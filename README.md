@@ -1,70 +1,282 @@
-# Getting Started with Create React App
+# Git Analytics Dashboard (Frontend)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Фронтенд-часть аналитической панели для сбора и визуализации статистики Git-коммитов. Позволяет получать данные по коммитам за выбранный период с детализацией по пользователям.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 📋 Функциональность
 
-### `npm start`
+- **Выбор периода** — выбор даты начала и окончания для анализа
+- **Загрузка данных** — получение статистики с бэкенда
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Интерактивная таблица:**
+    - Сортировка по колонкам
+    - Пагинация (15 строк на страницу)
+    - Поиск и фильтрация
+    - Кастомные иконки с подсказками в заголовках
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Экспорт данных** — выгрузка таблицы в CSV
 
-### `npm test`
+- **Адаптивные состояния:**
+    - Скелетон при загрузке
+    - Красивые заглушки при отсутствии данных
+    - Отображение ошибок
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## 🛠 Технологии
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **React 18** — основной фреймворк
+- **Material-UI (MUI) v6+** — компоненты и стилизация
+- **material-react-table** — продвинутая таблица
+- **Axios** — HTTP-клиент
+- **Day.js** — работа с датами
+- **React Router DOM v6** — навигация
+- **Webpack** — сборка проекта
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 📁 Структура проекта
 
-### `npm run eject`
+```
+src/
+├── api/                    # Работа с бэкендом
+│   ├── client.js          # Axios клиент с интерцепторами
+│   ├── analysisAPI.js     # API для аналитики
+│   └── types/             # Типы данных
+│
+├── component/             # UI компоненты
+│   ├── container/
+│   │   └── MainContainerComponent.jsx
+│   ├── DataTable.jsx       # Основная таблица
+│   ├── tableColumns.jsx    # Конфигурация колонок
+│   ├── TableSkeleton.jsx   # Скелетон загрузки
+│   ├── EmptyTableState.jsx # Заглушка "нет данных"
+│   ├── DateRangePicker.jsx # Выбор дат
+│   └── img/
+│       ├── empty.png
+│       └── error.png
+│
+├── hooks/
+│   └── useAnalysis.js      # Хук для работы с аналитикой
+│
+├── pages/
+│   └── MainPage.jsx        # Главная страница
+│
+└── App.jsx
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+---
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 🚀 Установка и запуск
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Требования
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- Node.js 16+
+- npm или yarn
 
-## Learn More
+### Установка зависимостей
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```bash
+npm install
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+или
 
-### Code Splitting
+```bash
+yarn
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+---
 
-### Analyzing the Bundle Size
+### Запуск в режиме разработки
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```bash
+npm start
+```
 
-### Making a Progressive Web App
+или
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```bash
+npm run dev
+```
 
-### Advanced Configuration
+Приложение будет доступно по адресу:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```
+http://localhost:9000
+```
 
-### Deployment
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### Сборка для продакшена
 
-### `npm run build` fails to minify
+```bash
+npm run build
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+---
+
+## 🔧 Конфигурация
+
+### API endpoint
+
+По умолчанию:
+
+```
+http://localhost:8080/api/v1/analysis
+```
+
+Чтобы изменить URL, отредактируйте:
+
+```javascript
+// api/client.js
+
+const apiClient = axios.create({
+  baseURL: "http://your-backend-url/api",
+});
+```
+
+---
+
+### Настройка порта разработки
+
+```javascript
+// webpack.dev.config.js
+
+devServer: {
+  port: 9000,
+}
+```
+
+---
+
+## 📊 Описание колонок таблицы
+
+| Колонка | Иконка | Описание |
+|--------|--------|----------|
+| Пользователь | 👤 | Email пользователя |
+| Merge коммиты | 🔀 | Количество merge-коммитов |
+| Коммиты | 💻 | Общее количество коммитов |
+| Строк добавлено | ➕ | Добавлено строк кода |
+| Строк удалено | ➖ | Удалено строк кода |
+| Строк тестов добавлено | 🧪 | Добавлено строк тестов |
+
+---
+
+## 🎨 Особенности интерфейса
+
+### Состояния таблицы
+
+**Загрузка**
+- Отображается skeleton loader
+
+**Ошибка**
+- Показывается иконка и сообщение об ошибке
+
+**Нет данных**
+- Показывается заглушка
+
+**Данные загружены**
+- Показывается интерактивная таблица
+
+---
+
+### Цветовая схема
+
+Основной акцентный цвет:
+
+```
+#f1c40f
+```
+
+Может быть изменён в теме MUI.
+
+---
+
+## 📝 API
+
+### Запрос
+
+```
+POST /api/v1/analysis
+```
+
+```json
+{
+  "since": "2024-01-01",
+  "until": "2024-12-31"
+}
+```
+
+---
+
+### Ответ
+
+```json
+[
+  {
+    "email": "user@example.com",
+    "mergeCommits": 5,
+    "commits": 42,
+    "added": 1500,
+    "deleted": 300,
+    "testAdded": 200
+  }
+]
+```
+
+---
+
+## 🐛 Известные проблемы
+
+### CORS ошибка
+
+Разрешите на backend:
+
+```
+http://localhost:9000
+```
+
+или используйте proxy.
+
+---
+
+### React hooks ошибка
+
+```
+Rendered more hooks than during the previous render
+```
+
+Решение:
+
+- Не вызывать hooks внутри условий
+- Проверить версии библиотек
+
+---
+
+## 🤝 Contribution
+
+```bash
+git checkout -b feature/my-feature
+git commit -m "Add new feature"
+git push origin feature/my-feature
+```
+
+Создайте Pull Request.
+
+---
+
+## 📄 License
+
+MIT
+
+---
+
+## ⚠ Важно
+
+Требуется backend:
+
+```
+http://localhost:8080
+```
