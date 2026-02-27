@@ -1,12 +1,4 @@
-import React from "react";
-import { useMemo } from 'react';
-import {
-    MaterialReactTable,
-    useMaterialReactTable,
-} from 'material-react-table';
-
-//nested data is ok, see accessorKeys in ColumnDef below
-const data = [
+export const data = [
     {
         "email": "evgeny.kungurov@x5.ru",
         "mergeCommits": 0,
@@ -592,64 +584,3 @@ const data = [
         "testAdded": 73
     }
 ];
-
-const Example = () => {
-    //should be memoized or stable
-    const columns = useMemo(
-        () => [
-            {
-                accessorKey: 'email', //access nested data with dot notation
-                header: 'Email',
-                size: 150,
-            },
-            {
-                accessorKey: 'mergeCommits',
-                header: 'Merge',
-                size: 30,
-            },
-            {
-                accessorKey: 'commits', //normal accessorKey
-                header: 'Commits',
-                size: 30,
-            },
-            {
-                accessorKey: 'added',
-                header: 'Added',
-                size: 30,
-            },
-            {
-                accessorKey: 'deleted',
-                header: 'Deleted',
-                size: 30,
-            },
-            {
-                accessorKey: 'testAdded',
-                header: 'Added Tests',
-                size: 30,
-            },
-        ],
-        [],
-    );
-
-    const table = useMaterialReactTable({
-        columns,
-        data,
-        muiTableHeadCellProps: {
-            sx: {
-                fontFamily: 'Manrope',
-            },
-        },
-        muiTableBodyCellProps: ({ column }) => ({
-            sx: {
-                fontFamily: 'Manrope',
-            },
-        }),
-        initialState: {
-            pagination: { pageIndex: 0, pageSize: 30 }, //set different default page size
-        },
-    });
-
-    return <MaterialReactTable table={table}  />;
-};
-
-export default Example;

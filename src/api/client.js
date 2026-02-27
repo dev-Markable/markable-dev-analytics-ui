@@ -1,58 +1,57 @@
 import axios from "axios";
-import { getAccessToken, getRefreshToken, setTokens, clearTokens } from "./tokenService";
 
 const apiClient = axios.create({
-    baseURL: "http://localhost:8080", // ← поменяй на свой backend
+    baseURL: "http://localhost:8080/", // Базовый URL вашего API
     headers: {
         "Content-Type": "application/json",
     },
 });
 
 /**
- * Request interceptor — добавляем Bearer токен
- */
-apiClient.interceptors.request.use((config) => {
-    const token = getAccessToken();
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
-
-/**
- * Response interceptor — авто refresh
+ * Response interceptor для обработки ошибок
  */
 apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
-        const originalRequest = error.config;
+        // Подробное логирование ошибок
+        if (error.response) {
+            // Сервер ответил с ошибкой
+            console.error('API Error Response:', {
+                status: error.response.status,
+                data: error.response.data,
+                url: error.config?.url,
+                method: error.config?.method
+            });
 
-        if (
-            error.response?.status === 401 &&
-            !originalRequest._retry &&
-            getRefreshToken()
-        ) {
-            originalRequest._retry = true;
-
-            try {
-                const response = await axios.post(
-                    "http://localhost:8080/auth/refresh",
-                    {
-                        refreshToken: getRefreshToken(),
-                    }
-                );
-
-                const { accessToken, refreshToken } = response.data;
-                setTokens(accessToken, refreshToken);
-
-                originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-                return apiClient(originalRequest);
-            } catch (err) {
-                clearTokens();
-                window.location.href = "/login";
-            }
+            // Форматируем ошибку для удобства использования
+            error.formattedMessage = error.response.data?.message ||
+                error.response.data?.error ||
+                `Ошибка ${error.response.status}`;
+        } else if (error.request) {
+            // Запрос был отправлен, но нет ответа
+            console.error('API No Response:', {
+                request: error.request,
+                url: error.config?.url
+            });
+            error.formattedMessage = 'Сервер не отвечает. Проверьте подключение к сети.';
+        } else {
+            // Ошибка при настройке запроса
+            console.error('API Request Error:', error.message);
+            error.formattedMessage = 'Ошибка при отправке запроса';
         }
 
+        return Promise.reject(error);
+    }
+);
+
+// Добавляем перехватчик для логирования всех запросов (опционально, для отладки)
+apiClient.interceptors.request.use(
+    (config) => {
+        console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`, config.data);
+        return config;
+    },
+    (error) => {
+        console.error('API Request Error:', error);
         return Promise.reject(error);
     }
 );
