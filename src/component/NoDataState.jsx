@@ -1,8 +1,8 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import Empty from "../img/pana8.png";
+import NoData from "../img/empty.png";
 
-const EmptyTableState = () => {
+const NoDataState = () => {
     return (
         <Box
             sx={{
@@ -16,21 +16,21 @@ const EmptyTableState = () => {
         >
             <Box
                 component="img"
-                alt="left Img"
-                src={Empty}
+                alt="No data found"
+                src={NoData}
                 sx={{
                     width: '80%',
                 }}/>
 
             <Typography variant="h6" color="text.secondary" gutterBottom>
-                Сбор статистики за период
+                Данные не найдены
             </Typography>
 
             <Typography variant="body2" color="text.secondary" align="center" sx={{ maxWidth: 400 }}>
-                Выберите период и нажмите кнопку "Выгрузить", чтобы получить статистику по коммитам
+                За выбранный период нет коммитов. Попробуйте изменить даты.
             </Typography>
         </Box>
     );
 };
 
-export default EmptyTableState;
+export default NoDataState;

@@ -1,4 +1,4 @@
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
 
 module.exports = {
@@ -8,7 +8,8 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, 'target/classes/public/'),
         filename: 'bundle.js',
-        libraryTarget: 'umd'
+        libraryTarget: 'umd',
+        publicPath: '/'
     },
 
     devServer: {
@@ -18,18 +19,6 @@ module.exports = {
         port: 9000,
         host: 'localhost',
         open: true,
-        /*
-                setupMiddlewares: (middlewares, devServer) => {
-                    middlewares.unshift({
-                        name: 'inital-data-mw',
-                        path: '/api/persons',
-                        middleware: (req, res) => res.send([
-                            {id: '1', name: 'Привяу'}
-                        ])
-                      });
-                    return middlewares;
-                },
-        */
         proxy: {
             '/api/*': {
                 target: 'http://localhost:8080',
@@ -37,8 +26,6 @@ module.exports = {
                 changeOrigin: true
             }
         }
-
-
     },
 
     module: {
@@ -61,7 +48,8 @@ module.exports = {
                         name: f => {
                             let dirNameInsideAssets = path.relative(path.join(__dirname, 'src'), path.dirname(f));
                             return `${dirNameInsideAssets}/[name].[ext]`;
-                        }
+                        },
+                        publicPath: '/',
                     }
                 }],
             },
@@ -77,7 +65,8 @@ module.exports = {
     plugins: [
         new HtmlWebpackPlugin({
             filename: 'index.html',
-            template: 'src/index.html'
+            template: 'src/index.html',
+            inject: 'body',
         })
     ]
-}
+};
