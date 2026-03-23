@@ -61,7 +61,7 @@ src/
 │   └── useAnalysis.js      # Хук для работы с аналитикой
 │
 ├── pages/
-│   └── MainPage.jsx        # Главная страница
+│   └── ManualExport.jsx        # Главная страница
 │
 └── App.jsx
 ```

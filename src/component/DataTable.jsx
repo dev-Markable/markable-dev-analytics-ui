@@ -11,6 +11,7 @@ import {mkConfig, generateCsv, download} from 'export-to-csv';
 import {getColumns} from './tableColumns';
 import TableSkeleton from './TableSkeleton';
 import EmptyTableState from './EmptyTableState';
+import NoDataState from './NoDataState';
 import Typography from "@mui/material/Typography";
 import Error from "../img/error.png";
 
@@ -21,7 +22,7 @@ const csvConfig = mkConfig({
     useKeysAsHeaders: true,
 });
 
-const DataTable = ({data = [], loading = false, error = null}) => {
+const DataTable = ({data = [], loading = false, error = null, hasRequestBeenMade = false}) => {
     const columns = useMemo(() => getColumns(), []);
 
     const handleExportData = () => {
@@ -118,7 +119,7 @@ const DataTable = ({data = [], loading = false, error = null}) => {
             }}>
                 <Box
                     component="img"
-                    alt="left Img"
+                    alt="Error"
                     src={Error}
                     sx={{
                         width: '80%',
@@ -131,9 +132,14 @@ const DataTable = ({data = [], loading = false, error = null}) => {
         );
     }
 
-    // Показываем заглушку если нет данных
+    // Если данных нет - показываем разные заглушки
     if (data.length === 0) {
-        return <EmptyTableState/>;
+        // Если запрос еще не делали - приветственная картинка
+        if (!hasRequestBeenMade) {
+            return <EmptyTableState />;
+        }
+        // Если запрос делали, но данных нет - "ничего не найдено"
+        return <NoDataState />;
     }
 
     return <MaterialReactTable table={table} />;
