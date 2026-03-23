@@ -11,6 +11,8 @@ import KaitenBoardsPage from "./pages/KaitenBoardsPage.jsx";
 import KaitenSprintsPage from "./pages/KaitenSprintsPage.jsx";
 import KaitenTeamPage from "./pages/KaitenTeamPage.jsx";
 import MainPage from "./pages/MainPage";
+import WeeklyStatsPage from "./pages/WeeklyStatsPage.jsx";
+import UserProfilePage from "./pages/UserProfilePage";
 
 
 function App() {
@@ -25,6 +27,8 @@ function App() {
                     <Route path="/git/repos" Component={GitReposPage}/>
                     <Route path="/git/manual" Component={ManualExport}/>
                     <Route path="/git/users" Component={GitUsersPage}/>
+                    <Route path="/git/weekly" Component={WeeklyStatsPage}/>
+                    <Route path="/git/user/:email" Component={UserProfilePage}/>
                     <Route path="/kaiten/tasks" Component={KaitenTasksPage}/>
                     <Route path="/kaiten/boards" Component={KaitenBoardsPage}/>
                     <Route path="/kaiten/sprints" Component={KaitenSprintsPage}/>

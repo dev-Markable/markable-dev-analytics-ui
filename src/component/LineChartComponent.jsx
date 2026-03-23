@@ -12,7 +12,6 @@ import {
     Brush
 } from 'recharts';
 import { Box, Typography, Paper, CircularProgress } from '@mui/material';
-import { useChartData } from '../hooks/useChartData';
 import { formatShortDate } from '../api/types/chart';
 
 // Кастомный Tooltip
@@ -47,30 +46,12 @@ const CustomTooltip = ({ active, payload, label }) => {
     return null;
 };
 
-const LineChartComponent = () => {
-    const { data, loading, error } = useChartData();
-
+const LineChartComponent = ({ data = [] }) => {
     // Форматируем даты для отображения на оси X
     const formattedData = data.map(item => ({
         ...item,
         shortDate: formatShortDate(item.date)
     }));
-
-    if (loading) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
-                <CircularProgress sx={{ color: '#2ea043' }} />
-            </Box>
-        );
-    }
-
-    if (error) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
-                <Typography color="error">{error}</Typography>
-            </Box>
-        );
-    }
 
     if (data.length === 0) {
         return (
@@ -147,6 +128,7 @@ const LineChartComponent = () => {
                         gap={5}
                         startIndex={0}
                         endIndex={formattedData.length - 1}
+                        alwaysShowText={true}
                     />
                 </ComposedChart>
             </ResponsiveContainer>

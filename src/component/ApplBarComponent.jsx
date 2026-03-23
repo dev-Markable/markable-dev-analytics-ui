@@ -11,9 +11,24 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemButton from '@mui/material/ListItemButton';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
+// Импортируем иконки для Material UI
+import ShowChartIcon from '@mui/icons-material/ShowChart';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import PeopleIcon from '@mui/icons-material/People';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import MergeIcon from '@mui/icons-material/Merge';
+import FolderIcon from '@mui/icons-material/Folder';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import BugReportIcon from '@mui/icons-material/BugReport';
+import BoardIcon from '@mui/icons-material/Dashboard';
+import SportsIcon from '@mui/icons-material/Sports';
+import GroupIcon from '@mui/icons-material/Group';
 
 const ApplBarComponent = () => {
+    const navigate = useNavigate();
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [currentMenu, setCurrentMenu] = React.useState(null);
 
@@ -27,21 +42,25 @@ const ApplBarComponent = () => {
         setCurrentMenu(null);
     };
 
+    const handleNavigation = (path) => {
+        handleCloseMenu();
+        navigate(path);
+    };
+
     const open = Boolean(anchorEl);
 
     const menuItems = {
         'Аналитика Git': [
-            { title: 'Коммиты', link: '/git/commits', icon: '📊' },
-            { title: 'Ветки', link: '/git/branches', icon: '🌿' },
-            { title: 'Репозитории', link: '/git/repos', icon: '📁' },
-            { title: 'Статистика пользователей', link: '/git/users', icon: '👥' },
-            { title: 'Ручная выгрузка статистики за период', link: '/git/manual', icon: '📅' }
+            { title: 'Коммиты', link: '/git/commits', icon: <ShowChartIcon fontSize="small" /> },
+            { title: 'Статистика по неделям', link: '/git/weekly', icon: <CalendarTodayIcon fontSize="small" /> },
+            { title: 'Статистика по пользователям', link: '/git/users', icon: <PeopleIcon fontSize="small" /> },
+            { title: 'Ручная выгрузка', link: '/git/manual', icon: <FileUploadIcon fontSize="small" /> }
         ],
         'Аналитика Kaiten': [
-            { title: 'Задачи', link: '/kaiten/tasks', icon: '📋' },
-            { title: 'Доски', link: '/kaiten/boards', icon: '📌' },
-            { title: 'Спринты', link: '/kaiten/sprints', icon: '🏃' },
-            { title: 'Статистика команды', link: '/kaiten/team', icon: '📈' }
+            { title: 'Задачи', link: '/kaiten/tasks', icon: <AssessmentIcon fontSize="small" /> },
+            { title: 'Доски', link: '/kaiten/boards', icon: <BoardIcon fontSize="small" /> },
+            { title: 'Спринты', link: '/kaiten/sprints', icon: <SportsIcon fontSize="small" /> },
+            { title: 'Статистика команды', link: '/kaiten/team', icon: <GroupIcon fontSize="small" /> }
         ]
     };
 
@@ -101,7 +120,6 @@ const ApplBarComponent = () => {
                             ))}
                         </Box>
 
-                        {/* Выпадающее меню */}
                         <Popover
                             open={open}
                             anchorEl={anchorEl}
@@ -116,14 +134,14 @@ const ApplBarComponent = () => {
                             }}
                             sx={{
                                 '& .MuiPaper-root': {
-                                    backgroundColor: 'rgba(51, 51, 51, 0.85)',
-                                    backdropFilter: 'blur(5px)',
+                                    backgroundColor: 'rgba(51, 51, 51, 0.95)',
+                                    backdropFilter: 'blur(10px)',
                                     color: 'white',
                                     minWidth: '280px',
                                     mt: 1,
                                     borderRadius: 2,
                                     boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-                                    border: '1px solid rgba(241, 196, 15, 0.1)'
+                                    border: '1px solid rgba(241, 196, 15, 0.1)',
                                 }
                             }}
                         >
@@ -131,22 +149,30 @@ const ApplBarComponent = () => {
                                 {currentMenu && menuItems[currentMenu]?.map((item) => (
                                     <ListItem key={item.title} disablePadding>
                                         <ListItemButton
-                                            component={Link}
-                                            to={item.link}
-                                            onClick={handleCloseMenu}
+                                            onClick={() => handleNavigation(item.link)}
                                             sx={{
                                                 borderRadius: 1,
+                                                transition: 'all 0.2s',
                                                 '&:hover': {
-                                                    backgroundColor: 'rgba(241, 196, 15, 0.1)',
+                                                    backgroundColor: 'rgba(241, 196, 15, 0.15)',
+                                                    transform: 'translateX(4px)',
                                                 }
                                             }}
                                         >
-                                            <Box sx={{ mr: 2, fontSize: '1.2rem' }}>{item.icon}</Box>
+                                            <Box sx={{
+                                                mr: 2,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                color: '#f1c40f'
+                                            }}>
+                                                {item.icon}
+                                            </Box>
                                             <ListItemText
                                                 primary={item.title}
                                                 primaryTypographyProps={{
                                                     fontFamily: 'Manrope',
-                                                    fontSize: '0.95rem'
+                                                    fontSize: '0.95rem',
+                                                    fontWeight: 400,
                                                 }}
                                             />
                                         </ListItemButton>

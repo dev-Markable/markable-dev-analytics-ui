@@ -9,6 +9,10 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import {useChartData} from "../hooks/useChartData";
+import GitHubIcon from '@mui/icons-material/GitHub';
+import CodeIcon from '@mui/icons-material/Code';
+import MergeIcon from '@mui/icons-material/Merge';
+import ViewKanbanIcon from '@mui/icons-material/ViewKanban';
 // import { useKaitenData } from "../hooks/useKaitenData"; // если есть
 
 const MainPage = () => {
@@ -54,8 +58,9 @@ const MainPage = () => {
     return (
         <MainContainerComponent>
             {/* Секция Git */}
-            <Typography variant="h5" sx={{fontWeight: 500, mb: 2, color: '#2ea043'}}>
-                📊 Git активность
+            <Typography variant="h5" sx={{ fontWeight: 500, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <GitHubIcon sx={{ color: '#2ea043', fontSize: 28 }} />
+                Git активность
             </Typography>
 
             <Grid container spacing={3} sx={{mb: 4, display: 'flex', justifyContent: 'space-between'}}>
@@ -215,14 +220,15 @@ const MainPage = () => {
                             backgroundColor: '#fafafa',
                         }}
                     >
-                        <LineChartComponent/>
+                        <LineChartComponent data={gitData}/>
                     </Paper>
                 </Grid>
             </Grid>
 
             {/* Секция Kaiten (пока с моковыми данными) */}
-            <Typography variant="h5" sx={{fontWeight: 500, mb: 2, color: '#00a3ff', mt: 6}}>
-                🎯 Kaiten активность (в разработке)
+            <Typography variant="h5" sx={{ fontWeight: 500, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <ViewKanbanIcon sx={{ color: '#00a3ff', fontSize: 28 }} />
+                Kaiten активность
             </Typography>
 
             <Grid container spacing={3} sx={{mb: 4, opacity: 0.5, display: 'flex', justifyContent: 'space-between'}}>
