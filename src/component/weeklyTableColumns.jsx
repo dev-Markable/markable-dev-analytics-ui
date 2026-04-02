@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Tooltip, Typography, Chip } from '@mui/material';
+import { Box, Tooltip, Typography, Chip, Avatar } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import MergeIcon from '@mui/icons-material/Merge';
 import CodeIcon from '@mui/icons-material/Code';
@@ -58,6 +58,13 @@ const tooltipConfig = {
         icon: TrendingUpIcon,
         title: 'Net',
         description: 'Разница между добавленными и удаленными строками'
+    },
+    activityIndex: {
+        bgcolor: '#f1c40f',
+        color: '#333333',
+        icon: TrendingUpIcon,
+        title: 'Индекс активности',
+        description: 'Отношение добавленных строк к количеству коммитов. Показывает "ценность" коммита.'
     }
 };
 
@@ -93,6 +100,48 @@ const CustomHeader = ({ config }) => {
     );
 };
 
+// Функция для получения цвета и текста индекса активности
+const getActivityIndexInfo = (value) => {
+    if (value < 20) {
+        return {
+            color: '#f44336',
+            bgColor: 'rgba(244, 67, 54, 0.1)',
+            label: 'Низкая',
+            icon: '🔴'
+        };
+    }
+    if (value >= 20 && value < 40) {
+        return {
+            color: '#ff9800',
+            bgColor: 'rgba(255, 152, 0, 0.1)',
+            label: 'Средняя',
+            icon: '🟡'
+        };
+    }
+    if (value >= 40 && value < 60) {
+        return {
+            color: '#4caf50',
+            bgColor: 'rgba(76, 175, 80, 0.1)',
+            label: 'Хорошая',
+            icon: '🟢'
+        };
+    }
+    if (value >= 60) {
+        return {
+            color: '#9c27b0',
+            bgColor: 'rgba(156, 39, 176, 0.1)',
+            label: 'Легендарная',
+            icon: '💎'
+        };
+    }
+    return {
+        color: '#999',
+        bgColor: 'rgba(153, 153, 153, 0.1)',
+        label: 'Нет данных',
+        icon: '⚪'
+    };
+};
+
 export const getWeeklyUserColumns = () => [
     {
         accessorKey: 'email',
@@ -100,9 +149,14 @@ export const getWeeklyUserColumns = () => [
         size: 220,
         Header: () => <CustomHeader config={tooltipConfig.user} />,
         Cell: ({ cell }) => (
-            <Typography fontWeight="bold" sx={{ fontSize: '0.95rem' }}>
-                {cell.getValue()}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Avatar sx={{ width: 32, height: 32, bgcolor: '#f1c40f', fontSize: '0.9rem' }}>
+                    {cell.getValue()?.charAt(0).toUpperCase()}
+                </Avatar>
+                <Typography fontWeight="bold" sx={{ fontSize: '0.95rem' }}>
+                    {cell.getValue()}
+                </Typography>
+            </Box>
         ),
     },
     {
@@ -168,5 +222,40 @@ export const getWeeklyUserColumns = () => [
             );
         },
         Header: () => <CustomHeader config={tooltipConfig.net} />,
+    },
+    {
+        accessorKey: 'activityIndex',
+        header: '',
+        size: 100,
+        muiTableBodyCellProps: { align: 'center' },
+        Header: () => <CustomHeader config={tooltipConfig.activityIndex} />,
+        Cell: ({ row }) => {
+            const commits = row.original.commits;
+            const addedLines = row.original.addedLines;
+
+            // Рассчитываем индекс активности (добавленные строки / количество коммитов)
+            let activityIndex = 0;
+            if (commits > 0) {
+                activityIndex = Math.round(addedLines / commits);
+            }
+
+            const info = getActivityIndexInfo(activityIndex);
+
+            return (
+                <Tooltip title={`${info.label} активность: ${activityIndex} строк/коммит`} arrow>
+                    <Chip
+                        label={`${info.icon} ${activityIndex}`}
+                        size="small"
+                        sx={{
+                            backgroundColor: info.bgColor,
+                            color: info.color,
+                            fontWeight: 'bold',
+                            minWidth: 80,
+                            border: `1px solid ${info.color}`,
+                        }}
+                    />
+                </Tooltip>
+            );
+        },
     },
 ];

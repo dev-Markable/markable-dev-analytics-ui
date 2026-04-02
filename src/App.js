@@ -13,29 +13,33 @@ import KaitenTeamPage from "./pages/KaitenTeamPage.jsx";
 import MainPage from "./pages/MainPage";
 import WeeklyStatsPage from "./pages/WeeklyStatsPage.jsx";
 import UserProfilePage from "./pages/UserProfilePage";
+import {TeamFilterProvider} from "./context/TeamFilterContext";
 
 
 function App() {
     return (
         <BrowserRouter>
-            <React.Fragment>
-                <ApplBarComponent/>
-                <Routes>
-                    <Route path="/" Component={MainPage}/>
-                    <Route path="/git/commits" Component={GitCommitsPage}/>
-                    <Route path="/git/branches" Component={GitBranchesPage}/>
-                    <Route path="/git/repos" Component={GitReposPage}/>
-                    <Route path="/git/manual" Component={ManualExport}/>
-                    <Route path="/git/users" Component={GitUsersPage}/>
-                    <Route path="/git/weekly" Component={WeeklyStatsPage}/>
-                    <Route path="/git/user/:email" Component={UserProfilePage}/>
-                    <Route path="/kaiten/tasks" Component={KaitenTasksPage}/>
-                    <Route path="/kaiten/boards" Component={KaitenBoardsPage}/>
-                    <Route path="/kaiten/sprints" Component={KaitenSprintsPage}/>
-                    <Route path="/kaiten/team" Component={KaitenTeamPage}/>
-                </Routes>
-            </React.Fragment>
+            <TeamFilterProvider>
+                <React.Fragment>
+                    <ApplBarComponent/>
+                    <Routes>
+                        <Route path="/" Component={MainPage}/>
+                        <Route path="/git/commits" Component={GitCommitsPage}/>
+                        <Route path="/git/branches" Component={GitBranchesPage}/>
+                        <Route path="/git/repos" Component={GitReposPage}/>
+                        <Route path="/git/manual" Component={ManualExport}/>
+                        <Route path="/git/users" Component={GitUsersPage}/>
+                        <Route path="/git/weekly" Component={WeeklyStatsPage}/>
+                        <Route path="/git/user/:email" Component={UserProfilePage}/>
+                        <Route path="/kaiten/tasks" Component={KaitenTasksPage}/>
+                        <Route path="/kaiten/boards" Component={KaitenBoardsPage}/>
+                        <Route path="/kaiten/sprints" Component={KaitenSprintsPage}/>
+                        <Route path="/kaiten/team" Component={KaitenTeamPage}/>
+                    </Routes>
+                </React.Fragment>
+            </TeamFilterProvider>
         </BrowserRouter>
-);
+    );
 }
+
 export default App;

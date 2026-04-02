@@ -17,35 +17,64 @@ const csvConfig = mkConfig({
 });
 
 const WeeklyUsersTable = ({ weekData, weekStart, weekEnd }) => {
+    if (!weekData || !weekStart || !weekEnd) {
+        return (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography color="text.secondary">Нет данных для отображения</Typography>
+            </Box>
+        );
+    }
     const navigate = useNavigate();
     const columns = useMemo(() => getWeeklyUserColumns(), []);
-
     const users = useMemo(() => {
         if (!weekData?.topAuthors) return [];
 
-        return Object.values(weekData.topAuthors).map(author => ({
-            email: author.email,
-            commits: author.commits,
-            mergeCommits: author.mergeCommits || 0,
-            addedLines: author.addedLines,
-            deletedLines: author.deletedLines,
-            testAddedLines: author.testAddedLines || 0,
-            net: author.addedLines - author.deletedLines
-        })).sort((a, b) => b.commits - a.commits);
+        return Object.values(weekData.topAuthors).map(author => {
+            const commits = author.commits || 0;
+            const addedLines = author.addedLines || 0;
+
+            // Рассчитываем индекс активности
+            let activityIndex = 0;
+            if (commits > 0) {
+                activityIndex = Math.round(addedLines / commits);
+            }
+
+            return {
+                email: author.email,
+                commits: commits,
+                mergeCommits: author.mergeCommits || 0,
+                addedLines: addedLines,
+                deletedLines: author.deletedLines || 0,
+                testAddedLines: author.testAddedLines || 0,
+                net: addedLines - (author.deletedLines || 0),
+                activityIndex: activityIndex
+            };
+        }).sort((a, b) => b.commits - a.commits);
     }, [weekData]);
 
     const handleExport = () => {
         if (users.length === 0) return;
-        const csv = generateCsv(csvConfig)(users);
+
+        // Экспортируем данные с индексом активности
+        const exportData = users.map(user => ({
+            email: user.email,
+            commits: user.commits,
+            mergeCommits: user.mergeCommits,
+            addedLines: user.addedLines,
+            deletedLines: user.deletedLines,
+            testAddedLines: user.testAddedLines,
+            net: user.net,
+            activityIndex: user.activityIndex
+        }));
+
+        const csv = generateCsv(csvConfig)(exportData);
         download(csvConfig)(csv);
     };
 
     const handleRowClick = (row) => {
-        // Передаем период (даты недели) через URL параметры
         const params = new URLSearchParams();
         if (weekStart) params.set('start', weekStart);
         if (weekEnd) params.set('end', weekEnd);
-
         navigate(`/git/user/${encodeURIComponent(row.original.email)}?${params.toString()}`);
     };
 
@@ -53,7 +82,7 @@ const WeeklyUsersTable = ({ weekData, weekStart, weekEnd }) => {
         columns,
         data: users,
         initialState: {
-            sorting: [{ id: 'commits', desc: true }],
+            sorting: [{ id: 'commits', desc: true }], // Сортируем по индексу активности по умолчанию
             pagination: { pageIndex: 0, pageSize: 10 },
         },
         localization: MRT_Localization_RU,
