@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -10,27 +10,34 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemButton from '@mui/material/ListItemButton';
+import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useNavigate } from "react-router-dom";
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { AdminAPI } from '../api/adminAPI';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import { useTeamFilter } from '../context/TeamFilterContext';
 
-// Импортируем иконки для Material UI
+// Импортируем иконки
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import PeopleIcon from '@mui/icons-material/People';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import AssessmentIcon from '@mui/icons-material/Assessment';
-import MergeIcon from '@mui/icons-material/Merge';
-import FolderIcon from '@mui/icons-material/Folder';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import BugReportIcon from '@mui/icons-material/BugReport';
-import BoardIcon from '@mui/icons-material/Dashboard';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 import SportsIcon from '@mui/icons-material/Sports';
 import GroupIcon from '@mui/icons-material/Group';
 
 const ApplBarComponent = () => {
     const navigate = useNavigate();
+    const { isTeamFilterEnabled, setIsTeamFilterEnabled } = useTeamFilter();
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [currentMenu, setCurrentMenu] = React.useState(null);
+    const [collecting, setCollecting] = useState(false);
+    const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
     const handleOpenMenu = (event, menuTitle) => {
         setAnchorEl(event.currentTarget);
@@ -47,6 +54,39 @@ const ApplBarComponent = () => {
         navigate(path);
     };
 
+    const handleCollectStats = async () => {
+        setCollecting(true);
+        try {
+            await AdminAPI.triggerDailyStatsCollection();
+            setSnackbar({
+                open: true,
+                message: 'Сбор статистики запущен успешно',
+                severity: 'success'
+            });
+        } catch (error) {
+            setSnackbar({
+                open: true,
+                message: error.response?.data?.message || 'Ошибка при запуске сбора статистики',
+                severity: 'error'
+            });
+        } finally {
+            setCollecting(false);
+        }
+    };
+
+    const handleCloseSnackbar = () => {
+        setSnackbar({ ...snackbar, open: false });
+    };
+
+    const handleTeamFilterToggle = (event) => {
+        setIsTeamFilterEnabled(event.target.checked);
+        setSnackbar({
+            open: true,
+            message: event.target.checked ? 'Включен режим "Команда маркировки"' : 'Режим "Команда маркировки" отключен',
+            severity: 'info'
+        });
+    };
+
     const open = Boolean(anchorEl);
 
     const menuItems = {
@@ -58,7 +98,7 @@ const ApplBarComponent = () => {
         ],
         'Аналитика Kaiten': [
             { title: 'Задачи', link: '/kaiten/tasks', icon: <AssessmentIcon fontSize="small" /> },
-            { title: 'Доски', link: '/kaiten/boards', icon: <BoardIcon fontSize="small" /> },
+            { title: 'Доски', link: '/kaiten/boards', icon: <DashboardIcon fontSize="small" /> },
             { title: 'Спринты', link: '/kaiten/sprints', icon: <SportsIcon fontSize="small" /> },
             { title: 'Статистика команды', link: '/kaiten/team', icon: <GroupIcon fontSize="small" /> }
         ]
@@ -68,26 +108,8 @@ const ApplBarComponent = () => {
         <React.Fragment>
             <AppBar position="static" sx={{ background: '#333333' }}>
                 <Container maxWidth="lg">
-                    <Toolbar disableGutters>
-                        <Typography
-                            variant="h6"
-                            noWrap
-                            component="a"
-                            href="/"
-                            sx={{
-                                mr: 2,
-                                display: { xs: 'none', md: 'flex' },
-                                fontFamily: 'Manrope',
-                                fontWeight: 700,
-                                letterSpacing: '.3rem',
-                                color: 'inherit',
-                                textDecoration: 'none',
-                            }}
-                        >
-                            Dev analytics
-                        </Typography>
-
-                        <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: 1 }}>
+                    <Toolbar disableGutters sx={{ flexWrap: 'wrap', gap: 1 }}>
+                        <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: 1, alignItems: 'center' }}>
                             {Object.keys(menuItems).map((menuTitle) => (
                                 <Box key={menuTitle}>
                                     <Button
@@ -118,6 +140,55 @@ const ApplBarComponent = () => {
                                     </Button>
                                 </Box>
                             ))}
+
+                            {/* Тумблер "Команда маркировки" */}
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2 }}>
+                                <QrCodeScannerIcon sx={{ color: 'white', fontSize: 20 }} />
+                                <Typography variant="body2" sx={{ color: 'white', fontFamily: 'Manrope' }}>
+                                    Команда маркировки
+                                </Typography>
+                                <Switch
+                                    checked={isTeamFilterEnabled}
+                                    onChange={handleTeamFilterToggle}
+                                    sx={{
+                                        '& .MuiSwitch-switchBase.Mui-checked': {
+                                            color: '#f1c40f',
+                                        },
+                                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                            backgroundColor: '#f1c40f',
+                                        },
+                                    }}
+                                />
+                            </Box>
+
+                            {/* Кнопка сбора статистики */}
+                            <Button
+                                onClick={handleCollectStats}
+                                disabled={collecting}
+                                sx={{
+                                    color: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    textTransform: 'none',
+                                    fontFamily: 'Manrope',
+                                    fontSize: '0.9rem',
+                                    py: 1,
+                                    px: 2,
+                                    borderRadius: 1,
+                                    backgroundColor: 'rgba(241, 196, 15, 0.15)',
+                                    border: '1px solid rgba(241, 196, 15, 0.3)',
+                                    '&:hover': {
+                                        backgroundColor: 'rgba(241, 196, 15, 0.3)',
+                                    },
+                                    '&:disabled': {
+                                        opacity: 0.5,
+                                        cursor: 'not-allowed'
+                                    }
+                                }}
+                                startIcon={<CloudUploadIcon sx={{ color: '#f1c40f' }} />}
+                            >
+                                {collecting ? 'Сбор...' : 'Собрать статистику'}
+                            </Button>
                         </Box>
 
                         <Popover
@@ -183,6 +254,17 @@ const ApplBarComponent = () => {
                     </Toolbar>
                 </Container>
             </AppBar>
+
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={3000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </React.Fragment>
     );
 }
