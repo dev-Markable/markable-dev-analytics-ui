@@ -5,6 +5,7 @@ export class UserProfile {
         this.email = data.email;
         this.username = data.username;
         this.joinedDate = data.joinedDate;
+        this.avatarUrl = data.avatarUrl;  // 👈 добавляем аватарку
         this.totalCommits = data.totalCommits;
         this.totalMergeCommits = data.totalMergeCommits;
         this.totalAddedLines = data.totalAddedLines;
@@ -19,32 +20,23 @@ export class UserProfile {
         this.activityByHour = data.activityByHour || {};
         this.repositories = data.repositories || [];
         this.tasks = data.tasks || [];
+        this.kaitenCards = data.kaitenCards || [];
         this.inactivePeriods = data.inactivePeriods || [];
         this.aiSummary = data.aiSummary || "";
     }
 }
 
 export const UserAPI = {
-    /**
-     * Получить профиль пользователя
-     * @param {string} email - email пользователя (может быть с параметрами)
-     * @param {string} url - полный URL (если передан, используем его)
-     */
     getUserProfile: async (emailOrUrl) => {
         try {
             let url;
-
-            // Если передан полный URL (с параметрами)
             if (emailOrUrl.startsWith('/users/') || emailOrUrl.startsWith('users/')) {
                 url = 'api/v1' + emailOrUrl;
             } else {
-                // Если передан только email
                 const encodedEmail = encodeURIComponent(emailOrUrl);
                 url = `api/v1/users/${encodedEmail}`;
             }
-
             console.log('API Request: GET', url);
-
             const response = await apiClient.get(url);
             return new UserProfile(response.data);
         } catch (error) {
@@ -53,9 +45,6 @@ export const UserAPI = {
         }
     },
 
-    /**
-     * Получить коммиты пользователя
-     */
     getUserCommits: async (email) => {
         try {
             const encodedEmail = encodeURIComponent(email);

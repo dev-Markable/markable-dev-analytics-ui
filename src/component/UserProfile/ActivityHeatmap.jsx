@@ -8,7 +8,8 @@ import {
     XAxis,
     YAxis,
     CartesianGrid,
-    Cell
+    Cell,
+    LabelList
 } from 'recharts';
 
 const dayNames = {
@@ -42,6 +43,107 @@ const getBarColor = (value, maxValue) => {
     if (intensity < 0.5) return hourColors[2];
     if (intensity < 0.75) return hourColors[3];
     return hourColors[4];
+};
+
+// Кастомный компонент для отображения значений по центру бара с фоном (горизонтальные бары)
+const renderCustomizedLabelHorizontal = (props) => {
+    const { x, y, width, height, value } = props;
+    if (value === 0) return null;
+
+    const centerX = x + width / 2;
+    const centerY = y + height / 2;
+    const labelWidth = 40;
+    const labelHeight = 20;
+
+    return (
+        <g>
+            <rect
+                x={centerX - labelWidth / 2}
+                y={centerY - labelHeight / 2}
+                width={labelWidth}
+                height={labelHeight}
+                fill="rgba(200, 200, 200, 0.8)"
+                rx={4}
+                ry={4}
+                style={{ backdropFilter: 'blur(4px)' }}
+            />
+            <text
+                x={centerX}
+                y={centerY}
+                fill="#333"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontSize={11}
+                fontWeight="bold"
+            >
+                {value}
+            </text>
+        </g>
+    );
+};
+
+// Кастомный компонент для отображения значений по центру бара с фоном (вертикальные бары)
+const renderCustomizedLabelVertical = (props) => {
+    const { x, y, width, height, value } = props;
+    if (value === 0) return null;
+
+    const centerX = x + width / 2;
+    const centerY = y + height / 2;
+    const labelWidth = 30;
+    const labelHeight = 18;
+
+    // Для низких баров (меньше 30px) размещаем метку над баром
+    if (height < 30) {
+        return (
+            <g>
+                <rect
+                    x={centerX - labelWidth / 2}
+                    y={y - labelHeight - 2}
+                    width={labelWidth}
+                    height={labelHeight}
+                    fill="rgba(200, 200, 200, 0.8)"
+                    rx={4}
+                    ry={4}
+                />
+                <text
+                    x={centerX}
+                    y={y - labelHeight / 2 - 2}
+                    fill="#333"
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fontSize={10}
+                    fontWeight="bold"
+                >
+                    {value}
+                </text>
+            </g>
+        );
+    }
+
+    return (
+        <g>
+            <rect
+                x={centerX - labelWidth / 2}
+                y={centerY - labelHeight / 2}
+                width={labelWidth}
+                height={labelHeight}
+                fill="rgba(200, 200, 200, 0.8)"
+                rx={4}
+                ry={4}
+            />
+            <text
+                x={centerX}
+                y={centerY}
+                fill="#333"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontSize={10}
+                fontWeight="bold"
+            >
+                {value}
+            </text>
+        </g>
+    );
 };
 
 const ActivityHeatmap = ({ title, data, type, maxValue }) => {
@@ -120,6 +222,11 @@ const ActivityHeatmap = ({ title, data, type, maxValue }) => {
                                 radius={[0, 4, 4, 0]}
                                 barSize={32}
                             >
+                                <LabelList
+                                    dataKey="commits"
+                                    position="center"
+                                    content={renderCustomizedLabelHorizontal}
+                                />
                                 {chartData.map((entry, index) => (
                                     <Cell
                                         key={`cell-${index}`}
@@ -190,6 +297,11 @@ const ActivityHeatmap = ({ title, data, type, maxValue }) => {
                             radius={[4, 4, 0, 0]}
                             barSize={24}
                         >
+                            <LabelList
+                                dataKey="commits"
+                                position="center"
+                                content={renderCustomizedLabelVertical}
+                            />
                             {hourData.map((entry, index) => (
                                 <Cell
                                     key={`cell-${index}`}
