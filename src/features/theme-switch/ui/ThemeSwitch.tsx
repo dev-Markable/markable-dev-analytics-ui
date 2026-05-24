@@ -1,17 +1,18 @@
-import { Segmented, Tooltip } from 'antd';
+import type { ReactNode } from 'react';
+import { Tooltip } from 'antd';
 import { Monitor, Moon, Sun } from 'lucide-react';
 import { useThemeStore, type ThemePreference } from '../model/theme.store';
 
 interface Option {
   value: ThemePreference;
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
 }
 
 const OPTIONS: readonly Option[] = [
-  { value: 'light', icon: <Sun size={14} strokeWidth={2} />, label: 'Светлая' },
-  { value: 'system', icon: <Monitor size={14} strokeWidth={2} />, label: 'Системная' },
-  { value: 'dark', icon: <Moon size={14} strokeWidth={2} />, label: 'Тёмная' },
+  { value: 'light', icon: <Sun size={15} strokeWidth={2} />, label: 'Светлая' },
+  { value: 'system', icon: <Monitor size={15} strokeWidth={2} />, label: 'Системная' },
+  { value: 'dark', icon: <Moon size={15} strokeWidth={2} />, label: 'Тёмная' },
 ];
 
 export function ThemeSwitch() {
@@ -19,28 +20,24 @@ export function ThemeSwitch() {
   const setPreference = useThemeStore((s) => s.setPreference);
 
   return (
-    <Segmented<ThemePreference>
-      size="small"
-      value={preference}
-      onChange={(value) => setPreference(value)}
-      options={OPTIONS.map((opt) => ({
-        value: opt.value,
-        label: (
-          <Tooltip title={opt.label} mouseEnterDelay={0.4}>
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 20,
-                height: 20,
-              }}
+    <div className="theme-switch" role="radiogroup" aria-label="Тема оформления">
+      {OPTIONS.map((opt) => {
+        const isActive = opt.value === preference;
+        return (
+          <Tooltip key={opt.value} title={opt.label} mouseEnterDelay={0.4}>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={isActive}
+              aria-label={opt.label}
+              className={`theme-switch__btn${isActive ? ' theme-switch__btn--active' : ''}`}
+              onClick={() => setPreference(opt.value)}
             >
               {opt.icon}
-            </span>
+            </button>
           </Tooltip>
-        ),
-      }))}
-    />
+        );
+      })}
+    </div>
   );
 }

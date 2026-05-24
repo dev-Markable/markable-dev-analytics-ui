@@ -11,15 +11,15 @@ export const lightTheme: ThemeConfig = {
     colorTextBase: '#0a0a0a',
     colorBgBase: '#ffffff',
 
-    // Page bg — заметно серый, чтобы белые панели «лежали сверху».
-    colorBgLayout: '#e8eaf0',
-    // Все панели: сайдбар, топбар, карточки — единый «elevated» белый.
+    // Page + topbar — лёгкий серый, чтобы elevated-панели (cards/sidebar) лежали сверху.
+    colorBgLayout: '#eef0f4',
+    // Elevated-панели: сайдбар, карточки.
     colorBgContainer: '#ffffff',
     colorBgElevated: '#ffffff',
 
-    colorBorder: '#d8dce3',
-    colorBorderSecondary: '#e2e5ea',
-    colorSplit: '#e2e5ea',
+    colorBorder: '#dbdfe6',
+    colorBorderSecondary: '#e6e9ee',
+    colorSplit: '#e6e9ee',
 
     colorTextSecondary: '#5b6271',
     colorTextTertiary: '#8a909c',
@@ -43,7 +43,6 @@ export const lightTheme: ThemeConfig = {
     controlHeightLG: 40,
     controlHeightSM: 28,
 
-    // Реальные, видимые тени Stripe/Linear-style.
     boxShadow:
       '0 1px 3px rgba(15,17,21,0.06), 0 1px 2px rgba(15,17,21,0.05)',
     boxShadowSecondary:
@@ -64,11 +63,11 @@ export const lightTheme: ThemeConfig = {
       dangerShadow: 'none',
     },
     Table: {
-      headerBg: '#f5f6f9',
+      headerBg: '#f7f8fa',
       headerColor: '#5b6271',
-      rowHoverBg: '#f5f6f9',
+      rowHoverBg: '#f7f8fa',
       cellPaddingBlock: 12,
-      headerSplitColor: '#e2e5ea',
+      headerSplitColor: '#e6e9ee',
     },
     Input: { borderRadius: 8, paddingBlock: 8 },
     Select: { borderRadius: 8 },
@@ -81,7 +80,8 @@ export const lightTheme: ThemeConfig = {
       itemMarginInline: 8,
     },
     Tag: { borderRadiusSM: 6, defaultBg: '#eef0f4', defaultColor: '#5b6271' },
-    Layout: { headerBg: '#ffffff', siderBg: '#ffffff', bodyBg: '#e8eaf0' },
+    // Sider — elevated (= card BG, белый). Header — низкий уровень (= page BG, серый).
+    Layout: { headerBg: '#eef0f4', siderBg: '#ffffff', bodyBg: '#eef0f4' },
     Tooltip: { colorBgSpotlight: '#0a0a0a' },
     Statistic: { titleFontSize: 13, contentFontSize: 28 },
     Modal: { borderRadiusLG: 12 },

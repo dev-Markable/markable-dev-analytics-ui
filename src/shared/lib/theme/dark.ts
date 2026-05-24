@@ -9,10 +9,10 @@ export const darkTheme: ThemeConfig = {
     colorWarning: '#f5a524',
     colorError: '#f87171',
 
-    // Page bg — самый тёмный уровень.
-    colorBgBase: '#06070a',
-    colorBgLayout: '#06070a',
-    // Все панели — единый elevated-уровень. Сайдбар = топбар = карточки.
+    // Page + topbar — низкий уровень.
+    colorBgBase: '#0a0c10',
+    colorBgLayout: '#0a0c10',
+    // Elevated-панели: сайдбар, карточки.
     colorBgContainer: '#15171c',
     colorBgElevated: '#1c1f25',
 
@@ -79,8 +79,8 @@ export const darkTheme: ThemeConfig = {
       itemMarginInline: 8,
     },
     Tag: { borderRadiusSM: 6, defaultBg: '#1c1f25', defaultColor: '#9099a4' },
-    // Sider = Header = Card BG. Page (bodyBg) — темнее на пару уровней.
-    Layout: { headerBg: '#15171c', siderBg: '#15171c', bodyBg: '#06070a' },
+    // Sider — elevated. Header — низкий уровень (= page BG).
+    Layout: { headerBg: '#0a0c10', siderBg: '#15171c', bodyBg: '#0a0c10' },
     Tooltip: { colorBgSpotlight: '#2a2e36' },
     Statistic: { titleFontSize: 13, contentFontSize: 28 },
     Modal: { borderRadiusLG: 12 },
