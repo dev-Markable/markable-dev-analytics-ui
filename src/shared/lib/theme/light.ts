@@ -11,13 +11,15 @@ export const lightTheme: ThemeConfig = {
     colorTextBase: '#0a0a0a',
     colorBgBase: '#ffffff',
 
-    colorBgLayout: '#fafafa',
+    // Page bg — заметно серый, чтобы белые панели «лежали сверху».
+    colorBgLayout: '#e8eaf0',
+    // Все панели: сайдбар, топбар, карточки — единый «elevated» белый.
     colorBgContainer: '#ffffff',
     colorBgElevated: '#ffffff',
 
-    colorBorder: '#e6e8eb',
-    colorBorderSecondary: '#eef0f2',
-    colorSplit: '#eef0f2',
+    colorBorder: '#d8dce3',
+    colorBorderSecondary: '#e2e5ea',
+    colorSplit: '#e2e5ea',
 
     colorTextSecondary: '#5b6271',
     colorTextTertiary: '#8a909c',
@@ -41,11 +43,12 @@ export const lightTheme: ThemeConfig = {
     controlHeightLG: 40,
     controlHeightSM: 28,
 
+    // Реальные, видимые тени Stripe/Linear-style.
     boxShadow:
-      '0 1px 2px rgba(15,17,21,.04), 0 0 0 1px rgba(15,17,21,.04)',
+      '0 1px 3px rgba(15,17,21,0.06), 0 1px 2px rgba(15,17,21,0.05)',
     boxShadowSecondary:
-      '0 4px 16px rgba(15,17,21,.06), 0 0 0 1px rgba(15,17,21,.04)',
-    boxShadowTertiary: '0 1px 2px rgba(15,17,21,.03)',
+      '0 8px 24px rgba(15,17,21,0.08), 0 2px 6px rgba(15,17,21,0.05)',
+    boxShadowTertiary: '0 1px 2px rgba(15,17,21,0.04)',
 
     wireframe: false,
     motion: true,
@@ -61,24 +64,24 @@ export const lightTheme: ThemeConfig = {
       dangerShadow: 'none',
     },
     Table: {
-      headerBg: '#fafafa',
+      headerBg: '#f5f6f9',
       headerColor: '#5b6271',
-      rowHoverBg: '#fafafa',
+      rowHoverBg: '#f5f6f9',
       cellPaddingBlock: 12,
-      headerSplitColor: '#eef0f2',
+      headerSplitColor: '#e2e5ea',
     },
     Input: { borderRadius: 8, paddingBlock: 8 },
     Select: { borderRadius: 8 },
     Menu: {
       itemBorderRadius: 8,
       itemHeight: 36,
-      itemHoverBg: '#f4f5f7',
+      itemHoverBg: '#eef0f4',
       itemSelectedBg: '#eef0ff',
       itemSelectedColor: '#5b6cff',
       itemMarginInline: 8,
     },
-    Tag: { borderRadiusSM: 6, defaultBg: '#f4f5f7', defaultColor: '#5b6271' },
-    Layout: { headerBg: '#ffffff', siderBg: '#ffffff', bodyBg: '#fafafa' },
+    Tag: { borderRadiusSM: 6, defaultBg: '#eef0f4', defaultColor: '#5b6271' },
+    Layout: { headerBg: '#ffffff', siderBg: '#ffffff', bodyBg: '#e8eaf0' },
     Tooltip: { colorBgSpotlight: '#0a0a0a' },
     Statistic: { titleFontSize: 13, contentFontSize: 28 },
     Modal: { borderRadiusLG: 12 },

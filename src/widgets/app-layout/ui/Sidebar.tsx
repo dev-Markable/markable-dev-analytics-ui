@@ -1,6 +1,6 @@
 import { Layout, Typography } from 'antd';
-import { APP_SHORT_NAME } from '@/shared/config';
 import { PRIMARY_NAV, SECONDARY_NAV } from '../config/nav-items';
+import { Brand } from './Brand';
 import { NavItem } from './NavItem';
 
 const { Sider } = Layout;
@@ -14,10 +14,7 @@ export function Sidebar() {
       breakpoint="lg"
       collapsedWidth={64}
     >
-      <div className="app-sidebar-brand">
-        <span className="app-sidebar-brand__dot" aria-hidden />
-        <span>{APP_SHORT_NAME}</span>
-      </div>
+      <Brand />
 
       <nav style={{ display: 'flex', flexDirection: 'column', padding: '8px 12px', gap: 2 }}>
         <Typography.Text

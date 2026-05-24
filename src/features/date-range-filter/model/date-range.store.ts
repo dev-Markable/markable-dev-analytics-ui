@@ -35,7 +35,7 @@ export const useDateRangeStore = create<DateRangeState>()(
         set({ presetKey: null, range });
       },
     }),
-    { name: 'markable.date-range' },
+    { name: 'devpulse.date-range' },
   ),
 );
 

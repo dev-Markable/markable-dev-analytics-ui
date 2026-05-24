@@ -10,3 +10,4 @@ export {
   asyncFailure,
   isFresh,
 } from './async-state';
+export { createRaceGuard, type RaceGuard } from './race';

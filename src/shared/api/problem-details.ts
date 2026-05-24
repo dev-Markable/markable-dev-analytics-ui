@@ -37,7 +37,7 @@ export function toApiError(err: unknown): ApiError {
     if (status === 0) {
       return new ApiError({
         status: 0,
-        type: 'urn:markable:problem:network',
+        type: 'urn:devpulse:problem:network',
         title: 'Сервер недоступен',
         detail: networkErrorMessage,
       });

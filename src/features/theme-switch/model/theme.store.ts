@@ -24,7 +24,7 @@ export const useThemeStore = create<ThemeState>()(
           return { preference: order[nextI] ?? 'system' };
         }),
     }),
-    { name: 'markable.theme' },
+    { name: 'devpulse.theme' },
   ),
 );
 

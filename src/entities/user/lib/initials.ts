@@ -1,5 +1,7 @@
 import { initials } from '@/shared/lib';
-import type { UnifiedUser } from '../model/types';
+import type { AuthorActivity, UnifiedUser } from '../model/types';
+
+type UserLike = Pick<UnifiedUser, 'name' | 'username' | 'email' | 'avatarUrl'>;
 
 export const userInitials = (u: Pick<UnifiedUser, 'name' | 'username' | 'email'>): string => {
   const candidate = u.name ?? u.username ?? u.email;
@@ -14,3 +16,14 @@ export const userInitials = (u: Pick<UnifiedUser, 'name' | 'username' | 'email'>
 export const userDisplayName = (
   u: Pick<UnifiedUser, 'name' | 'username' | 'email'>,
 ): string => u.name ?? u.username ?? u.email;
+
+/**
+ * Преобразует enriched-агрегацию автора (с бэка) в shape, понятный UserAvatar/UserChip.
+ * `displayName`/`avatarUrl` могут быть `null` — компоненты сами упадут на инициалы и градиент.
+ */
+export const authorAsUser = (a: AuthorActivity): UserLike => ({
+  email: a.email,
+  name: a.displayName,
+  username: null,
+  avatarUrl: a.avatarUrl,
+});

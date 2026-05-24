@@ -15,7 +15,7 @@ export const useTeamFilterStore = create<TeamFilterState>()(
       toggle: () => set((s) => ({ enabled: !s.enabled })),
       setEnabled: (next) => set({ enabled: next }),
     }),
-    { name: 'markable.team-filter' },
+    { name: 'devpulse.team-filter' },
   ),
 );
 
