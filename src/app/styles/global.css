@@ -669,3 +669,125 @@ body {
   flex-direction: column;
   gap: 6px;
 }
+
+/* ──────────────────────────────────────────────────────────── */
+/*  Recharts tooltip                                           */
+/* ──────────────────────────────────────────────────────────── */
+
+.weekly-tooltip {
+  background: var(--ant-color-bg-elevated);
+  border: 1px solid var(--ant-color-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  min-width: 180px;
+  box-shadow:
+    0 2px 6px rgba(15, 17, 21, 0.06),
+    0 8px 24px rgba(15, 17, 21, 0.08);
+}
+
+[data-theme='dark'] .weekly-tooltip {
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.5),
+    0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.weekly-tooltip__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ant-color-text);
+  margin-bottom: 8px;
+}
+
+.weekly-tooltip__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.weekly-tooltip__row {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.weekly-tooltip__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.weekly-tooltip__label {
+  color: var(--ant-color-text-secondary);
+}
+
+.weekly-tooltip__value {
+  color: var(--ant-color-text);
+  font-weight: 500;
+}
+
+/* ──────────────────────────────────────────────────────────── */
+/*  Week breakdown (expanded row)                              */
+/* ──────────────────────────────────────────────────────────── */
+
+.week-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0;
+}
+
+.week-breakdown__row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 120px 160px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  margin-inline: -12px;
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+  transition: background 120ms ease;
+}
+
+.week-breakdown__row:hover {
+  background: var(--ant-color-bg-layout);
+}
+
+.week-breakdown__identity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.week-breakdown__metric {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  white-space: nowrap;
+  line-height: 1.15;
+}
+
+.week-breakdown__metric--lines {
+  color: var(--ant-color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 768px) {
+  .week-breakdown__row {
+    grid-template-columns: 36px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    gap: 6px 12px;
+  }
+  .week-breakdown__metric,
+  .week-breakdown__metric--lines {
+    grid-column: 2 / 3;
+    align-items: flex-start;
+  }
+}
