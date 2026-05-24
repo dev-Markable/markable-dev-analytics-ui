@@ -15,7 +15,35 @@ module.exports = {
     devServer: {
         static: path.join(__dirname, 'public'),
         compress: true,
-        historyApiFallback: true,
+        historyApiFallback: {
+            // Перенаправляем все запросы, которые не являются статическими файлами, на index.html
+            rewrites: [
+                {
+                    from: /^\/api\/.*$/,
+                    to: (context) => context.parsedUrl.pathname
+                },
+                {
+                    from: /^\/bundle\.js$/,
+                    to: '/bundle.js'
+                },
+                {
+                    from: /^\/favicon\.ico$/,
+                    to: '/favicon.ico'
+                },
+                {
+                    from: /^\/manifest\.json$/,
+                    to: '/manifest.json'
+                },
+                {
+                    from: /^\/static\/.*$/,
+                    to: (context) => context.parsedUrl.pathname
+                },
+                {
+                    from: /./,
+                    to: '/index.html'
+                }
+            ]
+        },
         port: 9000,
         host: 'localhost',
         open: true,

@@ -10,7 +10,6 @@ import {
     CircularProgress,
     Paper,
     Alert,
-    Divider,
     Stack
 } from '@mui/material';
 import EmailIcon from '@mui/icons-material/Email';
@@ -30,7 +29,6 @@ const UserProfilePage = () => {
     const startDate = searchParams.get('start');
     const endDate = searchParams.get('end');
 
-    // Формируем URL для API
     const apiUrl = React.useMemo(() => {
         let url = `/users/${encodeURIComponent(email)}`;
         if (startDate && endDate) {
@@ -83,7 +81,6 @@ const UserProfilePage = () => {
     return (
         <MainContainerComponent>
             <Box sx={{ p: { xs: 2, md: 3 } }}>
-                {/* Баннер с периодом */}
                 {startDate && endDate && (
                     <Alert
                         severity="info"
@@ -94,7 +91,7 @@ const UserProfilePage = () => {
                     </Alert>
                 )}
 
-                {/* Шапка профиля */}
+                {/* Шапка профиля с аватаркой */}
                 <Paper
                     elevation={0}
                     sx={{
@@ -106,18 +103,29 @@ const UserProfilePage = () => {
                     }}
                 >
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} alignItems="center">
-                        <Avatar
-                            sx={{
-                                width: 100,
-                                height: 100,
-                                bgcolor: '#f1c40f',
-                                fontSize: 40,
-                                fontWeight: 'bold',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                            }}
-                        >
-                            {profile.username?.charAt(0).toUpperCase()}
-                        </Avatar>
+                        {profile.avatarUrl ? (
+                            <Avatar
+                                src={profile.avatarUrl}
+                                sx={{
+                                    width: 100,
+                                    height: 100,
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                                }}
+                            />
+                        ) : (
+                            <Avatar
+                                sx={{
+                                    width: 100,
+                                    height: 100,
+                                    bgcolor: '#f1c40f',
+                                    fontSize: 40,
+                                    fontWeight: 'bold',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                                }}
+                            >
+                                {profile.username?.charAt(0).toUpperCase()}
+                            </Avatar>
+                        )}
                         <Box sx={{ flex: 1, textAlign: { xs: 'center', sm: 'left' } }}>
                             <Typography variant="h4" sx={{ fontWeight: 500, mb: 1 }}>
                                 {profile.username}
@@ -151,10 +159,7 @@ const UserProfilePage = () => {
                     </Stack>
                 </Paper>
 
-                {/* Карточки статистики */}
                 <StatsCards profile={profile} />
-
-                {/* AI Summary */}
                 <AISummaryCard summary={profile.aiSummary} />
 
                 <Typography variant="h5" sx={{ fontWeight: 500, mb: 2, color: '#2ea043' }}>
@@ -179,11 +184,13 @@ const UserProfilePage = () => {
 
                 </Grid>
 
-                {/* Задачи */}
                 <Typography variant="h5" sx={{ fontWeight: 500, mb: 2, color: '#2ea043' }}>
                     🎯 Задачи
                 </Typography>
-                <TasksTable tasks={profile.tasks} />
+                <TasksTable
+                    tasks={profile.tasks || []}
+                    kaitenCards={profile.kaitenCards || []}
+                />
             </Box>
         </MainContainerComponent>
     );
