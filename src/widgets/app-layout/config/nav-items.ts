@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { Activity, BarChart3, CalendarDays, LayoutGrid, RefreshCcw, Settings, User } from 'lucide-react';
+import { Activity, BarChart3, CalendarDays, LayoutGrid, RefreshCcw, Settings } from 'lucide-react';
 import { ROUTES } from '@/app/router/paths';
 
 export interface NavItem {
@@ -11,6 +11,11 @@ export interface NavItem {
   group: 'primary' | 'secondary';
 }
 
+/**
+ * Профиль не в сайдбаре — открывается кликом по строке автора
+ * на дашборде / в недельках. Нет концепции «текущий юзер»,
+ * поэтому единственного дефолтного email для пункта меню нет.
+ */
 export const NAV_ITEMS: readonly NavItem[] = [
   {
     key: 'dashboard',
@@ -31,14 +36,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: 'Активность',
     icon: Activity,
     path: ROUTES.activity,
-    group: 'primary',
-  },
-  {
-    key: 'profile',
-    label: 'Профиль',
-    icon: User,
-    path: ROUTES.profile('me'),
-    matchPaths: ['/users/'],
     group: 'primary',
   },
   {

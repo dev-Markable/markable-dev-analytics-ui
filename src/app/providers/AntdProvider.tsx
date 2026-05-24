@@ -28,7 +28,10 @@ export function AntdProvider({ mode, children }: AntdProviderProps) {
       componentSize="middle"
       typography={{ style: { color: 'inherit' } }}
     >
-      <AntApp component={false}>{children}</AntApp>
+      {/* cssVar: true требует, чтобы у AntApp был DOM-элемент-обёртка,
+          на который AntD навесит класс с CSS-переменными.
+          Дефолт component="div" — оставляем как есть. */}
+      <AntApp>{children}</AntApp>
     </ConfigProvider>
   );
 }
