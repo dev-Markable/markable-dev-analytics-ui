@@ -1,4 +1,10 @@
-export const TEAM_MEMBERS: readonly string[] = [
+/**
+ * Дефолтный набор email-ов команды маркировки. Используется как
+ * базовый список при первом запуске и при «сбросить к дефолту».
+ * Актуальный список (с пользовательскими правками) живёт в
+ * useTeamMembersStore + localStorage.
+ */
+export const DEFAULT_TEAM_MEMBERS: readonly string[] = [
   'kiril.aksyutik@x5.ru',
   'stepan.ermakov@x5.ru',
   'vikto.zhigunov@x5.ru',
@@ -10,7 +16,6 @@ export const TEAM_MEMBERS: readonly string[] = [
   'boris.osechinskiy@x5.ru',
 ] as const;
 
-const TEAM_SET = new Set(TEAM_MEMBERS.map((e) => e.toLowerCase()));
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
-export const isTeamMember = (email: string | null | undefined): boolean =>
-  email != null && TEAM_SET.has(email.toLowerCase());
+export const isEmailValid = (email: string): boolean => EMAIL_RE.test(email.trim());
