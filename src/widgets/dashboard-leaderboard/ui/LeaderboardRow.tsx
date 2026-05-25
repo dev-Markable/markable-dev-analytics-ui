@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Typography } from 'antd';
 import { buildProfilePath } from '@/app/router/paths';
 import {
+  ActivityBadge,
   UserAvatar,
   authorAsUser,
   userDisplayName,
@@ -33,9 +34,12 @@ export function LeaderboardRow({ rank, data, range, variant }: LeaderboardRowPro
       <span className="leaderboard-row__author">
         <UserAvatar user={user} size={32} />
         <span className="leaderboard-row__identity">
-          <Typography.Text strong ellipsis className="leaderboard-row__name">
-            {userDisplayName(user)}
-          </Typography.Text>
+          <span className="leaderboard-row__name-line">
+            <Typography.Text strong ellipsis className="leaderboard-row__name">
+              {userDisplayName(user)}
+            </Typography.Text>
+            {data.activity && <ActivityBadge activity={data.activity} compact />}
+          </span>
           <Typography.Text type="secondary" ellipsis className="leaderboard-row__email">
             {data.email}
           </Typography.Text>

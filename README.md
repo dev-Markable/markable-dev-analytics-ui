@@ -145,6 +145,19 @@ export const extractCardId = (commit) =>
 
 Список членов команды живёт в `useTeamMembersStore` (persist), стартует с `DEFAULT_TEAM_MEMBERS` (`features/team-filter/config/team-members.ts`). Управление — на странице Settings → «Команда и фильтрация».
 
+### Activity score (дашборд)
+
+`/dashboard` возвращает у каждого автора композитный `activity: ActivityScore | null`:
+
+- `score = volumeFactor × qualityFactor` — финал, `1.0 ≈ норма команды`
+- `category` — `INACTIVE` / `BELOW_AVERAGE` / `ACTIVE` / `STAR`
+- `volumeFactor` — `nonMergeCommits / expected` (baseline 50 коммитов / 30 дней)
+- `qualityFactor` — 0.3..1.0 от avg lines/commit (штраф за микро-коммиты и бомбы)
+
+Сортировка дашборда — по `activity.score desc`. На weekly/summary эндпоинтах `activity = null`, на daily поля нет.
+
+Фронт показывает `<ActivityBadge>` (`entities/user/ui/ActivityBadge.tsx`) — Tag с цветом по категории + tooltip с разбивкой компонент. Используется в `LeaderboardRow` (компактно, inline с именем) и в столбце AuthorsTable.
+
 ---
 
 ## Скрипты

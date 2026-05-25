@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Typography } from 'antd';
 import { buildProfilePath } from '@/app/router/paths';
 import {
+  ActivityBadge,
   UserAvatar,
   authorAsUser,
   userDisplayName,
@@ -53,6 +54,13 @@ export const buildAuthorsColumns = ({
         </Link>
       );
     },
+  },
+  {
+    key: 'activity',
+    title: 'Активность',
+    width: 150,
+    render: (_value, record) =>
+      record.activity ? <ActivityBadge activity={record.activity} /> : null,
   },
   {
     key: 'commits',
