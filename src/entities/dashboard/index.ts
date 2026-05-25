@@ -6,3 +6,4 @@ export {
   EMPTY_TOTALS,
   type DashboardTotals,
 } from './lib/aggregate';
+export { splitTopAndOutsiders, type TopOutsidersSplit } from './lib/split-top-outsiders';

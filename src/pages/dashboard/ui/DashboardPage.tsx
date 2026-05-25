@@ -6,7 +6,11 @@ import { PageHeader, PageSection } from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
 import { useTeamFilter, useTeamFilterStore } from '@/features/team-filter';
-import { aggregateAuthors, useDashboardStore } from '@/entities/dashboard';
+import {
+  aggregateAuthors,
+  splitTopAndOutsiders,
+  useDashboardStore,
+} from '@/entities/dashboard';
 import type { AuthorActivity } from '@/entities/user';
 import { formatRange } from '@/shared/lib';
 import { DASHBOARD_PAGE_SIZE } from '@/shared/config';
@@ -41,18 +45,15 @@ export function DashboardPage() {
   const totals = useMemo(() => aggregateAuthors(filteredItems), [filteredItems]);
 
   /**
-   * Топ — первые N из отсортированного списка (бэк сортирует по
-   * nonMergeCommits desc, фильтрация порядок не ломает).
-   * Аутсайдеры — последние N, реверснутые: rank 1 = абсолютный минимум.
+   * Делим отфильтрованный (и отсортированный по activity.score desc) список
+   * на топ и аутсайдеров без пересечения.
+   * Для маленьких команд (len &lt; 2×N) — пополам, чтобы оба блока показывали
+   * разных людей. Для больших — стандартные top-N / outsiders-N.
    */
-  const topItems = useMemo(
-    () => filteredItems.slice(0, DASHBOARD_PAGE_SIZE),
+  const { top: topItems, outsiders: outsiderItems } = useMemo(
+    () => splitTopAndOutsiders(filteredItems, DASHBOARD_PAGE_SIZE),
     [filteredItems],
   );
-  const outsiderItems = useMemo<AuthorActivity[]>(() => {
-    if (filteredItems.length <= DASHBOARD_PAGE_SIZE) return [];
-    return [...filteredItems.slice(-DASHBOARD_PAGE_SIZE)].reverse();
-  }, [filteredItems]);
 
   const subtitle = useMemo(() => {
     const totalAll = state.data?.totalElements ?? allItems.length;
@@ -60,7 +61,7 @@ export function DashboardPage() {
     const countNote = teamEnabled
       ? ` · команда: ${filteredCount} из ${totalAll}`
       : ` · ${totalAll} авторов`;
-    return `Топ-${DASHBOARD_PAGE_SIZE} активных и аутсайдеры · ${formatRange(range.from, range.to)}${countNote}`;
+    return `Активные и аутсайдеры · ${formatRange(range.from, range.to)}${countNote}`;
   }, [
     range.from,
     range.to,
