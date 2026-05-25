@@ -1,6 +1,11 @@
 import type { DailyStat } from '@/entities/stats';
 
-export interface ContributorActivity {
+export interface AuthorEnrichment {
+  displayName: string | null;
+  avatarUrl: string | null;
+}
+
+export interface ContributorActivity extends AuthorEnrichment {
   email: string;
   commits: number;
   nonMergeCommits: number;
@@ -23,7 +28,15 @@ interface InternalAccumulator {
   repos: Set<string>;
 }
 
-export function aggregateByContributor(daily: readonly DailyStat[]): ContributorActivity[] {
+/**
+ * Аггрегирует daily-статы по автору. Опциональный enrichmentByEmail
+ * (из /dashboard) подмешивает displayName/avatarUrl — daily-эндпоинт
+ * их не возвращает, поэтому без enrichment у всех будут только инициалы.
+ */
+export function aggregateByContributor(
+  daily: readonly DailyStat[],
+  enrichmentByEmail?: ReadonlyMap<string, AuthorEnrichment>,
+): ContributorActivity[] {
   const map = new Map<string, InternalAccumulator>();
 
   for (const d of daily) {
@@ -51,16 +64,21 @@ export function aggregateByContributor(daily: readonly DailyStat[]): Contributor
   }
 
   return Array.from(map.values())
-    .map<ContributorActivity>((e) => ({
-      email: e.email,
-      commits: e.commits,
-      nonMergeCommits: e.commits - e.mergeCommits,
-      mergeCommits: e.mergeCommits,
-      addedLines: e.addedLines,
-      deletedLines: e.deletedLines,
-      testAddedLines: e.testAddedLines,
-      activeDays: e.dates.size,
-      repos: e.repos.size,
-    }))
+    .map<ContributorActivity>((e) => {
+      const enrich = enrichmentByEmail?.get(e.email.toLowerCase()) ?? null;
+      return {
+        email: e.email,
+        displayName: enrich?.displayName ?? null,
+        avatarUrl: enrich?.avatarUrl ?? null,
+        commits: e.commits,
+        nonMergeCommits: e.commits - e.mergeCommits,
+        mergeCommits: e.mergeCommits,
+        addedLines: e.addedLines,
+        deletedLines: e.deletedLines,
+        testAddedLines: e.testAddedLines,
+        activeDays: e.dates.size,
+        repos: e.repos.size,
+      };
+    })
     .sort((a, b) => b.nonMergeCommits - a.nonMergeCommits);
 }

@@ -8,11 +8,17 @@ import { UserAvatar, userDisplayName } from '@/entities/user';
 import { buildProfilePath } from '@/app/router/paths';
 import { EmptyState } from '@/shared/ui';
 import { formatLinesDelta, formatNumber, type DateRange } from '@/shared/lib';
-import { aggregateByContributor, type ContributorActivity } from '../lib/aggregate-contributors';
+import {
+  aggregateByContributor,
+  type AuthorEnrichment,
+  type ContributorActivity,
+} from '../lib/aggregate-contributors';
 
 interface ContributorsListProps {
   daily: readonly DailyStat[];
   range: DateRange;
+  /** email (lowercase) → displayName + avatarUrl из /dashboard. */
+  enrichmentByEmail?: ReadonlyMap<string, AuthorEnrichment>;
   topN?: number;
 }
 
@@ -25,7 +31,12 @@ function ContributorRow({
   data: ContributorActivity;
   range: DateRange;
 }) {
-  const user = { email: data.email, name: null, username: null, avatarUrl: null };
+  const user = {
+    email: data.email,
+    name: data.displayName,
+    username: null,
+    avatarUrl: data.avatarUrl,
+  };
   return (
     <Link
       to={buildProfilePath(data.email, range)}
@@ -66,8 +77,16 @@ function ContributorRow({
   );
 }
 
-export function ContributorsList({ daily, range, topN = 10 }: ContributorsListProps) {
-  const all = useMemo(() => aggregateByContributor(daily), [daily]);
+export function ContributorsList({
+  daily,
+  range,
+  enrichmentByEmail,
+  topN = 10,
+}: ContributorsListProps) {
+  const all = useMemo(
+    () => aggregateByContributor(daily, enrichmentByEmail),
+    [daily, enrichmentByEmail],
+  );
   const teamFiltered = useTeamFilter<ContributorActivity>(all, (c) => c.email);
   const items = teamFiltered.slice(0, topN);
 
