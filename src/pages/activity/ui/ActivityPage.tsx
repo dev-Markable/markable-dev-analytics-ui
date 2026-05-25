@@ -41,7 +41,7 @@ export function ActivityPage() {
     void fetchDashboard({ from: range.from, to: range.to });
   }, [fetchDaily, fetchDashboard, range.from, range.to]);
 
-  const rawDaily = dailyState.data ?? [];
+  const rawDaily = useMemo(() => dailyState.data ?? [], [dailyState.data]);
 
   const daily = useMemo(() => {
     if (!teamEnabled) return rawDaily;

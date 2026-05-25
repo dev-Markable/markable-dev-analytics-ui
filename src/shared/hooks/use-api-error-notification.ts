@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useNotification } from './use-notification';
-import { ApiError } from '@/shared/api';
+import type { ApiError } from '@/shared/api';
 
 export function useApiErrorNotification(error: ApiError | null, contextLabel?: string): void {
   const notification = useNotification();
