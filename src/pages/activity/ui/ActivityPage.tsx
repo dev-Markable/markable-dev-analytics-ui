@@ -5,6 +5,7 @@ import { PageHeader, PageSection, ErrorState, LoadingState } from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
 import { useDailyStore } from '@/entities/stats';
+import { useTeamFilterStore, useTeamMembersStore } from '@/features/team-filter';
 import { formatRange, rangeDays } from '@/shared/lib';
 import { ActivitySummary } from '@/widgets/activity-summary';
 import { ActivityHeatmap } from '@/widgets/activity-heatmap';
@@ -18,6 +19,9 @@ export function ActivityPage() {
   const state = useDailyStore(useShallow((s) => s.state));
   const fetchDaily = useDailyStore((s) => s.fetch);
 
+  const teamEnabled = useTeamFilterStore((s) => s.enabled);
+  const members = useTeamMembersStore((s) => s.members);
+
   useEffect(() => {
     void fetchDaily({ from: range.from, to: range.to });
   }, [range.from, range.to, fetchDaily]);
@@ -28,13 +32,28 @@ export function ActivityPage() {
     void fetchDaily({ from: range.from, to: range.to });
   }, [fetchDaily, range.from, range.to]);
 
-  const daily = state.data ?? [];
-  const isInitialLoading = state.status === 'loading' && daily.length === 0;
-  const isInitialError = state.status === 'error' && daily.length === 0;
+  const rawDaily = state.data ?? [];
+
+  /**
+   * Все агрегации в виджетах строятся от этого массива. Фильтр команды
+   * применяется здесь, чтобы метрик-карточки, heatmap и top-repos считали
+   * только команду, когда фильтр включён.
+   */
+  const daily = useMemo(() => {
+    if (!teamEnabled) return rawDaily;
+    const memberSet = new Set(members.map((m) => m.toLowerCase()));
+    return rawDaily.filter((d) => memberSet.has(d.email.toLowerCase()));
+  }, [rawDaily, teamEnabled, members]);
+
+  const isInitialLoading = state.status === 'loading' && rawDaily.length === 0;
+  const isInitialError = state.status === 'error' && rawDaily.length === 0;
 
   const daysInRange = useMemo(() => rangeDays(range), [range]);
 
-  const subtitle = `${formatRange(range.from, range.to)} · ${daysInRange} ${daysInRange === 1 ? 'день' : 'дней'}`;
+  const subtitle = useMemo(() => {
+    const teamNote = teamEnabled ? ' · только команда' : '';
+    return `${formatRange(range.from, range.to)} · ${daysInRange} ${daysInRange === 1 ? 'день' : 'дней'}${teamNote}`;
+  }, [range.from, range.to, daysInRange, teamEnabled]);
 
   if (isInitialLoading) {
     return (

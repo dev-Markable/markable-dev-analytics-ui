@@ -6,8 +6,7 @@ import { PageHeader, PageSection } from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
 import { useTeamFilter, useTeamFilterStore } from '@/features/team-filter';
-import { useDashboardStore } from '@/entities/dashboard';
-import { useSummaryStore } from '@/entities/stats';
+import { aggregateAuthors, useDashboardStore } from '@/entities/dashboard';
 import type { AuthorActivity } from '@/entities/user';
 import { formatRange } from '@/shared/lib';
 import { DASHBOARD_PAGE_SIZE } from '@/shared/config';
@@ -21,62 +20,69 @@ export function DashboardPage() {
   const range = useDateRange();
   const teamEnabled = useTeamFilterStore((s) => s.enabled);
 
-  const { topPage, outsidersPage, tablePage } = useDashboardStore(
-    useShallow((s) => ({
-      topPage: s.topPage,
-      outsidersPage: s.outsidersPage,
-      tablePage: s.tablePage,
-    })),
-  );
-  const summaryState = useSummaryStore(useShallow((s) => s.state));
+  const state = useDashboardStore(useShallow((s) => s.state));
   const fetchDashboard = useDashboardStore((s) => s.fetch);
-  const goToTablePage = useDashboardStore((s) => s.goToTablePage);
-  const fetchSummary = useSummaryStore((s) => s.fetch);
 
   useEffect(() => {
-    void fetchDashboard({ from: range.from, to: range.to }, DASHBOARD_PAGE_SIZE);
-    void fetchSummary({ from: range.from, to: range.to });
-  }, [range.from, range.to, fetchDashboard, fetchSummary]);
+    void fetchDashboard({ from: range.from, to: range.to });
+  }, [range.from, range.to, fetchDashboard]);
 
-  useApiErrorNotification(topPage.error, 'Не удалось загрузить дашборд');
-  useApiErrorNotification(summaryState.error, 'Не удалось загрузить сводку');
+  useApiErrorNotification(state.error, 'Не удалось загрузить дашборд');
 
-  const topItems = useTeamFilter<AuthorActivity>(topPage.data?.items, (a) => a.email);
-  const outsiderItems = useTeamFilter<AuthorActivity>(
-    outsidersPage.data?.items,
-    (a) => a.email,
+  const allItems = state.data?.items ?? [];
+  /**
+   * Фильтр команды применяется ДО агрегации. Все производные —
+   * totals в карточках, top/outsiders, таблица — считаются от уже
+   * отфильтрованного списка. Так «только команда» консистентно
+   * влияет на каждое число на странице.
+   */
+  const filteredItems = useTeamFilter<AuthorActivity>(allItems, (a) => a.email);
+
+  const totals = useMemo(() => aggregateAuthors(filteredItems), [filteredItems]);
+
+  /**
+   * Топ — первые N из отсортированного списка (бэк сортирует по
+   * nonMergeCommits desc, фильтрация порядок не ломает).
+   * Аутсайдеры — последние N, реверснутые: rank 1 = абсолютный минимум.
+   */
+  const topItems = useMemo(
+    () => filteredItems.slice(0, DASHBOARD_PAGE_SIZE),
+    [filteredItems],
   );
-  const tableItems = useTeamFilter<AuthorActivity>(
-    tablePage.data?.items,
-    (a) => a.email,
-  );
-
-  const totalAuthors = topPage.data?.totalElements ?? null;
+  const outsiderItems = useMemo<AuthorActivity[]>(() => {
+    if (filteredItems.length <= DASHBOARD_PAGE_SIZE) return [];
+    return [...filteredItems.slice(-DASHBOARD_PAGE_SIZE)].reverse();
+  }, [filteredItems]);
 
   const subtitle = useMemo(() => {
-    const sizeNote = totalAuthors != null ? ` · ${totalAuthors} авторов всего` : '';
-    const teamNote = teamEnabled ? ' · только команда' : '';
-    return `${formatRange(range.from, range.to)}${sizeNote}${teamNote}`;
-  }, [range.from, range.to, teamEnabled, totalAuthors]);
+    const totalAll = state.data?.totalElements ?? allItems.length;
+    const filteredCount = filteredItems.length;
+    const countNote = teamEnabled
+      ? ` · команда: ${filteredCount} из ${totalAll}`
+      : ` · ${totalAll} авторов`;
+    return `Топ-${DASHBOARD_PAGE_SIZE} активных и аутсайдеры · ${formatRange(range.from, range.to)}${countNote}`;
+  }, [
+    range.from,
+    range.to,
+    teamEnabled,
+    state.data?.totalElements,
+    allItems.length,
+    filteredItems.length,
+  ]);
 
-  const retryAll = useCallback((): void => {
-    void fetchDashboard({ from: range.from, to: range.to }, DASHBOARD_PAGE_SIZE);
-    void fetchSummary({ from: range.from, to: range.to });
-  }, [fetchDashboard, fetchSummary, range.from, range.to]);
+  const retry = useCallback(() => {
+    void fetchDashboard({ from: range.from, to: range.to });
+  }, [fetchDashboard, range.from, range.to]);
 
-  const handleTablePageChange = useCallback(
-    (nextPage: number, nextSize: number): void => {
-      void goToTablePage({ from: range.from, to: range.to }, nextPage, nextSize);
-    },
-    [goToTablePage, range.from, range.to],
-  );
+  const isLoading = state.status === 'loading';
+  const isLoadingInitial = isLoading && allItems.length === 0;
 
   return (
     <>
       <PageHeader title="Дашборд" subtitle={subtitle} />
 
       <PageSection>
-        <SummaryGrid state={summaryState} onRetry={retryAll} />
+        <SummaryGrid totals={totals} loading={isLoadingInitial} />
       </PageSection>
 
       <PageSection>
@@ -87,9 +93,9 @@ export function DashboardPage() {
               description="Ранжирование по не-мердж коммитам"
               icon={<TrendingUp size={16} />}
               items={topItems}
-              status={topPage.status}
-              error={topPage.error}
-              onRetry={retryAll}
+              status={state.status}
+              error={state.error}
+              onRetry={retry}
               variant="top"
               range={range}
               emptyDescription={
@@ -102,17 +108,17 @@ export function DashboardPage() {
           <Col xs={24} xl={12}>
             <LeaderboardCard
               title="Аутсайдеры"
-              description="Наименее активные авторы (минимум 1 коммит)"
+              description="Наименее активные (минимум 1 коммит)"
               icon={<TrendingDown size={16} />}
               items={outsiderItems}
-              status={outsidersPage.status}
-              error={outsidersPage.error}
-              onRetry={retryAll}
+              status={state.status}
+              error={state.error}
+              onRetry={retry}
               variant="outsider"
               range={range}
               emptyDescription={
                 teamEnabled
-                  ? 'В команде нет авторов в категории аутсайдеров.'
+                  ? 'В команде слишком мало авторов — все попали в топ.'
                   : 'В периоде слишком мало авторов — все попали в топ.'
               }
             />
@@ -122,11 +128,9 @@ export function DashboardPage() {
 
       <PageSection>
         <AuthorsTable
-          state={tablePage}
+          items={filteredItems}
           range={range}
-          items={tableItems}
-          onPageChange={handleTablePageChange}
-          onRetry={retryAll}
+          loading={isLoading}
           teamFilterEnabled={teamEnabled}
         />
       </PageSection>

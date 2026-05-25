@@ -1,12 +1,19 @@
 import { apiClient } from '@/shared/api';
 import type { DashboardData, DashboardQuery } from '../model/types';
 
+/**
+ * Backend max — 500. По умолчанию забираем всех авторов одним запросом,
+ * чтобы клиентский фильтр (team-filter) корректно пересчитывал агрегации,
+ * а не показывал «общие totals при показе только команды».
+ */
+const DEFAULT_DASHBOARD_SIZE = 500;
+
 export async function getDashboard(query: DashboardQuery = {}): Promise<DashboardData> {
   const params: Record<string, string> = {};
   if (query.from) params.from = query.from;
   if (query.to) params.to = query.to;
+  params.size = String(query.size ?? DEFAULT_DASHBOARD_SIZE);
   if (query.page != null) params.page = String(query.page);
-  if (query.size != null) params.size = String(query.size);
 
   const { data } = await apiClient.get<DashboardData>('/dashboard', { params });
   return data;

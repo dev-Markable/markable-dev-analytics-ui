@@ -5,7 +5,10 @@ import { LineChart } from 'lucide-react';
 import { PageHeader, PageSection, EmptyState, ErrorState, LoadingState } from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
-import { useWeeklyStore } from '@/entities/stats';
+import { applyTeamFilterToWeekly, useWeeklyStore } from '@/entities/stats';
+import { useTeamFilterStore, useTeamMembersStore } from '@/features/team-filter';
+import type { AsyncState } from '@/shared/api';
+import type { WeeklyStat } from '@/entities/stats';
 import { formatRange } from '@/shared/lib';
 import { WeeklyChart } from '@/widgets/weekly-chart';
 import { WeeklyTable } from '@/widgets/weekly-table';
@@ -16,6 +19,9 @@ export function WeeklyPage() {
   const range = useDateRange();
   const state = useWeeklyStore(useShallow((s) => s.state));
   const fetchWeekly = useWeeklyStore((s) => s.fetch);
+
+  const teamEnabled = useTeamFilterStore((s) => s.enabled);
+  const members = useTeamMembersStore((s) => s.members);
 
   useEffect(() => {
     void fetchWeekly({ from: range.from, to: range.to });
@@ -28,15 +34,29 @@ export function WeeklyPage() {
     [fetchWeekly, range.from, range.to],
   );
 
-  const weeks = state.data ?? [];
+  /**
+   * Если team-filter включён, пересчитываем per-week totals из
+   * отфильтрованных авторов. WeeklyChart и WeeklyTable получают
+   * уже консистентные с фильтром числа.
+   */
+  const filteredState = useMemo<AsyncState<WeeklyStat[]>>(() => {
+    if (!teamEnabled || !state.data) return state;
+    const memberSet = new Set(members.map((m) => m.toLowerCase()));
+    const isMember = (email: string): boolean => memberSet.has(email.toLowerCase());
+    const filtered = applyTeamFilterToWeekly(state.data, isMember);
+    return { ...state, data: filtered };
+  }, [state, teamEnabled, members]);
+
+  const weeks = filteredState.data ?? [];
   const isInitialLoading = state.status === 'loading' && weeks.length === 0;
   const isError = state.status === 'error' && weeks.length === 0;
   const isEmpty = state.status === 'success' && weeks.length === 0;
 
   const subtitle = useMemo(() => {
     const note = weeks.length > 0 ? ` · ${weeks.length} недель` : '';
-    return `${formatRange(range.from, range.to)}${note}`;
-  }, [range.from, range.to, weeks.length]);
+    const teamNote = teamEnabled ? ' · только команда' : '';
+    return `${formatRange(range.from, range.to)}${note}${teamNote}`;
+  }, [range.from, range.to, weeks.length, teamEnabled]);
 
   return (
     <>
@@ -64,7 +84,11 @@ export function WeeklyPage() {
             {isEmpty && (
               <EmptyState
                 title="Нет данных"
-                description="Выберите период с хотя бы одной активной неделей."
+                description={
+                  teamEnabled
+                    ? 'В команде нет активности в выбранном периоде.'
+                    : 'Выберите период с хотя бы одной активной неделей.'
+                }
               />
             )}
             {!isInitialLoading && !isError && !isEmpty && <WeeklyChart data={weeks} />}
@@ -73,8 +97,9 @@ export function WeeklyPage() {
       </PageSection>
 
       <PageSection>
-        <WeeklyTable state={state} range={range} onRetry={retry} />
+        <WeeklyTable state={filteredState} range={range} onRetry={retry} />
       </PageSection>
     </>
   );
 }
+
