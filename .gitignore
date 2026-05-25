@@ -1,10 +1,11 @@
 node_modules
 dist
+/.idea
 dist-ssr
 *.local
 
 # Editor
-.idea
+.idea/
 .vscode
 .DS_Store
 *.swp
