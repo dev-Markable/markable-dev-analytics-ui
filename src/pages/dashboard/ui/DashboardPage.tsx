@@ -8,7 +8,7 @@ import { useDateRange } from '@/features/date-range-filter';
 import { useTeamFilter, useTeamFilterStore } from '@/features/team-filter';
 import {
   aggregateAuthors,
-  splitTopAndOutsiders,
+  selectDashboardSections,
   useDashboardStore,
 } from '@/entities/dashboard';
 import type { AuthorActivity } from '@/entities/user';
@@ -45,13 +45,12 @@ export function DashboardPage() {
   const totals = useMemo(() => aggregateAuthors(filteredItems), [filteredItems]);
 
   /**
-   * Делим отфильтрованный (и отсортированный по activity.score desc) список
-   * на топ и аутсайдеров без пересечения.
-   * Для маленьких команд (len &lt; 2×N) — пополам, чтобы оба блока показывали
-   * разных людей. Для больших — стандартные top-N / outsiders-N.
+   * Top и outsiders — дизъюнктные множества по `activity.category`:
+   * top = ACTIVE/STAR (или без activity), outsiders = INACTIVE/BELOW_AVERAGE.
+   * Один и тот же автор не может попасть в оба блока.
    */
   const { top: topItems, outsiders: outsiderItems } = useMemo(
-    () => splitTopAndOutsiders(filteredItems, DASHBOARD_PAGE_SIZE),
+    () => selectDashboardSections(filteredItems, DASHBOARD_PAGE_SIZE),
     [filteredItems],
   );
 
@@ -91,7 +90,7 @@ export function DashboardPage() {
           <Col xs={24} xl={12}>
             <LeaderboardCard
               title="Топ активных"
-              description="Ранжирование по не-мердж коммитам"
+              description="Категория Активен или Топ, по убыванию score"
               icon={<TrendingUp size={16} />}
               items={topItems}
               status={state.status}
@@ -109,7 +108,7 @@ export function DashboardPage() {
           <Col xs={24} xl={12}>
             <LeaderboardCard
               title="Аутсайдеры"
-              description="Наименее активные (минимум 1 коммит)"
+              description="Категория Неактивен или Ниже среднего"
               icon={<TrendingDown size={16} />}
               items={outsiderItems}
               status={state.status}
@@ -119,8 +118,8 @@ export function DashboardPage() {
               range={range}
               emptyDescription={
                 teamEnabled
-                  ? 'В команде слишком мало авторов — все попали в топ.'
-                  : 'В периоде слишком мало авторов — все попали в топ.'
+                  ? 'Все в команде — Активен или Топ.'
+                  : 'Все авторы — Активен или Топ. Никто не попал в Неактивен/Ниже среднего.'
               }
             />
           </Col>

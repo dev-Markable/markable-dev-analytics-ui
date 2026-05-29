@@ -1,6 +1,6 @@
 import { Tag, Tooltip, Typography } from 'antd';
 import { ExternalLink, FileQuestion } from 'lucide-react';
-import { KaitenStatusBadge } from '@/entities/kaiten-card';
+import { CardTypeBadge, KaitenStatusBadge } from '@/entities/kaiten-card';
 import { ORPHAN_KEY, type TaskGroup } from '../lib/group-commits';
 
 interface TaskTitleProps {
@@ -56,6 +56,7 @@ export function TaskTitle({ record }: TaskTitleProps) {
       <Tag bordered={false} className="task-row__tag">
         #{card.id}
       </Tag>
+      <CardTypeBadge cardType={card.cardType} iconOnly />
       <KaitenStatusBadge card={card} />
       <span className="task-row__identity">
         <Typography.Text strong ellipsis className="task-row__name">
