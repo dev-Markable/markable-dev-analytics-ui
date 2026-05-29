@@ -1,21 +1,26 @@
+import { useMemo } from 'react';
 import { Col, Row } from 'antd';
 import { CheckCircle2, GitCommit, GitMerge, Kanban, Plus, TestTube } from 'lucide-react';
 import { MetricCard } from '@/shared/ui';
 import { formatNumber, formatPercent, safeDiv } from '@/shared/lib';
 import type { AuthorSummary } from '@/entities/user';
 import type { KaitenCard } from '@/entities/kaiten-card';
+import { summarizeCards } from '../lib/aggregate-cards';
 
 interface ProfileSummaryProps {
   summary: AuthorSummary;
   cards: readonly KaitenCard[];
 }
 
-const CLOSED_STATUSES = new Set(['done', 'closed']);
-
-const isCardClosed = (card: KaitenCard): boolean => {
-  if (card.archived) return true;
-  if (card.closedAt) return true;
-  return CLOSED_STATUSES.has((card.status ?? '').toLowerCase());
+/**
+ * Хелпер для hint'а карточек — собирает «X разработка · Y дефекты» или
+ * показывает только непустую часть.
+ */
+const typeBreakdown = (dev: number, defect: number): string => {
+  const parts: string[] = [];
+  if (dev > 0) parts.push(`${dev} разработка`);
+  if (defect > 0) parts.push(`${defect} дефект${defect === 1 ? '' : 'ы'}`);
+  return parts.join(' · ');
 };
 
 export function ProfileSummary({ summary, cards }: ProfileSummaryProps) {
@@ -23,8 +28,12 @@ export function ProfileSummary({ summary, cards }: ProfileSummaryProps) {
   const testRatio = safeDiv(summary.testAddedLines, summary.addedLines) * 100;
   const nonMerge = summary.commits - summary.mergeCommits;
 
-  const closedCards = cards.filter(isCardClosed).length;
-  const activeCards = cards.length - closedCards;
+  const c = useMemo(() => summarizeCards(cards), [cards]);
+  const activeHint = typeBreakdown(c.activeDev, c.activeDefect) || `из ${formatNumber(c.total)} всего`;
+  const closedHint = c.total > 0
+    ? typeBreakdown(c.closedDev, c.closedDefect) ||
+      formatPercent(safeDiv(c.closed, c.total) * 100, 0)
+    : '—';
 
   return (
     <Row gutter={[16, 16]}>
@@ -71,20 +80,16 @@ export function ProfileSummary({ summary, cards }: ProfileSummaryProps) {
       <Col xs={24} sm={12} md={8} xl={4}>
         <MetricCard
           label="Карточек в работе"
-          value={formatNumber(activeCards)}
-          hint={cards.length > 0 ? `из ${formatNumber(cards.length)} всего` : '—'}
+          value={formatNumber(c.active)}
+          hint={activeHint}
           icon={<Kanban size={16} />}
         />
       </Col>
       <Col xs={24} sm={12} md={8} xl={4}>
         <MetricCard
           label="Карточек закрыто"
-          value={formatNumber(closedCards)}
-          hint={
-            cards.length > 0
-              ? formatPercent(safeDiv(closedCards, cards.length) * 100, 0)
-              : '—'
-          }
+          value={formatNumber(c.closed)}
+          hint={closedHint}
           icon={<CheckCircle2 size={16} />}
         />
       </Col>

@@ -1,30 +1,15 @@
 import { Tag } from 'antd';
-import type { KaitenCard } from '../model/types';
+import type { KaitenCard, KaitenColumnStatus } from '../model/types';
 
-const STATUS_TONE: Record<string, string> = {
-  queued: 'default',
-  open: 'default',
-  in_progress: 'processing',
-  in_review: 'warning',
-  blocked: 'error',
-  done: 'success',
-  closed: 'success',
-  archived: 'default',
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  queued: 'В очереди',
-  open: 'Открыта',
-  in_progress: 'В работе',
-  in_review: 'На ревью',
-  blocked: 'Заблокирована',
-  done: 'Готова',
-  closed: 'Закрыта',
-  archived: 'В архиве',
+const STATUS_TONE: Record<KaitenColumnStatus, string> = {
+  NEW: 'default',
+  IN_PROGRESS: 'processing',
+  DONE: 'success',
+  UNKNOWN: 'default',
 };
 
 interface KaitenStatusBadgeProps {
-  card: Pick<KaitenCard, 'status' | 'columnName' | 'archived'>;
+  card: Pick<KaitenCard, 'columnStatus' | 'columnTitle' | 'archived' | 'closed'>;
 }
 
 export function KaitenStatusBadge({ card }: KaitenStatusBadgeProps) {
@@ -36,9 +21,10 @@ export function KaitenStatusBadge({ card }: KaitenStatusBadgeProps) {
     );
   }
 
-  const key = (card.status ?? '').toLowerCase();
-  const tone = STATUS_TONE[key] ?? 'default';
-  const label = STATUS_LABEL[key] ?? card.columnName ?? card.status ?? '—';
+  // `closed=true` доминирует над columnStatus — задача завершена.
+  // По умолчанию красим тэг по статусу колонки.
+  const tone = card.closed ? 'success' : STATUS_TONE[card.columnStatus];
+  const label = card.columnTitle || '—';
 
   return (
     <Tag bordered={false} color={tone} style={{ margin: 0, fontSize: 11 }}>
