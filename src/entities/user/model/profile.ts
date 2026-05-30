@@ -1,9 +1,9 @@
-import type { UsersComponents } from '@/shared/api/generated';
+import type { Schemas } from '@/shared/api/schema';
 
 /**
  * Backend: users-api.yaml#/components/schemas/UserProfileResponse
  */
-export type UserProfile = UsersComponents['schemas']['UserProfileResponse'];
+export type UserProfile = Schemas['UserProfileResponse'];
 
 export interface UserCommitsQuery {
   from?: string;

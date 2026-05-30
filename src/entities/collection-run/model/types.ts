@@ -1,6 +1,4 @@
-import type { SharedComponents } from '@/shared/api/generated';
-
-type Schemas = SharedComponents['schemas'];
+import type { Schemas } from '@/shared/api/schema';
 
 /**
  * Backend: shared.yaml#/components/schemas/CollectionRun

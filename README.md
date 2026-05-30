@@ -168,70 +168,60 @@ npm run build       # tsc -b && vite build → dist/
 npm run preview     # превью production-сборки
 npm run typecheck   # tsc -b --noEmit
 npm run lint        # eslint (нулевая толерантность к warning'ам)
-npm run gen:api     # регенерация TS-типов из devpulse-oas
 ```
 
 ---
 
-## OpenAPI codegen
+## API-типы (`@devpulse-dev/api-types`)
 
-Типы запросов/ответов **генерируются** из контрактов в репо
-[devpulse-dev/devpulse-oas](https://github.com/devpulse-dev/devpulse-oas). Это single source of truth — бэк implement'ит эти спеки через openapi-generator-maven, фронт берёт их же через `openapi-typescript`.
+Типы запросов/ответов **не генерируются у нас** — фронт ставит готовый npm-пакет
+[`@devpulse-dev/api-types`](https://github.com/devpulse-dev/devpulse-oas/pkgs/npm/api-types) из GitHub Packages. Внутри — bundled `.d.ts` на весь `/api/v2` (единый `components` / `paths` / `operations`), собранный из OpenAPI-контрактов в `devpulse-oas`. Single source of truth — бэк implement'ит те же спеки, фронт импортит те же типы. Версия пакета в lockstep с Maven-контрактами (`1.x` ↔ контракты `1.x`).
 
-### Источник OAS
+### Доступ к GitHub Packages
 
-Версия пинится в **`.openapi-config.json`**:
+`.npmrc` (коммитится, секрета внутри нет — токен берётся из env):
 
-```json
-{
-  "repo": "devpulse-dev/devpulse-oas",
-  "ref": "main"
-}
+```ini
+@devpulse-dev:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
 ```
 
-`ref` — branch / tag / commit SHA. Аналогично тому, как бэк пинит `<devpulse-oas.*.version>` в `adapter-rest/pom.xml`.
-
-### Режимы скачивания
-
-**Remote (default)** — `npm run gen:api` тянет YAML напрямую с `raw.githubusercontent.com` по `repo + ref`. Если репо приватный — задай env `OAS_GITHUB_TOKEN` (PAT с `repo:read`) или используй `GITHUB_TOKEN` в CI.
-
-**Local (override)** — задай `OAS_DIR=<путь к чекауту>` чтобы читать YAML с диска. Удобно когда правишь OAS параллельно с фронтом — не надо коммитить в OAS перед каждой регенерацией.
+GitHub Packages npm-registry требует токен **даже для публичного пакета** (в отличие от Maven). Перед `npm install`:
 
 ```bash
-# Remote, текущий ref
-npm run gen:api
-
-# Remote, приватный репо
-OAS_GITHUB_TOKEN=ghp_xxx npm run gen:api
-
-# Local, для одновременной разработки OAS + фронта
-OAS_DIR=../devpulse-oas npm run gen:api
+export GITHUB_TOKEN=ghp_xxx   # PAT с read:packages
+npm install
 ```
 
-### Как использовать сгенеренные типы
+> Не добавляй глобальный `registry=` в `.npmrc` — иначе react/axios/… полезут в GitHub Packages и получат 404. Только scoped-строка.
 
-Все entity-типы (`AuthorActivity`, `KaitenCard`, `Commit`, `DashboardData`, …) — это **алиасы на сгенерированные схемы**:
+### Как использовать
+
+Все entity-типы (`AuthorActivity`, `KaitenCard`, `Commit`, `DashboardData`, …) — **алиасы на схемы из пакета**. Барелл `src/shared/api/schema.ts`:
+
+```ts
+import type { components } from '@devpulse-dev/api-types';
+export type Schemas = components['schemas'];
+```
 
 ```ts
 // entities/user/model/types.ts
-import type { SharedComponents } from '@/shared/api/generated';
-type Schemas = SharedComponents['schemas'];
+import type { Schemas } from '@/shared/api/schema';
 
 export type AuthorActivity = Schemas['AuthorSummary'];
 export type ActivityScore = Schemas['ActivityScore'];
 ```
 
-Domain-наименование сохраняем (`AuthorActivity` локально привычнее), но shape — точно как в OAS. Бамп OAS-версии → ре-ген → компилятор находит места которые надо адаптировать.
+Domain-наименование сохраняем (`AuthorActivity` локально привычнее), но shape — точно как в OAS. Бамп версии пакета → `npm run typecheck` находит места которые надо адаптировать.
 
 ### Бамп версии контрактов
 
-1. В `devpulse-oas` слили PR с новой версией.
-2. Поправь `ref` в `.openapi-config.json` (или оставь `main` если хочешь жить на edge — но тогда зафиксируй конкретный коммит перед релизом).
-3. `npm run gen:api`.
-4. `npm run typecheck` — TS подсветит места, где shape поехал.
-5. Поправить → закоммитить и `.openapi-config.json`, и сгенеренные `.ts`, и app-код.
+1. В `devpulse-oas` слит PR, опубликована новая версия `@devpulse-dev/api-types`.
+2. `npm install @devpulse-dev/api-types@latest` (или подними `^1.x` в package.json).
+3. `npm run typecheck` — TS подсветит места, где shape поехал.
+4. Поправить → закоммитить `package.json` + `package-lock.json` + app-код.
 
-Сгенеренные `.ts` коммитятся в репо. CI codegen не запускает — это dev-time инструмент.
+`extractCardId` (`entities/commit/lib/task-id.ts`) остаётся ручным даже после перехода на типы — это defense-in-depth fallback на нестандартный формат сообщения коммита, не дубликат `taskNumber`.
 
 ---
 

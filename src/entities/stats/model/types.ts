@@ -1,10 +1,8 @@
-import type { SharedComponents } from '@/shared/api/generated';
-
-type Schemas = SharedComponents['schemas'];
+import type { Schemas } from '@/shared/api/schema';
 
 /**
  * Backend: shared.yaml#/components/schemas/DailyStats
- * (наше внутреннее имя — DailyStat, без `s` — оставляем как было)
+ * (наше внутреннее имя — DailyStat, без `s`)
  */
 export type DailyStat = Schemas['DailyStats'];
 

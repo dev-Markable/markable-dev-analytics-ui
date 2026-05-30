@@ -1,6 +1,6 @@
-import type { SharedComponents } from '@/shared/api/generated';
+import type { Schemas } from '@/shared/api/schema';
 
 /**
  * Backend: shared.yaml#/components/schemas/Commit
  */
-export type Commit = SharedComponents['schemas']['Commit'];
+export type Commit = Schemas['Commit'];

@@ -16,6 +16,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
+    # read:packages нужен для установки @devpulse-dev/api-types из GitHub Packages.
+    permissions:
+      contents: read
+      packages: read
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,7 +32,13 @@ jobs:
           cache: npm
 
       - name: Install dependencies
+        # .npmrc берёт токен из env GITHUB_TOKEN. Дефолтный workflow-токен видит
+        # пакеты той же org (devpulse-dev). Если пакет в чужой org или нужен
+        # расширенный доступ — заведи secret OAS_READ_TOKEN (PAT с read:packages)
+        # и подставь его вместо secrets.GITHUB_TOKEN.
         run: npm ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.OAS_READ_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Typecheck
         run: npm run typecheck
