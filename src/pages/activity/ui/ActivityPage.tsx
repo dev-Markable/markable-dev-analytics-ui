@@ -59,8 +59,8 @@ export function ActivityPage() {
     if (!dashboardData) return map;
     for (const a of dashboardData.items) {
       map.set(a.email.toLowerCase(), {
-        displayName: a.displayName,
-        avatarUrl: a.avatarUrl,
+        displayName: a.displayName ?? null,
+        avatarUrl: a.avatarUrl ?? null,
       });
     }
     return map;

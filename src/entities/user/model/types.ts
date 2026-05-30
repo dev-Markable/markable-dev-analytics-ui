@@ -1,57 +1,35 @@
-export interface UnifiedUser {
-  id: number;
-  email: string;
-  username: string | null;
-  name: string | null;
-  avatarUrl: string | null;
-  kaitenId: number | null;
-  gitlabId: number | null;
-}
+import type { SharedComponents } from '@/shared/api/generated';
+
+type Schemas = SharedComponents['schemas'];
 
 /**
- * Базовая агрегация по автору. Возвращается в `/users/{email}/profile.summary`
- * и в массиве `authors[]` старых эндпоинтов. Не содержит enrichment-полей.
+ * Запись unified_user. id и email — единственные гарантированно non-null поля.
+ * username / name / avatarUrl / kaitenId / gitlabId — nullable.
+ *
+ * Backend: shared.yaml#/components/schemas/UserProfile
  */
-export interface AuthorSummary {
-  email: string;
-  commits: number;
-  mergeCommits: number;
-  addedLines: number;
-  deletedLines: number;
-  testAddedLines: number;
-}
-
-export type ActivityCategory = 'INACTIVE' | 'BELOW_AVERAGE' | 'ACTIVE' | 'STAR';
+export type UnifiedUser = Schemas['UserProfile'];
 
 /**
- * Композитная метрика активности автора за период.
- * Возвращается ТОЛЬКО на `/dashboard`. В weekly/summary поле = null,
- * в daily вообще нет такого поля.
+ * Базовая агрегация автора БЕЗ enrichment. Возвращается в `summary` профиля.
  *
- * `score = volumeFactor × qualityFactor`, где
- * - `volumeFactor` = nonMergeCommits / expectedCommits (baseline 50/30 дней, масштабируется)
- * - `qualityFactor` = 0.3..1.0, штраф за микро-коммиты (&lt;5 строк) и бомбы (&gt;500 строк)
- *
- * Сортировка дашборда — по `score desc`.
+ * Backend: shared.yaml#/components/schemas/UserStatsSummary
  */
-export interface ActivityScore {
-  score: number;
-  category: ActivityCategory;
-  volumeFactor: number;
-  qualityFactor: number;
-  avgLinesPerCommit: number;
-}
+export type AuthorSummary = Schemas['UserStatsSummary'];
 
 /**
- * Обогащённая агрегация — AuthorSummary + displayName/avatarUrl
- * (подтягивается бэком из unified_user) + nonMergeCommits (= commits − mergeCommits)
- * + optional ActivityScore (только на /dashboard).
+ * Обогащённая агрегация автора: displayName/avatarUrl из unified_user,
+ * nonMergeCommits и опциональный ActivityScore (только на /dashboard).
  *
- * Возвращается в `/dashboard.items[]`, `/stats/weekly.authors[]`, `/stats/summary.topAuthors[]`.
+ * Backend: shared.yaml#/components/schemas/AuthorSummary
  */
-export interface AuthorActivity extends AuthorSummary {
-  displayName: string | null;
-  avatarUrl: string | null;
-  nonMergeCommits: number;
-  activity?: ActivityScore | null;
-}
+export type AuthorActivity = Schemas['AuthorSummary'];
+
+/**
+ * Композитная метрика активности. Только на /dashboard, в weekly/summary = null.
+ *
+ * Backend: shared.yaml#/components/schemas/ActivityScore
+ */
+export type ActivityScore = Schemas['ActivityScore'];
+
+export type ActivityCategory = ActivityScore['category'];

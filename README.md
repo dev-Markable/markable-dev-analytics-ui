@@ -168,7 +168,70 @@ npm run build       # tsc -b && vite build → dist/
 npm run preview     # превью production-сборки
 npm run typecheck   # tsc -b --noEmit
 npm run lint        # eslint (нулевая толерантность к warning'ам)
+npm run gen:api     # регенерация TS-типов из devpulse-oas
 ```
+
+---
+
+## OpenAPI codegen
+
+Типы запросов/ответов **генерируются** из контрактов в репо
+[devpulse-dev/devpulse-oas](https://github.com/devpulse-dev/devpulse-oas). Это single source of truth — бэк implement'ит эти спеки через openapi-generator-maven, фронт берёт их же через `openapi-typescript`.
+
+### Источник OAS
+
+Версия пинится в **`.openapi-config.json`**:
+
+```json
+{
+  "repo": "devpulse-dev/devpulse-oas",
+  "ref": "main"
+}
+```
+
+`ref` — branch / tag / commit SHA. Аналогично тому, как бэк пинит `<devpulse-oas.*.version>` в `adapter-rest/pom.xml`.
+
+### Режимы скачивания
+
+**Remote (default)** — `npm run gen:api` тянет YAML напрямую с `raw.githubusercontent.com` по `repo + ref`. Если репо приватный — задай env `OAS_GITHUB_TOKEN` (PAT с `repo:read`) или используй `GITHUB_TOKEN` в CI.
+
+**Local (override)** — задай `OAS_DIR=<путь к чекауту>` чтобы читать YAML с диска. Удобно когда правишь OAS параллельно с фронтом — не надо коммитить в OAS перед каждой регенерацией.
+
+```bash
+# Remote, текущий ref
+npm run gen:api
+
+# Remote, приватный репо
+OAS_GITHUB_TOKEN=ghp_xxx npm run gen:api
+
+# Local, для одновременной разработки OAS + фронта
+OAS_DIR=../devpulse-oas npm run gen:api
+```
+
+### Как использовать сгенеренные типы
+
+Все entity-типы (`AuthorActivity`, `KaitenCard`, `Commit`, `DashboardData`, …) — это **алиасы на сгенерированные схемы**:
+
+```ts
+// entities/user/model/types.ts
+import type { SharedComponents } from '@/shared/api/generated';
+type Schemas = SharedComponents['schemas'];
+
+export type AuthorActivity = Schemas['AuthorSummary'];
+export type ActivityScore = Schemas['ActivityScore'];
+```
+
+Domain-наименование сохраняем (`AuthorActivity` локально привычнее), но shape — точно как в OAS. Бамп OAS-версии → ре-ген → компилятор находит места которые надо адаптировать.
+
+### Бамп версии контрактов
+
+1. В `devpulse-oas` слили PR с новой версией.
+2. Поправь `ref` в `.openapi-config.json` (или оставь `main` если хочешь жить на edge — но тогда зафиксируй конкретный коммит перед релизом).
+3. `npm run gen:api`.
+4. `npm run typecheck` — TS подсветит места, где shape поехал.
+5. Поправить → закоммитить и `.openapi-config.json`, и сгенеренные `.ts`, и app-код.
+
+Сгенеренные `.ts` коммитятся в репо. CI codegen не запускает — это dev-time инструмент.
 
 ---
 

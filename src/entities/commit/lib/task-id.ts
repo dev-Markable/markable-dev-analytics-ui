@@ -19,7 +19,8 @@ const SPACE_TASK_PATTERN = /(\d+)-(\d+)/;
 export function extractCardId(commit: Pick<Commit, 'message' | 'taskNumber'>): string | null {
   const m = commit.message.match(SPACE_TASK_PATTERN);
   if (m && m[2]) return m[2];
-  return commit.taskNumber;
+  // OAS-generated тип taskNumber: string | null | undefined → нормализуем к null
+  return commit.taskNumber ?? null;
 }
 
 /**

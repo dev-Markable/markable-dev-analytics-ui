@@ -1,19 +1,11 @@
-import type { AuthorActivity } from '@/entities/user/model/types';
+import type { DashboardComponents } from '@/shared/api/generated';
 
 /**
- * Paginated-ответ /dashboard. Авторы отсортированы по nonMergeCommits desc.
- * Первая страница (page=0) — самые активные. Последняя — аутсайдеры.
+ * Paginated-ответ /dashboard. Авторы отсортированы по `activity.score desc`.
+ *
+ * Backend: dashboard-api.yaml#/components/schemas/DashboardResponse
  */
-export interface DashboardData {
-  from: string;
-  to: string;
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  hasNext: boolean;
-  items: AuthorActivity[];
-}
+export type DashboardData = DashboardComponents['schemas']['DashboardResponse'];
 
 export interface DashboardQuery {
   from?: string;
