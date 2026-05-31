@@ -4,12 +4,13 @@ import { useShallow } from 'zustand/react/shallow';
 import { PageHeader, PageSection, ErrorState, LoadingState } from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
-import { useDailyStore } from '@/entities/stats';
+import { useDailyStore, useHourlyStore } from '@/entities/stats';
 import { useDashboardStore } from '@/entities/dashboard';
 import { useTeamFilterStore, useTeamMembersStore } from '@/features/team-filter';
 import { formatRange, rangeDays } from '@/shared/lib';
 import { ActivitySummary } from '@/widgets/activity-summary';
 import { ActivityHeatmap } from '@/widgets/activity-heatmap';
+import { HourlyHeatmap } from '@/widgets/activity-hourly';
 import { ReposChart } from '@/widgets/activity-repos';
 import { ContributorsList } from '@/widgets/activity-contributors';
 import { BusFactorCard } from '@/widgets/activity-bus-factor';
@@ -27,13 +28,19 @@ export function ActivityPage() {
   const dashboardData = useDashboardStore((s) => s.state.data);
   const fetchDashboard = useDashboardStore((s) => s.fetch);
 
+  // Hourly — командный агрегат (без авторской разбивки), поэтому клиентский
+  // team-filter к нему не применяется: показываем паттерн всей команды по времени.
+  const hourlyData = useHourlyStore((s) => s.state.data);
+  const fetchHourly = useHourlyStore((s) => s.fetch);
+
   const teamEnabled = useTeamFilterStore((s) => s.enabled);
   const members = useTeamMembersStore((s) => s.members);
 
   useEffect(() => {
     void fetchDaily({ from: range.from, to: range.to });
     void fetchDashboard({ from: range.from, to: range.to });
-  }, [range.from, range.to, fetchDaily, fetchDashboard]);
+    void fetchHourly({ from: range.from, to: range.to });
+  }, [range.from, range.to, fetchDaily, fetchDashboard, fetchHourly]);
 
   useApiErrorNotification(dailyState.error, 'Не удалось загрузить активность');
 
@@ -105,6 +112,10 @@ export function ActivityPage() {
 
       <PageSection>
         <ActivityHeatmap daily={daily} range={range} />
+      </PageSection>
+
+      <PageSection>
+        <HourlyHeatmap data={hourlyData} title="Активность по часам · команда" />
       </PageSection>
 
       <PageSection>

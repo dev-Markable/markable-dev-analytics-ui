@@ -1,9 +1,14 @@
 import { apiClient } from '@/shared/api';
-import type { DailyStat, PeriodSummary, WeeklyStat } from '../model/types';
+import type { DailyStat, HourlyStats, PeriodSummary, WeeklyStat } from '../model/types';
 
 export interface PeriodQuery {
   from: string;
   to: string;
+}
+
+/** Hourly поддерживает опциональную фильтрацию по автору. */
+export interface HourlyQuery extends PeriodQuery {
+  email?: string;
 }
 
 export async function getSummary(query: PeriodQuery): Promise<PeriodSummary> {
@@ -18,5 +23,10 @@ export async function getWeekly(query: PeriodQuery): Promise<WeeklyStat[]> {
 
 export async function getDaily(query: PeriodQuery): Promise<DailyStat[]> {
   const { data } = await apiClient.get<DailyStat[]>('/stats/daily', { params: query });
+  return data;
+}
+
+export async function getHourly(query: HourlyQuery): Promise<HourlyStats> {
+  const { data } = await apiClient.get<HourlyStats>('/stats/hourly', { params: query });
   return data;
 }

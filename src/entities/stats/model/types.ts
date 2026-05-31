@@ -15,3 +15,11 @@ export type WeeklyStat = Schemas['WeeklyStats'];
  * Backend: shared.yaml#/components/schemas/PeriodSummary
  */
 export type PeriodSummary = Schemas['PeriodSummary'];
+
+/**
+ * Почасовая статистика (B1). Бэк может опускать пустые ячейки —
+ * фронт достраивает полную сетку 7×24.
+ * Backend: shared.yaml#/components/schemas/HourlyStats
+ */
+export type HourlyStats = Schemas['HourlyStats'];
+export type HourlyCell = Schemas['HourlyCell'];
