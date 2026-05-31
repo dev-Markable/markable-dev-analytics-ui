@@ -24,7 +24,9 @@ export function DashboardPage() {
   const range = useDateRange();
   const teamEnabled = useTeamFilterStore((s) => s.enabled);
 
-  const state = useDashboardStore(useShallow((s) => s.state));
+  const { state, prev } = useDashboardStore(
+    useShallow((s) => ({ state: s.state, prev: s.prev })),
+  );
   const fetchDashboard = useDashboardStore((s) => s.fetch);
 
   useEffect(() => {
@@ -41,8 +43,14 @@ export function DashboardPage() {
    * влияет на каждое число на странице.
    */
   const filteredItems = useTeamFilter<AuthorActivity>(allItems, (a) => a.email);
+  // Предыдущий период — для PoP-дельт. Фильтруем тем же фильтром команды.
+  const prevItems = useTeamFilter<AuthorActivity>(prev.data?.items, (a) => a.email);
 
   const totals = useMemo(() => aggregateAuthors(filteredItems), [filteredItems]);
+  const prevTotals = useMemo(
+    () => (prev.data ? aggregateAuthors(prevItems) : null),
+    [prev.data, prevItems],
+  );
 
   /**
    * Top и outsiders — дизъюнктные множества по `activity.category`:
@@ -60,7 +68,8 @@ export function DashboardPage() {
     const countNote = teamEnabled
       ? ` · команда: ${filteredCount} из ${totalAll}`
       : ` · ${totalAll} авторов`;
-    return `Активные и аутсайдеры · ${formatRange(range.from, range.to)}${countNote}`;
+    const deltaNote = prevTotals ? ' · ↕ к пред. периоду' : '';
+    return `${formatRange(range.from, range.to)}${countNote}${deltaNote}`;
   }, [
     range.from,
     range.to,
@@ -68,6 +77,7 @@ export function DashboardPage() {
     state.data?.totalElements,
     allItems.length,
     filteredItems.length,
+    prevTotals,
   ]);
 
   const retry = useCallback(() => {
@@ -82,7 +92,7 @@ export function DashboardPage() {
       <PageHeader title="Дашборд" subtitle={subtitle} />
 
       <PageSection>
-        <SummaryGrid totals={totals} loading={isLoadingInitial} />
+        <SummaryGrid totals={totals} prevTotals={prevTotals} loading={isLoadingInitial} />
       </PageSection>
 
       <PageSection>

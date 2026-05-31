@@ -25,3 +25,20 @@ export const formatPercent = (n: number | null | undefined, digits = 0): string 
   n == null ? PLACEHOLDER : `${n.toFixed(digits)}%`;
 
 export const safeDiv = (a: number, b: number): number => (b === 0 ? 0 : a / b);
+
+/**
+ * Процентное изменение curr относительно prev.
+ * null, если базы нет (prev = 0) — «+∞%» бессмысленно, вызывающий код
+ * просто не рисует дельту.
+ */
+export const pctChange = (curr: number, prev: number): number | null => {
+  if (prev === 0) return null;
+  return ((curr - prev) / prev) * 100;
+};
+
+/** «+12%» / «−8%» / «0%» — для DeltaBadge. Использует U+2212 для минуса. */
+export const formatPctDelta = (pct: number): string => {
+  const rounded = Math.round(pct);
+  const sign = rounded > 0 ? '+' : rounded < 0 ? '−' : '';
+  return `${sign}${Math.abs(rounded)}%`;
+};

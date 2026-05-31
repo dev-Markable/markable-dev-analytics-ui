@@ -45,5 +45,17 @@ export const fromDayjsRange = (r: DayjsRange): DateRange => ({
 export const rangeDays = (r: DateRange): number =>
   dayjs(r.to).diff(dayjs(r.from), 'day') + 1;
 
+/**
+ * Предыдущий период той же длины, вплотную перед текущим.
+ * Для [05-08 .. 05-14] (7 дней) → [05-01 .. 05-07].
+ * Используется для period-over-period дельт.
+ */
+export const previousPeriod = (r: DateRange): DateRange => {
+  const len = rangeDays(r);
+  const prevTo = dayjs(r.from).subtract(1, 'day');
+  const prevFrom = prevTo.subtract(len - 1, 'day');
+  return { from: toISODate(prevFrom), to: toISODate(prevTo) };
+};
+
 export const isValidRange = (r: DateRange): boolean =>
   dayjs(r.from).isValid() && dayjs(r.to).isValid() && !dayjs(r.to).isBefore(dayjs(r.from));
