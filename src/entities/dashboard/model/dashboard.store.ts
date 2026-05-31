@@ -6,10 +6,12 @@ import {
   asyncSuccess,
   createRaceGuard,
   idleAsyncState,
+  isFresh,
   toApiError,
   type AsyncState,
 } from '@/shared/api';
 import { previousPeriod } from '@/shared/lib';
+import { STORE_CACHE_TTL_MS } from '@/shared/config';
 import { getDashboard } from '../api/dashboard.api';
 import type { DashboardData, DashboardPeriod } from './types';
 
@@ -30,12 +32,21 @@ interface DashboardStore {
 }
 
 const guard = createRaceGuard();
+// Ключ последней успешной загрузки — для TTL-кэша при возврате на страницу.
+let lastKey: string | null = null;
 
-export const useDashboardStore = create<DashboardStore>((set) => ({
+export const useDashboardStore = create<DashboardStore>((set, get) => ({
   state: idleAsyncState<DashboardData>(),
   prev: idleAsyncState<DashboardData>(),
 
   fetch: async (period) => {
+    const key = `${period.from}|${period.to}`;
+    const current = get().state;
+    // Свежие данные за тот же период — не дёргаем API повторно.
+    if (current.status === 'success' && lastKey === key && isFresh(current, STORE_CACHE_TTL_MS)) {
+      return;
+    }
+
     const requestId = guard.next();
     set((s) => ({ state: asyncLoading(s.state), prev: asyncLoading(s.prev) }));
     try {
@@ -44,6 +55,7 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
         getDashboard(previousPeriod(period)),
       ]);
       if (!guard.isCurrent(requestId)) return;
+      lastKey = key;
       set({ state: asyncSuccess(data), prev: asyncSuccess(prevData) });
     } catch (e) {
       if (!guard.isCurrent(requestId)) return;
@@ -57,9 +69,11 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
     }
   },
 
-  reset: () =>
+  reset: () => {
+    lastKey = null;
     set({
       state: idleAsyncState<DashboardData>(),
       prev: idleAsyncState<DashboardData>(),
-    }),
+    });
+  },
 }));

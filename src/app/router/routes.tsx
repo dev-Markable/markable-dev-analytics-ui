@@ -1,14 +1,33 @@
+import { lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { AppLayout } from '@/widgets/app-layout';
 import { DashboardPage } from '@/pages/dashboard';
-import { WeeklyPage } from '@/pages/weekly';
-import { ActivityPage } from '@/pages/activity';
-import { ComparePage } from '@/pages/compare';
-import { ProfilePage } from '@/pages/profile';
-import { CollectionPage } from '@/pages/collection';
-import { SettingsPage } from '@/pages/settings';
-import { NotFoundPage } from '@/pages/not-found';
 import { ROUTES } from './paths';
+
+// Стартовая страница — eager (всё равно грузится сразу, без лишнего lazy-водопада).
+// Остальные — отдельными чанками по требованию. Страницы экспортируют named,
+// поэтому маппим в { default } для React.lazy.
+const WeeklyPage = lazy(() =>
+  import('@/pages/weekly').then((m) => ({ default: m.WeeklyPage })),
+);
+const ActivityPage = lazy(() =>
+  import('@/pages/activity').then((m) => ({ default: m.ActivityPage })),
+);
+const ComparePage = lazy(() =>
+  import('@/pages/compare').then((m) => ({ default: m.ComparePage })),
+);
+const ProfilePage = lazy(() =>
+  import('@/pages/profile').then((m) => ({ default: m.ProfilePage })),
+);
+const CollectionPage = lazy(() =>
+  import('@/pages/collection').then((m) => ({ default: m.CollectionPage })),
+);
+const SettingsPage = lazy(() =>
+  import('@/pages/settings').then((m) => ({ default: m.SettingsPage })),
+);
+const NotFoundPage = lazy(() =>
+  import('@/pages/not-found').then((m) => ({ default: m.NotFoundPage })),
+);
 
 export function AppRouter() {
   return (
