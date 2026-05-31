@@ -1,14 +1,26 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Card, Table, Typography } from 'antd';
 import { CalendarDays } from 'lucide-react';
 import type { AsyncState } from '@/shared/api';
 import type { WeeklyStat } from '@/entities/stats';
 import { useTeamFilter } from '@/features/team-filter';
-import type { DateRange } from '@/shared/lib';
+import { downloadCsv, type CsvColumn, type DateRange } from '@/shared/lib';
 import type { AuthorActivity } from '@/entities/user';
-import { EmptyState, ErrorState, SkeletonTable } from '@/shared/ui';
+import { EmptyState, ErrorState, ExportButton, SkeletonTable } from '@/shared/ui';
 import { buildWeeklyColumns } from '../config/columns';
 import { WeekAuthorsBreakdown } from './WeekAuthorsBreakdown';
+
+const csvColumns: CsvColumn<WeeklyStat>[] = [
+  { header: 'Год', value: (w) => w.year },
+  { header: 'Неделя', value: (w) => w.week },
+  { header: 'Начало недели', value: (w) => w.weekStart },
+  { header: 'Коммиты', value: (w) => w.totalCommits },
+  { header: 'Merge', value: (w) => w.totalMergeCommits },
+  { header: 'Добавлено', value: (w) => w.totalAddedLines },
+  { header: 'Удалено', value: (w) => w.totalDeletedLines },
+  { header: 'Тесты', value: (w) => w.totalTestAddedLines },
+  { header: 'Авторов', value: (w) => w.authors.length },
+];
 
 interface WeeklyTableProps {
   state: AsyncState<WeeklyStat[]>;
@@ -19,11 +31,15 @@ interface WeeklyTableProps {
 export function WeeklyTable({ state, range, onRetry }: WeeklyTableProps) {
   const teamEnabled = useExpandedRowsReset();
   const columns = useMemo(() => buildWeeklyColumns(), []);
-  const data = state.data ?? [];
+  const data = useMemo(() => state.data ?? [], [state.data]);
 
   const isInitialLoading = state.status === 'loading' && data.length === 0;
   const isError = state.status === 'error' && data.length === 0;
   const isEmpty = state.status === 'success' && data.length === 0;
+
+  const handleExportCsv = useCallback(() => {
+    downloadCsv(`devpulse-недели_${range.from}_${range.to}.csv`, data, csvColumns);
+  }, [data, range.from, range.to]);
 
   return (
     <Card variant="borderless" className="leaderboard-card">
@@ -39,6 +55,11 @@ export function WeeklyTable({ state, range, onRetry }: WeeklyTableProps) {
         <Typography.Text type="secondary" className="leaderboard-card__description">
           Каждая неделя раскрывается в разбивку по авторам
         </Typography.Text>
+        {!isInitialLoading && !isError && !isEmpty && (
+          <div className="leaderboard-card__actions">
+            <ExportButton size="small" onExportCsv={handleExportCsv} />
+          </div>
+        )}
       </header>
 
       <div className="leaderboard-card__body authors-table">

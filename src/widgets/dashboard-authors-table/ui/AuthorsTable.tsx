@@ -1,10 +1,23 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Card, Table, Typography } from 'antd';
 import { Users } from 'lucide-react';
-import type { AuthorActivity } from '@/entities/user';
-import type { DateRange } from '@/shared/lib';
-import { EmptyState, SkeletonTable } from '@/shared/ui';
+import { userDisplayName, type AuthorActivity } from '@/entities/user';
+import { downloadCsv, type CsvColumn, type DateRange } from '@/shared/lib';
+import { EmptyState, ExportButton, SkeletonTable } from '@/shared/ui';
 import { buildAuthorsColumns } from '../config/columns';
+
+const csvColumns: CsvColumn<AuthorActivity>[] = [
+  { header: 'Автор', value: (a) => userDisplayName({ name: a.displayName ?? null, username: null, email: a.email }) },
+  { header: 'Email', value: (a) => a.email },
+  { header: 'Категория', value: (a) => a.activity?.category ?? '' },
+  { header: 'Score', value: (a) => a.activity?.score ?? '' },
+  { header: 'Коммиты', value: (a) => a.commits },
+  { header: 'Не-мердж', value: (a) => a.nonMergeCommits },
+  { header: 'Merge', value: (a) => a.mergeCommits },
+  { header: 'Добавлено', value: (a) => a.addedLines },
+  { header: 'Удалено', value: (a) => a.deletedLines },
+  { header: 'Тесты', value: (a) => a.testAddedLines },
+];
 
 interface AuthorsTableProps {
   items: readonly AuthorActivity[];
@@ -33,6 +46,10 @@ export function AuthorsTable({
   const isInitialLoading = loading && totalElements === 0;
   const isEmpty = !loading && totalElements === 0;
 
+  const handleExportCsv = useCallback(() => {
+    downloadCsv(`devpulse-авторы_${range.from}_${range.to}.csv`, items, csvColumns);
+  }, [items, range.from, range.to]);
+
   return (
     <Card variant="borderless" className="leaderboard-card">
       <header className="leaderboard-card__header">
@@ -49,6 +66,11 @@ export function AuthorsTable({
             ? `Полный список с пагинацией · ${totalElements} ${teamFilterEnabled ? 'команды' : 'авторов'}`
             : 'Полный список с пагинацией'}
         </Typography.Text>
+        {totalElements > 0 && (
+          <div className="leaderboard-card__actions">
+            <ExportButton size="small" onExportCsv={handleExportCsv} />
+          </div>
+        )}
       </header>
 
       <div className="leaderboard-card__body authors-table">

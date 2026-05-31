@@ -2,6 +2,7 @@ export const ROUTES = {
   dashboard: '/',
   weekly: '/weekly',
   activity: '/activity',
+  compare: '/compare',
   profile: (email = ':email') => `/users/${email}`,
   profileMask: '/users/:email',
   collection: '/collection',

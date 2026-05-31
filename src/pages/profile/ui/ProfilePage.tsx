@@ -125,7 +125,11 @@ export function ProfilePage() {
       </PageSection>
 
       <PageSection>
-        <TasksTimeline commits={profile.commits} cards={profile.cards} />
+        <TasksTimeline
+          commits={profile.commits}
+          cards={profile.cards}
+          email={profile.user.email}
+        />
       </PageSection>
     </>
   );

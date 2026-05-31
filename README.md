@@ -2,8 +2,11 @@
 
 [![CI](https://github.com/devpulse-dev/devpulse-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/devpulse-dev/devpulse-ui/actions/workflows/ci.yml)
 
-Аналитика активности разработчиков: коммиты, недельная динамика, профили, heatmap-календарь.
+Аналитика активности разработчиков: дашборд с activity-score, недельная динамика,
+профили, heatmap-календарь, сравнение разработчиков, bus factor, экспорт.
 Бэк — [`DevPulse-core`](../DevPulse-core), API v2 (REST + RFC 7807 problem+json).
+
+> Дорожная карта фич и прогресс — в [`FEATURES.md`](./FEATURES.md).
 
 ---
 
@@ -39,11 +42,11 @@ npm run build
 # Превью production-сборки
 npm run preview
 
-# Только typecheck
-npm run typecheck
+# Проверки (typecheck / lint / тесты)
+npm run typecheck && npm run lint && npm test
 ```
 
-**Требования:** Node 20+, npm 10+. Бэк должен быть запущен на `localhost:8080` (или поправь `VITE_API_PROXY_TARGET` в `vite.config.ts`).
+**Требования:** Node 20+, npm 10+. Перед `npm install` нужен `GITHUB_TOKEN` с `read:packages` (см. [API-типы](#api-типы-devpulse-devapi-types)). Бэк должен быть запущен на `localhost:8080` (или поправь proxy `target` в `vite.config.ts`).
 
 ### Переменные окружения
 
@@ -59,7 +62,7 @@ VITE_API_BASE_URL=/api/v2          # baseURL axios-клиента; в dev — о
 ```
 src/
 ├── app/        # провайдеры, router, глобальные стили
-├── pages/      # роуты (Dashboard, Weekly, Profile, Activity, Collection, Settings, NotFound)
+├── pages/      # роуты (Dashboard, Weekly, Activity, Compare, Profile, Collection, Settings, NotFound)
 ├── widgets/    # самостоятельные UI-блоки (LeaderboardCard, ActivityHeatmap…)
 ├── features/   # пользовательские сценарии (theme-switch, date-range-filter, team-filter)
 ├── entities/   # бизнес-сущности (user, commit, kaiten-card, stats, dashboard, collection-run)
@@ -75,7 +78,10 @@ src/
 - **Filter stores** (`features/*/model/*.store.ts`) — глобальные настройки UI (`theme`, `dateRange`, `teamFilter`, `teamMembers`). Все с `persist` middleware → ключи `devpulse.*` в localStorage.
 - **Entity stores** (`entities/*/model/*.store.ts`) — кеш данных с бэка. Каждый держит `AsyncState<T>` (`status`, `data`, `error`, `lastFetchedAt`).
 - **Race protection.** Любой store с `fetch()` использует `createRaceGuard()` — если юзер переключит фильтр пока летит запрос, старый ответ молча игнорируется.
+- **TTL-кэш навигаций.** `fetch` за тот же период в пределах `STORE_CACHE_TTL_MS` (60с) — no-op (возврат на страницу не дёргает API). Stats-сторы (weekly/daily/summary) собраны общей фабрикой `createStatsStore` (race-guard + кэш).
 - **Селекторы через `useShallow`** — не реренжем компонент, если объект-выборка не изменился по структуре.
+- **Фильтры в URL.** `FilterUrlSync` (`app/providers`) двусторонне синхронит `dateRange`/`teamFilter` с `?from&to&team` — диплинки, закладки, кнопка «назад».
+- **Lazy-страницы.** Все роуты кроме стартового Dashboard — `React.lazy` + `Suspense`; recharts вынесен из инициального бандла.
 
 ### Поток данных
 
@@ -101,9 +107,10 @@ backend → entity store fetch → AsyncState<T>
 
 | Route | Файл | API |
 |---|---|---|
-| `/` Дашборд | `pages/dashboard/` | `GET /dashboard?size=500` |
+| `/` Дашборд | `pages/dashboard/` | `GET /dashboard?size=500` (×2 — текущий + предыдущий период для PoP-дельт) |
 | `/weekly` Недели | `pages/weekly/` | `GET /stats/weekly` |
 | `/activity` Активность | `pages/activity/` | `GET /stats/daily` + `GET /dashboard` (для аватаров) |
+| `/compare` Сравнение | `pages/compare/` | — (из dashboard-стора, выбор в `?ids=`) |
 | `/users/:email` Профиль | `pages/profile/` | `GET /users/{email}/profile` |
 | `/collection` Сбор | `pages/collection/` | `POST /collection/runs`, `GET /collection/runs/{id}`, `POST /kaiten/sync-users` |
 | `/settings` Настройки | `pages/settings/` | — (только localStorage) |
@@ -181,7 +188,8 @@ Vitest (нативно с Vite). Покрыты **чистые функции** 
 цена бага высока, а DOM не нужен. Тест-файлы `*.test.ts` co-located рядом с кодом.
 
 Фабрики тестовых данных — `src/shared/test/factories.ts` (`makeAuthor`, `makeCommit`,
-`makeCard`, `makeDaily`, `makeWeek`). В прод-бандл не попадают.
+`makeCard`, `makeDaily`, `makeWeek`, `makeActivity`). В прод-бандл не попадают.
+Сейчас ~100 тестов (`npm test`).
 
 Что покрыто:
 
@@ -192,9 +200,15 @@ Vitest (нативно с Vite). Покрыты **чистые функции** 
 | `entities/dashboard/lib/aggregate` | суммирование totals, uniqueAuthors |
 | `entities/stats/lib/apply-team-filter` | пересчёт недельных totals под фильтр команды, регистронезависимость |
 | `widgets/profile-tasks-timeline/lib/group-commits` | матчинг коммит↔карточка, orphan-группа, пустые карточки, сортировка |
-| `widgets/activity-summary/lib/aggregate` | uniqueAuthors/repos/activeDays |
+| `widgets/activity-summary/lib` | totals (авторы/репо/активные дни), `dailySeries` для спарклайнов |
+| `widgets/activity-bus-factor/lib` | bus factor (накопление до 50%), уровни риска, сортировка |
+| `widgets/activity-contributors/lib/detect-anomalies` | эвристики STALE / DECLINING / LOW_TESTS |
+| `widgets/compare-radar/lib/normalize` | нормализация осей радара к лидеру |
 | `widgets/profile-summary/lib/aggregate-cards` | разбивка карточек по closed × cardType |
-| `shared/lib/number/format` + `string/truncate` | форматтеры, эллипсис, инициалы |
+| `shared/lib/number/format` | форматтеры, `pctChange`, `formatPctDelta` |
+| `shared/lib/date/ranges` | `previousPeriod` (PoP), границы месяца |
+| `shared/lib/export/csv` | экранирование, разделитель, заголовки |
+| `shared/lib/string/truncate` | эллипсис, инициалы |
 
 > **tsconfig:** `tsconfig.app.json` исключает тесты (в прод-build не идут),
 > `tsconfig.test.json` проверяет их отдельно с послаблением `noUncheckedIndexedAccess`
@@ -280,9 +294,19 @@ Concurrency-группа отменяет старый прогон при пу�
 
 ## Roadmap
 
-- [ ] OpenAPI → автогенерация типов API (`openapi-typescript`)
-- [ ] Lazy-route chunks (`React.lazy()` per page)
-- [ ] Unit-тесты на критичные utils (extractCardId, group-commits, aggregate-authors)
-- [ ] Кэширование между навигациями через `isFresh(state, ms)` чек в эффектах страниц
-- [ ] Hourly heatmap на Profile (нужен бэк-эндпоинт или агрегация из `commits[]`)
-- [ ] Default-период через Settings (сейчас захардкожено 30 дней)
+Полный план и прогресс — в [`FEATURES.md`](./FEATURES.md). Все 9 клиентских фич
+закрыты (PoP-дельты, экспорт CSV/PNG, URL-фильтры, спарклайны, сравнение, аномалии,
+bus factor, lazy chunks, кэш навигаций). Инфраструктура: OpenAPI-типы из npm-пакета,
+unit-тесты, CI.
+
+Осталось — фичи, требующие бэка (заводятся в DevPulse-core, фронт подключается по
+готовому контракту):
+
+- **B1** Hourly heatmap (полноценный, нужен `/stats/hourly`)
+- **B2** Ревью-метрики (кто ревьюил, время до merge)
+- **B3** Email / Slack дайджест
+- **B4** Цели / таргеты команды
+- **B5** Push-алерты аномалий
+
+Мелочь без бэка: дефолтный период через Settings (сейчас 30 дней в persist-сторе,
+переопределяется URL).

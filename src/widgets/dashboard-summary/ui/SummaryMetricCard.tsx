@@ -6,6 +6,7 @@ interface SummaryMetricCardProps {
   value: ReactNode;
   hint?: ReactNode;
   icon?: ReactNode;
+  trend?: ReactNode;
   loading?: boolean;
 }
 

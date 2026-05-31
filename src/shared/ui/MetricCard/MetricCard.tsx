@@ -7,10 +7,20 @@ interface MetricCardProps {
   icon?: ReactNode;
   trend?: ReactNode;
   hint?: ReactNode;
+  /** Мини-график тренда под значением (обычно <Sparkline />). */
+  sparkline?: ReactNode;
   loading?: boolean;
 }
 
-export function MetricCard({ label, value, icon, trend, hint, loading }: MetricCardProps) {
+export function MetricCard({
+  label,
+  value,
+  icon,
+  trend,
+  hint,
+  sparkline,
+  loading,
+}: MetricCardProps) {
   return (
     <Card className="metric-card" variant="borderless">
       <div className="metric-card__head">
@@ -32,6 +42,7 @@ export function MetricCard({ label, value, icon, trend, hint, loading }: MetricC
           )}
         </div>
       )}
+      {sparkline && !loading && <div className="metric-card__spark">{sparkline}</div>}
     </Card>
   );
 }

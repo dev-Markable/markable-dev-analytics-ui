@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Card, Input, Typography } from 'antd';
 import { ListTree, Search } from 'lucide-react';
-import type { Commit } from '@/entities/commit';
+import { extractCardId, type Commit } from '@/entities/commit';
 import type { KaitenCard } from '@/entities/kaiten-card';
 import { useDebouncedValue } from '@/shared/hooks';
-import { DataTable, EmptyState } from '@/shared/ui';
+import { downloadCsv, formatDateTime, type CsvColumn } from '@/shared/lib';
+import { DataTable, EmptyState, ExportButton } from '@/shared/ui';
 import { buildTaskColumns } from '../config/columns';
 import { groupCommitsByTask, ORPHAN_KEY, type TaskGroup } from '../lib/group-commits';
 import { TaskCommitsBreakdown } from './TaskCommitsBreakdown';
@@ -12,7 +13,21 @@ import { TaskCommitsBreakdown } from './TaskCommitsBreakdown';
 interface TasksTimelineProps {
   commits: readonly Commit[];
   cards: readonly KaitenCard[];
+  /** email — для имени файла экспорта. */
+  email: string;
 }
+
+const commitCsvColumns: CsvColumn<Commit>[] = [
+  { header: 'Дата', value: (c) => formatDateTime(c.commitDate) },
+  { header: 'Репозиторий', value: (c) => c.repo },
+  { header: 'Карточка Kaiten', value: (c) => extractCardId(c) ?? '' },
+  { header: 'Merge', value: (c) => (c.merge ? 'да' : 'нет') },
+  { header: 'Добавлено', value: (c) => c.addedLines },
+  { header: 'Удалено', value: (c) => c.deletedLines },
+  { header: 'Тесты', value: (c) => c.testAddedLines },
+  { header: 'Сообщение', value: (c) => c.message },
+  { header: 'Хеш', value: (c) => c.hash },
+];
 
 const SEARCH_DEBOUNCE_MS = 250;
 
@@ -30,9 +45,14 @@ const matchesQuery = (group: TaskGroup, q: string): boolean => {
   );
 };
 
-export function TasksTimeline({ commits, cards }: TasksTimelineProps) {
+export function TasksTimeline({ commits, cards, email }: TasksTimelineProps) {
   const [query, setQuery] = useState('');
   const debounced = useDebouncedValue(query, SEARCH_DEBOUNCE_MS);
+
+  const handleExportCsv = useCallback(() => {
+    const safeEmail = email.replace(/[^a-z0-9]+/gi, '-');
+    downloadCsv(`devpulse-коммиты_${safeEmail}.csv`, commits, commitCsvColumns);
+  }, [commits, email]);
 
   const allGroups = useMemo(() => groupCommitsByTask(commits, cards), [commits, cards]);
 
@@ -67,6 +87,11 @@ export function TasksTimeline({ commits, cards }: TasksTimelineProps) {
         <Typography.Text type="secondary" className="leaderboard-card__description">
           {description}
         </Typography.Text>
+        {commits.length > 0 && (
+          <div className="leaderboard-card__actions">
+            <ExportButton size="small" onExportCsv={handleExportCsv} />
+          </div>
+        )}
       </header>
 
       <div className="leaderboard-card__body authors-table">

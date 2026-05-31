@@ -5,6 +5,8 @@ import {
   formatSigned,
   formatLinesDelta,
   safeDiv,
+  pctChange,
+  formatPctDelta,
 } from './format';
 
 describe('formatNumber', () => {
@@ -61,5 +63,35 @@ describe('safeDiv', () => {
   it('деление на ноль → 0, без Infinity/NaN', () => {
     expect(safeDiv(10, 0)).toBe(0);
     expect(safeDiv(0, 0)).toBe(0);
+  });
+});
+
+describe('pctChange', () => {
+  it('рост', () => {
+    expect(pctChange(110, 100)).toBe(10);
+  });
+  it('падение', () => {
+    expect(pctChange(80, 100)).toBeCloseTo(-20);
+  });
+  it('prev = 0 → null (нет базы)', () => {
+    expect(pctChange(50, 0)).toBeNull();
+  });
+  it('без изменений → 0', () => {
+    expect(pctChange(100, 100)).toBe(0);
+  });
+});
+
+describe('formatPctDelta', () => {
+  it('плюс с округлением', () => {
+    expect(formatPctDelta(12.4)).toBe('+12%');
+  });
+  it('минус через U+2212', () => {
+    expect(formatPctDelta(-8.6)).toBe('−9%');
+  });
+  it('ноль без знака', () => {
+    expect(formatPctDelta(0)).toBe('0%');
+  });
+  it('округление к нулю → без знака', () => {
+    expect(formatPctDelta(0.3)).toBe('0%');
   });
 });

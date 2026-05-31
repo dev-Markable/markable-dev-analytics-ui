@@ -44,3 +44,46 @@ export function aggregateTotals(daily: readonly DailyStat[]): ActivityTotals {
     activeDays: dates.size,
   };
 }
+
+export interface DailySeries {
+  /** Коммиты по дням (хронологически). */
+  commits: number[];
+  /** Добавленные строки по дням. */
+  addedLines: number[];
+  /** Уникальные авторы по дням. */
+  authors: number[];
+}
+
+interface DayAcc {
+  commits: number;
+  addedLines: number;
+  authors: Set<string>;
+}
+
+/**
+ * Сворачивает daily-статы (ключ email × date × repo) в ряды по дате —
+ * для спарклайнов. Дни сортируются хронологически по строке `date`
+ * (ISO YYYY-MM-DD сортируется лексикографически = хронологически).
+ * Дни без записей не вставляются — спарклайн показывает тренд по активным точкам.
+ */
+export function dailySeries(daily: readonly DailyStat[]): DailySeries {
+  const byDate = new Map<string, DayAcc>();
+
+  for (const d of daily) {
+    let acc = byDate.get(d.date);
+    if (!acc) {
+      acc = { commits: 0, addedLines: 0, authors: new Set() };
+      byDate.set(d.date, acc);
+    }
+    acc.commits += d.commits;
+    acc.addedLines += d.addedLines;
+    acc.authors.add(d.email);
+  }
+
+  const dates = [...byDate.keys()].sort();
+  return {
+    commits: dates.map((dt) => byDate.get(dt)!.commits),
+    addedLines: dates.map((dt) => byDate.get(dt)!.addedLines),
+    authors: dates.map((dt) => byDate.get(dt)!.authors.size),
+  };
+}
