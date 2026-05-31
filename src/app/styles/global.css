@@ -1662,3 +1662,17 @@ body {
 .leaderboard-row__name-line .activity-badge {
   flex-shrink: 0;
 }
+
+/* ──────────────────────────────────────────────────────────── */
+/*  Export button в шапке карточки                             */
+/* ──────────────────────────────────────────────────────────── */
+
+.leaderboard-card__header {
+  position: relative;
+}
+
+.leaderboard-card__actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+}

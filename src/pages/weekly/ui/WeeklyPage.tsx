@@ -1,15 +1,15 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Card, Typography } from 'antd';
 import { useShallow } from 'zustand/react/shallow';
 import { LineChart } from 'lucide-react';
-import { PageHeader, PageSection, EmptyState, ErrorState, LoadingState } from '@/shared/ui';
-import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
+import { PageHeader, PageSection, EmptyState, ErrorState, ExportButton, LoadingState } from '@/shared/ui';
+import { useDocumentTitle, useApiErrorNotification, useNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
 import { applyTeamFilterToWeekly, useWeeklyStore } from '@/entities/stats';
 import { useTeamFilterStore, useTeamMembersStore } from '@/features/team-filter';
 import type { AsyncState } from '@/shared/api';
 import type { WeeklyStat } from '@/entities/stats';
-import { formatRange } from '@/shared/lib';
+import { downloadSvgAsPng, formatRange } from '@/shared/lib';
 import { WeeklyChart } from '@/widgets/weekly-chart';
 import { WeeklyTable } from '@/widgets/weekly-table';
 
@@ -22,6 +22,8 @@ export function WeeklyPage() {
 
   const teamEnabled = useTeamFilterStore((s) => s.enabled);
   const members = useTeamMembersStore((s) => s.members);
+  const notification = useNotification();
+  const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     void fetchWeekly({ from: range.from, to: range.to });
@@ -48,6 +50,17 @@ export function WeeklyPage() {
   }, [state, teamEnabled, members]);
 
   const weeks = filteredState.data ?? [];
+
+  const handleExportPng = useCallback(async () => {
+    const svg = chartRef.current?.querySelector('svg');
+    if (!svg) return;
+    try {
+      await downloadSvgAsPng(svg as SVGSVGElement, `devpulse-недели_${range.from}_${range.to}.png`);
+    } catch {
+      notification.error({ message: 'Не удалось экспортировать график' });
+    }
+  }, [range.from, range.to, notification]);
+
   const isInitialLoading = state.status === 'loading' && weeks.length === 0;
   const isError = state.status === 'error' && weeks.length === 0;
   const isEmpty = state.status === 'success' && weeks.length === 0;
@@ -76,9 +89,14 @@ export function WeeklyPage() {
             <Typography.Text type="secondary" className="leaderboard-card__description">
               Коммиты (столбцы) и добавленные строки (линия)
             </Typography.Text>
+            {!isInitialLoading && !isError && !isEmpty && (
+              <div className="leaderboard-card__actions">
+                <ExportButton size="small" onExportPng={handleExportPng} />
+              </div>
+            )}
           </header>
 
-          <div className="leaderboard-card__body">
+          <div className="leaderboard-card__body" ref={chartRef}>
             {isInitialLoading && <LoadingState label="Загружаем недели" />}
             {isError && <ErrorState error={state.error} onRetry={retry} />}
             {isEmpty && (
