@@ -13,6 +13,8 @@ import {
   type AuthorEnrichment,
   type ContributorActivity,
 } from '../lib/aggregate-contributors';
+import { detectAnomaliesByAuthor, type Anomaly } from '../lib/detect-anomalies';
+import { AnomalyBadges } from './AnomalyBadges';
 
 interface ContributorsListProps {
   daily: readonly DailyStat[];
@@ -26,10 +28,12 @@ function ContributorRow({
   rank,
   data,
   range,
+  anomalies,
 }: {
   rank: number;
   data: ContributorActivity;
   range: DateRange;
+  anomalies: readonly Anomaly[];
 }) {
   const user = {
     email: data.email,
@@ -47,9 +51,12 @@ function ContributorRow({
       <span className="leaderboard-row__author">
         <UserAvatar user={user} size={32} />
         <span className="leaderboard-row__identity">
-          <Typography.Text strong ellipsis className="leaderboard-row__name">
-            {userDisplayName(user)}
-          </Typography.Text>
+          <span className="leaderboard-row__name-line">
+            <Typography.Text strong ellipsis className="leaderboard-row__name">
+              {userDisplayName(user)}
+            </Typography.Text>
+            <AnomalyBadges anomalies={anomalies} />
+          </span>
           <Typography.Text type="secondary" ellipsis className="leaderboard-row__email">
             {data.email} · {data.activeDays} дн · {data.repos} репо
           </Typography.Text>
@@ -87,8 +94,14 @@ export function ContributorsList({
     () => aggregateByContributor(daily, enrichmentByEmail),
     [daily, enrichmentByEmail],
   );
+  const anomaliesByEmail = useMemo(
+    () => detectAnomaliesByAuthor(daily, range),
+    [daily, range],
+  );
   const teamFiltered = useTeamFilter<ContributorActivity>(all, (c) => c.email);
   const items = teamFiltered.slice(0, topN);
+
+  const EMPTY: readonly Anomaly[] = [];
 
   return (
     <Card variant="borderless" className="leaderboard-card">
@@ -102,7 +115,7 @@ export function ContributorsList({
           </Typography.Title>
         </div>
         <Typography.Text type="secondary" className="leaderboard-card__description">
-          Топ-{topN} по не-мердж коммитам за период
+          Топ-{topN} по не-мердж коммитам · бейджи отмечают аномалии активности
         </Typography.Text>
       </header>
 
@@ -115,7 +128,13 @@ export function ContributorsList({
         ) : (
           <div className="leaderboard">
             {items.map((c, i) => (
-              <ContributorRow key={c.email} rank={i + 1} data={c} range={range} />
+              <ContributorRow
+                key={c.email}
+                rank={i + 1}
+                data={c}
+                range={range}
+                anomalies={anomaliesByEmail.get(c.email) ?? EMPTY}
+              />
             ))}
           </div>
         )}
