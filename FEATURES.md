@@ -145,40 +145,198 @@
 
 ---
 
-## Требуют бэка (совместная работа с DevPulse-core)
+## Требуют контракта + бэка (OAS → DevPulse-core → фронт)
+
+Это **не «просто бэк»** — каждая фича проходит через три репозитория. OAS-контракт
+первичен: он source of truth и для бэка, и для фронта.
+
+### Жизненный цикл B-фичи
+
+1. **OAS** ([`devpulse-oas`](https://github.com/devpulse-dev/devpulse-oas)) —
+   PR с новой схемой/эндпоинтом в нужный `*-contract.yaml` (или новый контракт),
+   bump версии, релиз → публикуются Maven JAR **и** npm `@devpulse-dev/api-types`.
+2. **Бэк** ([`DevPulse-core`](../DevPulse-core)) — бампит версию контракта в
+   `adapter-rest/pom.xml`, контроллер `implements` сгенеренный `*Api`, маппер,
+   сбор/агрегация данных.
+3. **Фронт** — `npm install @devpulse-dev/api-types@latest`, типы появляются
+   автоматически (см. README → «API-типы»), остаётся entity-api + store + UI.
+
+> Порядок жёсткий: **сначала OAS** (иначе ни у бэка, ни у фронта нет типов).
+> «Стоимость бэка» в таблице приоритетов ниже включает работу по OAS-контракту.
+
+Формат описаний: что нужно в контракте (эндпоинт, схема, параметры) → что фронт
+построит. Поля — в нотации OpenAPI-схем (как в `shared.yaml`), готовы к переносу
+в PR contract'а.
+
+---
 
 ### B1. Hourly heatmap (полноценный) ⬜
 
-**Что даёт:** паттерны работы по часам, ранний сигнал выгорания (ночные коммиты).
-**Блокер:** эндпоинт `/stats/hourly` или агрегация. Частично можно из `profile.commits[]` (там есть время) — MVP на клиенте, полноценный по команде — бэк.
+**Что даёт:** паттерны работы по часам/дням недели, ранний сигнал выгорания (стабильные ночные коммиты, работа в выходные).
+
+**Нужно от бэка** — эндпоинт почасовой агрегации:
+
+```
+GET /api/v2/stats/hourly?from&to[&email]
+```
+- `from`/`to` — период (как в остальных stats).
+- `email` — опционально: один автор (для профиля) или вся команда (без параметра).
+
+Ответ — плотная матрица день-недели × час (агрегат коммитов):
+```yaml
+HourlyStats:
+  required: [from, to, cells]
+  properties:
+    from: { $ref: Date }
+    to: { $ref: Date }
+    cells:                         # 7×24 = 168 точек (или только непустые)
+      type: array
+      items:
+        type: object
+        required: [weekday, hour, commits]
+        properties:
+          weekday: { type: integer, description: "0=Пн … 6=Вс" }
+          hour:    { type: integer, minimum: 0, maximum: 23 }
+          commits: { type: integer, format: int64 }
+          addedLines: { type: integer, format: int64 }  # опционально
+```
+
+**Почему именно бэк:** в `profile.commits[]` время есть (можно MVP по одному автору на клиенте), но по всей команде поднимать тысячи коммитов на фронт дорого — агрегацию делает БД (`GROUP BY EXTRACT(dow), EXTRACT(hour)`).
+
+**Что построит фронт:** grid 7×24, цвет ячейки = интенсивность (как `ActivityHeatmap`, переиспользуем `buildHeatmapGrid`-подход). На профиле — личный, на Activity — командный.
 
 ---
 
 ### B2. Ревью-метрики ⬜
 
-**Что даёт:** кто тащит ревью, время до merge, баланс «пишу / ревьюю». Сильнейший сигнал для тимлида.
-**Блокер:** бэк не собирает «кто ревьюил» / timestamps PR. Нужен сбор из Git-провайдера (MR/PR API).
+**Что даёт:** кто тащит ревью, время до merge, баланс «пишу / ревьюю». Сильнейший сигнал здоровья команды — обычно невидимый.
+
+**Нужно от бэка** — сбор данных о ревью из Git-провайдера (GitLab MR / GitHub PR API) + эндпоинт:
+
+```
+GET /api/v2/stats/reviews?from&to
+```
+```yaml
+ReviewStats:
+  required: [from, to, authors]
+  properties:
+    authors:
+      type: array
+      items:
+        type: object
+        required: [email, reviewsGiven, reviewsReceived, avgTimeToMergeHours]
+        properties:
+          email: { $ref: Email }
+          displayName: { type: string, nullable: true }
+          avatarUrl:   { type: string, nullable: true }
+          reviewsGiven:    { type: integer }   # сколько MR отревьюил
+          reviewsReceived: { type: integer }   # сколько его MR отревьюили
+          avgTimeToMergeHours: { type: number, format: double }
+          mergedMrCount: { type: integer }
+```
+
+**Почему именно бэк:** сейчас собираются только коммиты из git. Ревью живут в API провайдера (MR/PR, approvals, timestamps) — нужен новый адаптер сбора + таблица. Самая дорогая из B-фич по бэку.
+
+**Что построит фронт:** виджет на Activity / отдельная вкладка — таблица «отревьюил / получил ревью / ср. время до merge», bar-chart баланса, бейдж «ревьюит много / мало».
 
 ---
 
 ### B3. Email / Slack дайджест ⬜
 
-**Что даёт:** проактивность — «топ за неделю», аномалии приходят сами. Никто не открывает дашборд по своей воле.
-**Блокер:** целиком бэк — cron + рендер + интеграция (SMTP / Slack webhook).
+**Что даёт:** проактивность — «топ за неделю», аномалии приходят сами в Slack/почту. Никто не открывает дашборд добровольно.
+
+**Это в основном бэк, фронту — только UI настроек.** От бэка:
+
+1. Cron-джоба: раз в неделю собирает summary + аномалии, рендерит, шлёт (SMTP / Slack webhook).
+2. CRUD-эндпоинт настроек подписки:
+```
+GET  /api/v2/digest/settings
+PUT  /api/v2/digest/settings
+```
+```yaml
+DigestSettings:
+  required: [enabled, channel, schedule]
+  properties:
+    enabled:  { type: boolean }
+    channel:  { type: string, enum: [EMAIL, SLACK] }
+    target:   { type: string, description: "email-адрес или Slack webhook/channel" }
+    schedule: { type: string, enum: [WEEKLY, DAILY] }
+    includeAnomalies: { type: boolean }
+```
+
+**Что построит фронт:** форма на странице Settings — вкл/выкл, канал, расписание, превью содержимого. Доставка/рендер целиком на бэке.
 
 ---
 
 ### B4. Цели / таргеты команды ⬜
 
-**Что даёт:** фокус и геймификация («команда: 200 коммитов/мес, прогресс 60%»).
-**Блокер:** хранение целей. MVP можно на localStorage (клиент), полноценно — бэк (общие на команду, история).
+**Что даёт:** фокус и геймификация — «команда: 200 коммитов/мес, прогресс 60%», прогресс-бары на дашборде.
+
+**MVP возможен на localStorage** (цели только в браузере, без шаринга). Полноценно — бэк (общие на команду, история выполнения):
+
+```
+GET  /api/v2/goals
+POST /api/v2/goals
+DELETE /api/v2/goals/{id}
+```
+```yaml
+Goal:
+  required: [id, metric, target, period]
+  properties:
+    id:     { $ref: Uuid }
+    title:  { type: string }
+    metric: { type: string, enum: [COMMITS, NON_MERGE_COMMITS, ADDED_LINES, TEST_LINES, CLOSED_CARDS] }
+    target: { type: integer, format: int64 }
+    period: { type: string, enum: [WEEK, MONTH, QUARTER] }
+    scope:  { type: string, enum: [TEAM, AUTHOR] }
+    authorEmail: { $ref: Email, nullable: true }  # для персональной цели
+```
+Прогресс фронт считает сам: текущее значение метрики за период / `target`.
+
+**Что построит фронт:** карточки целей с прогресс-барами (Dashboard / Settings), форма создания. Если без бэка — те же карточки, но цели в `useGoalsStore` (persist).
 
 ---
 
 ### B5. Push-алерты аномалий ⬜
 
-**Что даёт:** проактивные уведомления о проблемах (см. #6, но push, а не пассивные бейджи).
-**Блокер:** бэк — расписание (cron), правила, доставка. Фронт переиспользует эвристики из #6.
+**Что даёт:** проактивные уведомления о проблемах (фича #6, но push в Slack/почту, а не пассивные бейджи на экране).
+
+**Целиком бэк** (правила #6 уже реализованы на фронте — их можно перенести в домен):
+
+1. Cron сканирует daily, применяет правила (STALE / DECLINING / LOW_TESTS — пороги из #6).
+2. Доставка в канал (переиспользует инфраструктуру B3).
+3. Опционально — эндпоинт истории сработавших алертов:
+```
+GET /api/v2/alerts?from&to
+```
+```yaml
+Alert:
+  properties:
+    type:    { type: string, enum: [STALE, DECLINING, LOW_TESTS] }
+    email:   { $ref: Email }
+    triggeredAt: { $ref: DateTime }
+    details: { type: string }
+```
+
+**Что построит фронт:** лента сработавших алертов (если эндпоинт есть), настройки порогов выносятся в общий с B3 экран. Эвристики `detect-anomalies.ts` — готовый референс для бэк-реализации правил.
+
+---
+
+### Приоритет B-фич
+
+«OAS» — объём контрактной работы (новые схемы/эндпоинты), «Бэк» — сбор/агрегация/cron.
+
+| Фича | Польза | OAS | Бэк | Рекомендация |
+|---|---|---|---|---|
+| B1 Hourly heatmap | ▰▰ | ▰ (1 эндпоинт + `HourlyStats`) | ▰▰ (один GROUP BY) | **первой** — дёшево, данные уже в БД |
+| B4 Цели | ▰▰ | ▰▰ (CRUD + `Goal`) | ▰▰ | MVP на localStorage **без OAS/бэка** прямо сейчас |
+| B2 Ревью-метрики | ▰▰▰ | ▰▰ (эндпоинт + `ReviewStats`) | ▰▰▰ (новый адаптер сбора MR/PR) | высокая польза, но дорого — отдельный эпик |
+| B3 Дайджест | ▰▰▰ | ▰▰ (settings CRUD) | ▰▰▰ (cron + SMTP/Slack) | после B2 (переиспользует данные) |
+| B5 Push-алерты | ▰▰▰ | ▰ (опц. `GET /alerts`) | ▰▰▰ (cron + доставка B3) | вместе с B3 (общая инфраструктура доставки) |
+
+Самостоятельный фронт-задел без ожидания контракта: **B4 на localStorage**
+(цели в `useGoalsStore` с persist, как `useTeamMembersStore`) — позже мигрируется
+на бэк-эндпоинт без переписывания UI.
 
 ---
 
