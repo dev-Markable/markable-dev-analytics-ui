@@ -12,6 +12,7 @@ import { ActivitySummary } from '@/widgets/activity-summary';
 import { ActivityHeatmap } from '@/widgets/activity-heatmap';
 import { ReposChart } from '@/widgets/activity-repos';
 import { ContributorsList } from '@/widgets/activity-contributors';
+import { BusFactorCard } from '@/widgets/activity-bus-factor';
 import type { AuthorEnrichment } from '@/widgets/activity-contributors/lib/aggregate-contributors';
 
 export function ActivityPage() {
@@ -119,6 +120,10 @@ export function ActivityPage() {
             />
           </Col>
         </Row>
+      </PageSection>
+
+      <PageSection>
+        <BusFactorCard daily={daily} />
       </PageSection>
     </>
   );
