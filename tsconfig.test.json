@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "types": ["node", "vitest/importMeta"],
+    // В тестах деструктуризация массивов (`const [x] = arr`) идиоматична —
+    // строгий noUncheckedIndexedAccess только зашумляет ассерты.
+    "noUncheckedIndexedAccess": false
+  },
+  "include": ["src/**/*.test.ts", "src/shared/test/**/*.ts", "vitest.config.ts"]
+}

@@ -1,19 +1,18 @@
-export type CollectionRunStatus = 'RUNNING' | 'SUCCESS' | 'FAILED';
+import type { Schemas } from '@/shared/api/schema';
 
-export interface CollectionRun {
-  id: string;
-  startedAt: string;
-  finishedAt: string | null;
-  sinceDate: string;
-  untilDate: string | null;
-  status: CollectionRunStatus;
-  errorMessage: string | null;
-}
+/**
+ * Backend: shared.yaml#/components/schemas/CollectionRun
+ */
+export type CollectionRun = Schemas['CollectionRun'];
 
-export interface TriggerCollectionPayload {
-  since?: string | null;
-}
+export type CollectionRunStatus = CollectionRun['status'];
 
-export interface KaitenSyncResult {
-  synced: number;
-}
+/**
+ * Backend: shared.yaml#/components/schemas/CollectionRunRequest
+ */
+export type TriggerCollectionPayload = Schemas['CollectionRunRequest'];
+
+/**
+ * Backend: shared.yaml#/components/schemas/KaitenSyncResponse
+ */
+export type KaitenSyncResult = Schemas['KaitenSyncResponse'];

@@ -168,7 +168,90 @@ npm run build       # tsc -b && vite build → dist/
 npm run preview     # превью production-сборки
 npm run typecheck   # tsc -b --noEmit
 npm run lint        # eslint (нулевая толерантность к warning'ам)
+npm test            # vitest run (unit-тесты)
+npm run test:watch  # vitest в watch-режиме
+npm run test:cov    # vitest с coverage-отчётом
 ```
+
+---
+
+## Тесты
+
+Vitest (нативно с Vite). Покрыты **чистые функции** — агрегации и парсеры, где
+цена бага высока, а DOM не нужен. Тест-файлы `*.test.ts` co-located рядом с кодом.
+
+Фабрики тестовых данных — `src/shared/test/factories.ts` (`makeAuthor`, `makeCommit`,
+`makeCard`, `makeDaily`, `makeWeek`). В прод-бандл не попадают.
+
+Что покрыто:
+
+| Модуль | Что проверяется |
+|---|---|
+| `entities/commit/lib/task-id` | `extractCardId` (формат `<space>-<task>`, merge-сообщения, fallback), `stripTaskPrefix` |
+| `entities/dashboard/lib/select-sections` | дизъюнктность top/outsiders по категории, worst-first, лимиты |
+| `entities/dashboard/lib/aggregate` | суммирование totals, uniqueAuthors |
+| `entities/stats/lib/apply-team-filter` | пересчёт недельных totals под фильтр команды, регистронезависимость |
+| `widgets/profile-tasks-timeline/lib/group-commits` | матчинг коммит↔карточка, orphan-группа, пустые карточки, сортировка |
+| `widgets/activity-summary/lib/aggregate` | uniqueAuthors/repos/activeDays |
+| `widgets/profile-summary/lib/aggregate-cards` | разбивка карточек по closed × cardType |
+| `shared/lib/number/format` + `string/truncate` | форматтеры, эллипсис, инициалы |
+
+> **tsconfig:** `tsconfig.app.json` исключает тесты (в прод-build не идут),
+> `tsconfig.test.json` проверяет их отдельно с послаблением `noUncheckedIndexedAccess`
+> (деструктуризация массивов в ассертах идиоматична). `tsc -b` гоняет оба проекта.
+
+---
+
+## API-типы (`@devpulse-dev/api-types`)
+
+Типы запросов/ответов **не генерируются у нас** — фронт ставит готовый npm-пакет
+[`@devpulse-dev/api-types`](https://github.com/devpulse-dev/devpulse-oas/pkgs/npm/api-types) из GitHub Packages. Внутри — bundled `.d.ts` на весь `/api/v2` (единый `components` / `paths` / `operations`), собранный из OpenAPI-контрактов в `devpulse-oas`. Single source of truth — бэк implement'ит те же спеки, фронт импортит те же типы. Версия пакета в lockstep с Maven-контрактами (`1.x` ↔ контракты `1.x`).
+
+### Доступ к GitHub Packages
+
+`.npmrc` (коммитится, секрета внутри нет — токен берётся из env):
+
+```ini
+@devpulse-dev:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
+```
+
+GitHub Packages npm-registry требует токен **даже для публичного пакета** (в отличие от Maven). Перед `npm install`:
+
+```bash
+export GITHUB_TOKEN=ghp_xxx   # PAT с read:packages
+npm install
+```
+
+> Не добавляй глобальный `registry=` в `.npmrc` — иначе react/axios/… полезут в GitHub Packages и получат 404. Только scoped-строка.
+
+### Как использовать
+
+Все entity-типы (`AuthorActivity`, `KaitenCard`, `Commit`, `DashboardData`, …) — **алиасы на схемы из пакета**. Барелл `src/shared/api/schema.ts`:
+
+```ts
+import type { components } from '@devpulse-dev/api-types';
+export type Schemas = components['schemas'];
+```
+
+```ts
+// entities/user/model/types.ts
+import type { Schemas } from '@/shared/api/schema';
+
+export type AuthorActivity = Schemas['AuthorSummary'];
+export type ActivityScore = Schemas['ActivityScore'];
+```
+
+Domain-наименование сохраняем (`AuthorActivity` локально привычнее), но shape — точно как в OAS. Бамп версии пакета → `npm run typecheck` находит места которые надо адаптировать.
+
+### Бамп версии контрактов
+
+1. В `devpulse-oas` слит PR, опубликована новая версия `@devpulse-dev/api-types`.
+2. `npm install @devpulse-dev/api-types@latest` (или подними `^1.x` в package.json).
+3. `npm run typecheck` — TS подсветит места, где shape поехал.
+4. Поправить → закоммитить `package.json` + `package-lock.json` + app-код.
+
+`extractCardId` (`entities/commit/lib/task-id.ts`) остаётся ручным даже после перехода на типы — это defense-in-depth fallback на нестандартный формат сообщения коммита, не дубликат `taskNumber`.
 
 ---
 
@@ -181,6 +264,7 @@ GitHub Actions — [`.github/workflows/ci.yml`](.github/workflows/ci.yml). На 
 | Install | `npm ci` (с npm-кэшем GitHub Actions) |
 | Typecheck | `npm run typecheck` |
 | Lint | `npm run lint` (zero warnings) |
+| Test | `npm test` (vitest run) |
 | Build | `npm run build` |
 | Upload artifact | `dist/` на 7 дней (только для push в main/master) |
 

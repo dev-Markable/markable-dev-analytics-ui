@@ -1,12 +1,6 @@
-export interface Commit {
-  hash: string;
-  authorEmail: string;
-  commitDate: string;
-  merge: boolean;
-  addedLines: number;
-  deletedLines: number;
-  testAddedLines: number;
-  message: string;
-  taskNumber: string | null;
-  repo: string;
-}
+import type { Schemas } from '@/shared/api/schema';
+
+/**
+ * Backend: shared.yaml#/components/schemas/Commit
+ */
+export type Commit = Schemas['Commit'];

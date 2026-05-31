@@ -1,39 +1,17 @@
-import type { AuthorActivity } from '@/entities/user/model/types';
+import type { Schemas } from '@/shared/api/schema';
 
-export interface DailyStat {
-  id: number;
-  email: string;
-  date: string;
-  repo: string;
-  commits: number;
-  mergeCommits: number;
-  addedLines: number;
-  deletedLines: number;
-  testAddedLines: number;
-  lastUpdated: string;
-  userId: number | null;
-}
+/**
+ * Backend: shared.yaml#/components/schemas/DailyStats
+ * (наше внутреннее имя — DailyStat, без `s`)
+ */
+export type DailyStat = Schemas['DailyStats'];
 
-export interface WeeklyStat {
-  year: number;
-  week: number;
-  weekStart: string;
-  totalCommits: number;
-  totalMergeCommits: number;
-  totalAddedLines: number;
-  totalDeletedLines: number;
-  totalTestAddedLines: number;
-  authors: AuthorActivity[];
-}
+/**
+ * Backend: shared.yaml#/components/schemas/WeeklyStats
+ */
+export type WeeklyStat = Schemas['WeeklyStats'];
 
-export interface PeriodSummary {
-  from: string;
-  to: string;
-  totalCommits: number;
-  totalMergeCommits: number;
-  totalAddedLines: number;
-  totalDeletedLines: number;
-  totalTestAddedLines: number;
-  uniqueAuthors: number;
-  topAuthors: AuthorActivity[];
-}
+/**
+ * Backend: shared.yaml#/components/schemas/PeriodSummary
+ */
+export type PeriodSummary = Schemas['PeriodSummary'];
