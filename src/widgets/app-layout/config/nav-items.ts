@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { Activity, BarChart3, CalendarDays, LayoutGrid, RefreshCcw, Settings } from 'lucide-react';
+import { Activity, BarChart3, CalendarDays, GitCompare, LayoutGrid, RefreshCcw, Settings } from 'lucide-react';
 import { ROUTES } from '@/app/router/paths';
 
 export interface NavItem {
@@ -36,6 +36,13 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: 'Активность',
     icon: Activity,
     path: ROUTES.activity,
+    group: 'primary',
+  },
+  {
+    key: 'compare',
+    label: 'Сравнение',
+    icon: GitCompare,
+    path: ROUTES.compare,
     group: 'primary',
   },
   {
