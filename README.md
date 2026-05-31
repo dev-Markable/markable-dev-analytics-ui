@@ -168,7 +168,37 @@ npm run build       # tsc -b && vite build → dist/
 npm run preview     # превью production-сборки
 npm run typecheck   # tsc -b --noEmit
 npm run lint        # eslint (нулевая толерантность к warning'ам)
+npm test            # vitest run (unit-тесты)
+npm run test:watch  # vitest в watch-режиме
+npm run test:cov    # vitest с coverage-отчётом
 ```
+
+---
+
+## Тесты
+
+Vitest (нативно с Vite). Покрыты **чистые функции** — агрегации и парсеры, где
+цена бага высока, а DOM не нужен. Тест-файлы `*.test.ts` co-located рядом с кодом.
+
+Фабрики тестовых данных — `src/shared/test/factories.ts` (`makeAuthor`, `makeCommit`,
+`makeCard`, `makeDaily`, `makeWeek`). В прод-бандл не попадают.
+
+Что покрыто:
+
+| Модуль | Что проверяется |
+|---|---|
+| `entities/commit/lib/task-id` | `extractCardId` (формат `<space>-<task>`, merge-сообщения, fallback), `stripTaskPrefix` |
+| `entities/dashboard/lib/select-sections` | дизъюнктность top/outsiders по категории, worst-first, лимиты |
+| `entities/dashboard/lib/aggregate` | суммирование totals, uniqueAuthors |
+| `entities/stats/lib/apply-team-filter` | пересчёт недельных totals под фильтр команды, регистронезависимость |
+| `widgets/profile-tasks-timeline/lib/group-commits` | матчинг коммит↔карточка, orphan-группа, пустые карточки, сортировка |
+| `widgets/activity-summary/lib/aggregate` | uniqueAuthors/repos/activeDays |
+| `widgets/profile-summary/lib/aggregate-cards` | разбивка карточек по closed × cardType |
+| `shared/lib/number/format` + `string/truncate` | форматтеры, эллипсис, инициалы |
+
+> **tsconfig:** `tsconfig.app.json` исключает тесты (в прод-build не идут),
+> `tsconfig.test.json` проверяет их отдельно с послаблением `noUncheckedIndexedAccess`
+> (деструктуризация массивов в ассертах идиоматична). `tsc -b` гоняет оба проекта.
 
 ---
 
@@ -234,6 +264,7 @@ GitHub Actions — [`.github/workflows/ci.yml`](.github/workflows/ci.yml). На 
 | Install | `npm ci` (с npm-кэшем GitHub Actions) |
 | Typecheck | `npm run typecheck` |
 | Lint | `npm run lint` (zero warnings) |
+| Test | `npm test` (vitest run) |
 | Build | `npm run build` |
 | Upload artifact | `dist/` на 7 дней (только для push в main/master) |
 
