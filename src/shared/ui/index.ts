@@ -9,3 +9,4 @@ export { RetryButton } from './RetryButton';
 export { SkeletonTable } from './SkeletonTable';
 export { DataTable, type DataTableProps } from './DataTable';
 export { ExportButton, type ExportButtonProps } from './ExportButton';
+export { Sparkline } from './Sparkline';

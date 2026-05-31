@@ -1676,3 +1676,13 @@ body {
   top: 0;
   right: 0;
 }
+
+/* ──────────────────────────────────────────────────────────── */
+/*  MetricCard sparkline                                       */
+/* ──────────────────────────────────────────────────────────── */
+
+.metric-card__spark {
+  margin-top: 8px;
+  margin-inline: -4px;
+  margin-bottom: -6px;
+}
