@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { useThemeMode } from '@/features/theme-switch';
 import { AntdProvider } from './AntdProvider';
+import { FilterUrlSync } from './FilterUrlSync';
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -17,6 +18,7 @@ export function AppProviders({ children }: AppProvidersProps) {
           v7_relativeSplatPath: true,
         }}
       >
+        <FilterUrlSync />
         {children}
       </BrowserRouter>
     </AntdProvider>
