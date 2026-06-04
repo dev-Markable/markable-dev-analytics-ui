@@ -7,11 +7,13 @@ import { PageHeader, PageSection, ErrorState, LoadingState } from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
 import { useProfileStore, userDisplayName } from '@/entities/user';
+import { useReviewsStore } from '@/entities/stats';
 import { formatRange } from '@/shared/lib';
 import { ROUTES } from '@/app/router/paths';
 import { ProfileHeader } from '@/widgets/profile-header';
 import { ProfileSummary } from '@/widgets/profile-summary';
 import { ProfileActivity } from '@/widgets/profile-activity';
+import { ProfileReviews } from '@/widgets/profile-reviews';
 import { TasksTimeline } from '@/widgets/profile-tasks-timeline';
 
 export function ProfilePage() {
@@ -23,6 +25,12 @@ export function ProfilePage() {
   const state = useProfileStore(useShallow((s) => s.state));
   const fetchProfile = useProfileStore((s) => s.fetch);
 
+  // Ревью-метрики (вариант A): тянем командный /stats/reviews, виджет находит
+  // строку автора и сравнивает со средним. TTL-кэш стора → если юзер пришёл
+  // с Activity за тот же период, повторного запроса нет.
+  const reviewsState = useReviewsStore(useShallow((s) => s.state));
+  const fetchReviews = useReviewsStore((s) => s.fetch);
+
   const profile = state.data;
   const isFreshData = profile?.user.email === email;
 
@@ -33,7 +41,8 @@ export function ProfilePage() {
   useEffect(() => {
     if (!email) return;
     void fetchProfile(email, { from: range.from, to: range.to });
-  }, [email, range.from, range.to, fetchProfile]);
+    void fetchReviews({ from: range.from, to: range.to });
+  }, [email, range.from, range.to, fetchProfile, fetchReviews]);
 
   useApiErrorNotification(state.error, 'Не удалось загрузить профиль');
 
@@ -122,6 +131,10 @@ export function ProfilePage() {
 
       <PageSection>
         <ProfileActivity commits={profile.commits} range={range} />
+      </PageSection>
+
+      <PageSection>
+        <ProfileReviews state={reviewsState} email={profile.user.email} />
       </PageSection>
 
       <PageSection>

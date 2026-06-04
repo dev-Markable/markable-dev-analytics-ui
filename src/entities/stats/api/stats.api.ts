@@ -1,5 +1,11 @@
 import { apiClient } from '@/shared/api';
-import type { DailyStat, HourlyStats, PeriodSummary, WeeklyStat } from '../model/types';
+import type {
+  DailyStat,
+  HourlyStats,
+  PeriodSummary,
+  ReviewStats,
+  WeeklyStat,
+} from '../model/types';
 
 export interface PeriodQuery {
   from: string;
@@ -28,5 +34,10 @@ export async function getDaily(query: PeriodQuery): Promise<DailyStat[]> {
 
 export async function getHourly(query: HourlyQuery): Promise<HourlyStats> {
   const { data } = await apiClient.get<HourlyStats>('/stats/hourly', { params: query });
+  return data;
+}
+
+export async function getReviews(query: PeriodQuery): Promise<ReviewStats> {
+  const { data } = await apiClient.get<ReviewStats>('/stats/reviews', { params: query });
   return data;
 }

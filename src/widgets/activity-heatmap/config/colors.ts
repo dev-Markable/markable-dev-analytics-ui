@@ -12,8 +12,10 @@ export const COLOR_SCALE: readonly string[] = [
 
 export const OUT_OF_RANGE_COLOR = 'transparent';
 
-export const CELL_SIZE = 13;
+export const CELL_SIZE = 16;
 export const CELL_GAP = 3;
+/** Ширина колонки недели = ячейка + зазор. Шаг для подписи месяца. */
+export const CELL_STEP = CELL_SIZE + CELL_GAP;
 
 /**
  * Маппит количество коммитов в индекс цветовой шкалы (0..4).

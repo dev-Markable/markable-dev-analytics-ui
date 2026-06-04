@@ -23,3 +23,10 @@ export type PeriodSummary = Schemas['PeriodSummary'];
  */
 export type HourlyStats = Schemas['HourlyStats'];
 export type HourlyCell = Schemas['HourlyCell'];
+
+/**
+ * Ревью-метрики (B2). Собираются из GitLab MR (approvals + notes).
+ * Backend: shared.yaml#/components/schemas/ReviewStats
+ */
+export type ReviewStats = Schemas['ReviewStats'];
+export type ReviewAuthor = Schemas['ReviewAuthor'];
