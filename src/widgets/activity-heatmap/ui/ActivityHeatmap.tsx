@@ -4,7 +4,7 @@ import { CalendarRange } from 'lucide-react';
 import type { DailyStat } from '@/entities/stats';
 import { EmptyState } from '@/shared/ui';
 import type { DateRange } from '@/shared/lib';
-import { CELL_GAP, CELL_SIZE, COLOR_SCALE } from '../config/colors';
+import { CELL_GAP, CELL_SIZE, CELL_STEP, COLOR_SCALE } from '../config/colors';
 import { buildHeatmapGrid } from '../lib/build-grid';
 import { HeatmapCell } from './HeatmapCell';
 
@@ -45,12 +45,17 @@ export function ActivityHeatmap({ daily, range }: ActivityHeatmapProps) {
         ) : (
           <div className="heatmap-wrap">
             <div className="heatmap-scroll">
-              <div className="heatmap-months">
+              <div
+                className="heatmap-months"
+                style={{ width: grid.columns * CELL_STEP }}
+              >
                 {grid.monthMarkers.map((m) => (
                   <span
                     key={`${m.column}-${m.label}`}
                     className="heatmap-months__label"
-                    style={{ gridColumn: m.column + 1 }}
+                    // Абсолютная привязка к колонке начала месяца: текст растёт
+                    // вправо и не зависит от ширины grid-ячейки (label шире её).
+                    style={{ left: m.column * CELL_STEP }}
                   >
                     {m.label}
                   </span>

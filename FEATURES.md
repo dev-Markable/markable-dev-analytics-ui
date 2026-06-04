@@ -23,7 +23,7 @@
 | 8 | Lazy route chunks | ▰ | ▰ | ✅ | — |
 | 9 | Кэш навигаций (`isFresh`) | ▰ | ▰ | ✅ | — |
 | B1 | Hourly heatmap (полноценный) | ▰▰ | ▰▰ | ✅ | да |
-| B2 | Ревью-метрики | ▰▰▰ | ▰▰▰ | ⬜ | да |
+| B2 | Ревью-метрики (+комменты) | ▰▰▰ | ▰▰▰ | ✅ | да |
 | B3 | Email / Slack дайджест | ▰▰▰ | ▰▰▰ | ⬜ | да |
 | B4 | Цели / таргеты команды | ▰▰ | ▰▰ | ⬜ | да |
 | B5 | Push-алерты аномалий | ▰▰▰ | ▰▰▰ | ⬜ | да |
@@ -217,11 +217,22 @@ HourlyStats:
 
 ---
 
-### B2. Ревью-метрики ⬜
+### B2. Ревью-метрики ✅
 
-**Что даёт:** кто тащит ревью, время до merge, баланс «пишу / ревьюю». Сильнейший сигнал здоровья команды — обычно невидимый.
+**Готово** (контракт `@devpulse-dev/api-types@1.4.0`, бэк, фронт):
 
-**Нужно от бэка** — сбор данных о ревью из Git-провайдера (GitLab MR / GitHub PR API) + эндпоинт:
+- [x] `getReviews({from,to})` → `ReviewStats`, стор `useReviewsStore` (TTL-кэш)
+- [x] `ReviewsCard` на Activity — таблица: Approve / Комментов / Получено / Ср. до merge, сортировка по вовлечённости, tooltip на колонках
+- [x] team-filter применяется (есть авторская разбивка), клик по ревьюеру → профиль
+- [x] `formatHours` (часы < 24 → «N ч», иначе «N.N дн»), `engagementOf`, `sortByEngagement`
+- [x] **в профиле** (вариант A — без доп. контракта): секция «Ревью» с метриками автора + сравнением со средним по команде (`выше/на уровне/ниже среднего`), ранг по вовлечённости. Данные из того же `/stats/reviews` (TTL-кэш переиспользует загрузку с Activity)
+- [x] +13 юнит-тестов (Activity + профильное сравнение)
+
+**Реализовано против контракта:**
+
+**Что даёт:** кто тащит ревью, время до merge, баланс «пишу / ревьюю» + **объём комментариев**. Сильнейший сигнал здоровья команды — обычно невидимый.
+
+**Бэк готов** (`@devpulse-dev/api-types@1.4.0`): эндпоинт `GET /api/v2/stats/reviews?from&to`, сбор из **GitLab** (MR + approvals + notes) в новом модуле `adapter-reviews` → таблицы `merge_request`/`mr_review`, фаза в `POST /collection/runs`.
 
 ```
 GET /api/v2/stats/reviews?from&to
@@ -234,20 +245,26 @@ ReviewStats:
       type: array
       items:
         type: object
-        required: [email, reviewsGiven, reviewsReceived, avgTimeToMergeHours]
+        required: [email, reviewsGiven, commentsGiven, reviewsReceived, avgTimeToMergeHours]
         properties:
           email: { $ref: Email }
           displayName: { type: string, nullable: true }
           avatarUrl:   { type: string, nullable: true }
-          reviewsGiven:    { type: integer }   # сколько MR отревьюил
-          reviewsReceived: { type: integer }   # сколько его MR отревьюили
+          reviewsGiven:    { type: integer }   # distinct MR, где нажал Approve
+          commentsGiven:   { type: integer }   # объём ревью-комментов к чужим MR (не distinct)
+          reviewsReceived: { type: integer }   # сколько его MR отревьюили (approve/коммент другого)
           avgTimeToMergeHours: { type: number, format: double }
-          mergedMrCount: { type: integer }
+          mergedMrCount: { type: integer }     # опционально
 ```
 
-**Почему именно бэк:** сейчас собираются только коммиты из git. Ревью живут в API провайдера (MR/PR, approvals, timestamps) — нужен новый адаптер сбора + таблица. Самая дорогая из B-фич по бэку.
+> **Расширение vs первоначальный план:** `reviewsGiven` сузили до **approve** (формальный акт ревью)
+> и добавили отдельный **`commentsGiven`** — объём ревью-комментариев. На GitLab нет единого
+> review-объекта, поэтому участие собирается из approvals + notes; саморевью и системные заметки
+> отсеиваются на сборе. «Вовлечённость» фронт выводит как `reviewsGiven>0 || commentsGiven>0`.
 
-**Что построит фронт:** виджет на Activity / отдельная вкладка — таблица «отревьюил / получил ревью / ср. время до merge», bar-chart баланса, бейдж «ревьюит много / мало».
+**Что построит фронт:** виджет на Activity / отдельная вкладка — таблица
+«отревьюил (approve) / **комментов** / получил ревью / ср. время до merge», bar-chart баланса
+given-vs-received, бейдж «ревьюит много / мало» (по `reviewsGiven + commentsGiven`).
 
 ---
 

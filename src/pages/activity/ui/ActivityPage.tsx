@@ -4,7 +4,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { PageHeader, PageSection, ErrorState, LoadingState } from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
-import { useDailyStore, useHourlyStore } from '@/entities/stats';
+import { useDailyStore, useHourlyStore, useReviewsStore } from '@/entities/stats';
 import { useDashboardStore } from '@/entities/dashboard';
 import { useTeamFilterStore, useTeamMembersStore } from '@/features/team-filter';
 import { formatRange, rangeDays } from '@/shared/lib';
@@ -14,6 +14,7 @@ import { HourlyHeatmap } from '@/widgets/activity-hourly';
 import { ReposChart } from '@/widgets/activity-repos';
 import { ContributorsList } from '@/widgets/activity-contributors';
 import { BusFactorCard } from '@/widgets/activity-bus-factor';
+import { ReviewsCard } from '@/widgets/activity-reviews';
 import type { AuthorEnrichment } from '@/widgets/activity-contributors/lib/aggregate-contributors';
 
 export function ActivityPage() {
@@ -33,6 +34,10 @@ export function ActivityPage() {
   const hourlyData = useHourlyStore((s) => s.state.data);
   const fetchHourly = useHourlyStore((s) => s.fetch);
 
+  // Ревью-метрики (B2) — есть авторская разбивка, team-filter применяется внутри виджета.
+  const reviewsState = useReviewsStore(useShallow((s) => s.state));
+  const fetchReviews = useReviewsStore((s) => s.fetch);
+
   const teamEnabled = useTeamFilterStore((s) => s.enabled);
   const members = useTeamMembersStore((s) => s.members);
 
@@ -40,7 +45,8 @@ export function ActivityPage() {
     void fetchDaily({ from: range.from, to: range.to });
     void fetchDashboard({ from: range.from, to: range.to });
     void fetchHourly({ from: range.from, to: range.to });
-  }, [range.from, range.to, fetchDaily, fetchDashboard, fetchHourly]);
+    void fetchReviews({ from: range.from, to: range.to });
+  }, [range.from, range.to, fetchDaily, fetchDashboard, fetchHourly, fetchReviews]);
 
   useApiErrorNotification(dailyState.error, 'Не удалось загрузить активность');
 
@@ -111,19 +117,22 @@ export function ActivityPage() {
       </PageSection>
 
       <PageSection>
-        <ActivityHeatmap daily={daily} range={range} />
-      </PageSection>
-
-      <PageSection>
-        <HourlyHeatmap data={hourlyData} title="Активность по часам · команда" />
+        <Row gutter={[16, 16]} align="stretch">
+          <Col xs={24} xl={12}>
+            <ActivityHeatmap daily={daily} range={range} />
+          </Col>
+          <Col xs={24} xl={12}>
+            <HourlyHeatmap data={hourlyData} title="Активность по часам · команда" />
+          </Col>
+        </Row>
       </PageSection>
 
       <PageSection>
         <Row gutter={[16, 16]}>
-          <Col xs={24} xl={12}>
+          <Col xs={24} xl={9}>
             <ReposChart daily={daily} />
           </Col>
-          <Col xs={24} xl={12}>
+          <Col xs={24} xl={15}>
             <ContributorsList
               daily={daily}
               range={range}
@@ -135,6 +144,10 @@ export function ActivityPage() {
 
       <PageSection>
         <BusFactorCard daily={daily} />
+      </PageSection>
+
+      <PageSection>
+        <ReviewsCard state={reviewsState} range={range} onRetry={retry} />
       </PageSection>
     </>
   );

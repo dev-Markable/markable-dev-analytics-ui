@@ -1226,20 +1226,20 @@ body {
 }
 
 .heatmap-months {
-  display: grid;
-  gap: 3px;
+  position: relative;
   margin-left: 24px;
   margin-bottom: 4px;
+  height: 14px;
   font-size: 10px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ant-color-text-tertiary);
   font-variant-numeric: tabular-nums;
-  height: 14px;
-  align-items: center;
 }
 
 .heatmap-months__label {
+  position: absolute;
+  top: 0;
   white-space: nowrap;
 }
 
@@ -1251,7 +1251,7 @@ body {
 
 .heatmap-weekdays {
   display: grid;
-  grid-template-rows: repeat(7, 13px);
+  grid-template-rows: repeat(7, 16px);
   gap: 3px;
   width: 16px;
   font-size: 10px;
@@ -1261,7 +1261,7 @@ body {
 .heatmap-weekdays__label {
   display: flex;
   align-items: center;
-  height: 13px;
+  height: 16px;
 }
 
 .heatmap {
@@ -1911,4 +1911,83 @@ body {
 .hourly__cell:hover {
   transform: scale(1.2);
   box-shadow: 0 0 0 1px var(--ant-color-border);
+}
+
+/* ──────────────────────────────────────────────────────────── */
+/*  Profile reviews                                            */
+/* ──────────────────────────────────────────────────────────── */
+
+.profile-reviews {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.profile-reviews__metric {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 10px;
+  background: var(--ant-color-bg-layout);
+}
+
+.profile-reviews__metric-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.profile-reviews__metric-value {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ant-color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.profile-reviews__metric-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.profile-reviews__metric-hint {
+  font-size: 12px;
+}
+
+.standing-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.standing-badge__avg {
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
+.standing-badge--up {
+  color: var(--ant-color-success);
+  background: var(--ant-color-success-bg);
+}
+.standing-badge--down {
+  color: var(--ant-color-error);
+  background: var(--ant-color-error-bg);
+}
+.standing-badge--flat {
+  color: var(--ant-color-text-secondary);
+  background: var(--ant-color-fill-tertiary);
+}
+
+@media (max-width: 768px) {
+  .profile-reviews {
+    grid-template-columns: 1fr;
+  }
 }
