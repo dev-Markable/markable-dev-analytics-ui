@@ -16,6 +16,9 @@ const ActivityPage = lazy(() =>
 const ComparePage = lazy(() =>
   import('@/pages/compare').then((m) => ({ default: m.ComparePage })),
 );
+const PerformanceReviewPage = lazy(() =>
+  import('@/pages/performance-review').then((m) => ({ default: m.PerformanceReviewPage })),
+);
 const ProfilePage = lazy(() =>
   import('@/pages/profile').then((m) => ({ default: m.ProfilePage })),
 );
@@ -37,6 +40,7 @@ export function AppRouter() {
         <Route path={ROUTES.weekly} element={<WeeklyPage />} />
         <Route path={ROUTES.activity} element={<ActivityPage />} />
         <Route path={ROUTES.compare} element={<ComparePage />} />
+        <Route path={ROUTES.performanceReview} element={<PerformanceReviewPage />} />
         <Route path={ROUTES.profileMask} element={<ProfilePage />} />
         <Route path={ROUTES.collection} element={<CollectionPage />} />
         <Route path={ROUTES.settings} element={<SettingsPage />} />

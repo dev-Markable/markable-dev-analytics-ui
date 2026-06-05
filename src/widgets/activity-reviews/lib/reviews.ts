@@ -10,12 +10,5 @@ export function sortByEngagement(authors: readonly ReviewAuthor[]): ReviewAuthor
   );
 }
 
-/**
- * Человекочитаемое время до merge. < 24ч → «N ч», иначе → «N.N дн».
- * 0 / отрицательное (нет данных) → «—».
- */
-export function formatHours(hours: number): string {
-  if (!Number.isFinite(hours) || hours <= 0) return '—';
-  if (hours < 24) return `${Math.round(hours)} ч`;
-  return `${(hours / 24).toFixed(1)} дн`;
-}
+// formatHours переехал в shared/lib/number — реэкспорт для обратной совместимости.
+export { formatHours } from '@/shared/lib';

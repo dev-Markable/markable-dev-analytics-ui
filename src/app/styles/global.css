@@ -1991,3 +1991,412 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   Performance Review
+   ============================================================ */
+
+/* --- Controls (picker bar) --- */
+.perf-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 20px;
+}
+
+.perf-controls__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.perf-controls__field--person {
+  flex: 1 1 280px;
+  min-width: 240px;
+}
+
+.perf-controls__field--compare {
+  align-items: flex-start;
+}
+
+.perf-controls__label {
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* --- Subject header --- */
+.perf-subject.ant-card {
+  border: 1px solid var(--ant-color-border);
+  border-radius: 12px;
+  background: var(--ant-color-bg-container);
+  box-shadow:
+    0 1px 2px rgba(15, 17, 21, 0.04),
+    0 4px 12px rgba(15, 17, 21, 0.05);
+}
+
+[data-theme='dark'] .perf-subject.ant-card {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.perf-subject .ant-card-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px;
+}
+
+.perf-subject__main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.perf-subject__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.perf-subject__name.ant-typography {
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.perf-subject__sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.perf-subject__period {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+}
+
+.perf-subject__period-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.perf-subject__compare {
+  font-size: 12px;
+}
+
+.perf-subject__profile-link {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* --- KPI grid --- */
+.perf-kpi-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.perf-kpi-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.perf-kpi-group__title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.perf-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.perf-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid var(--ant-color-border);
+  border-radius: 12px;
+  background: var(--ant-color-bg-container);
+  box-shadow: 0 1px 2px rgba(15, 17, 21, 0.04);
+}
+
+.perf-kpi__label {
+  font-size: 12px;
+  color: var(--ant-color-text-secondary);
+}
+
+.perf-kpi__value {
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.perf-kpi__foot {
+  font-size: 12px;
+  min-height: 18px;
+}
+
+.perf-kpi__delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.perf-kpi__delta--up {
+  color: var(--ant-color-success);
+}
+
+.perf-kpi__delta--down {
+  color: var(--ant-color-error);
+}
+
+.perf-kpi__delta-pct {
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.perf-kpi__snapshot,
+.perf-kpi__flat {
+  color: var(--ant-color-text-quaternary);
+}
+
+/* --- Task breakdown --- */
+.task-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.task-breakdown__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.task-breakdown__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.task-breakdown__total {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.task-breakdown__bar {
+  display: flex;
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--ant-color-fill-tertiary);
+}
+
+.task-breakdown__seg {
+  height: 100%;
+}
+
+.task-breakdown__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--ant-color-text-secondary);
+}
+
+.task-breakdown__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.task-breakdown__legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+/* --- Highlights --- */
+.perf-highlights {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.perf-highlights__link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--ant-color-border);
+  border-radius: 10px;
+  color: inherit;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.perf-highlights__link:hover {
+  background: var(--ant-color-fill-quaternary);
+  border-color: var(--ant-color-primary-border);
+}
+
+.perf-highlights__icon {
+  display: inline-flex;
+  color: var(--ant-color-text-secondary);
+}
+
+.perf-highlights__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.perf-highlights__title {
+  font-weight: 500;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.perf-highlights__subtitle {
+  font-size: 12px;
+}
+
+.perf-highlights__tag {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* --- Print / PDF --- */
+@media print {
+  .app-sider,
+  .app-topbar,
+  .perf-controls,
+  .perf-subject__profile-link {
+    display: none !important;
+  }
+
+  .perf-kpi,
+  .perf-subject.ant-card,
+  .leaderboard-card.ant-card {
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  .perf-review {
+    break-inside: avoid;
+  }
+}
+
+@media (max-width: 768px) {
+  .perf-subject__period {
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
+/* ============================================================
+   Team management (Settings)
+   ============================================================ */
+.team-management__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.team-management__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.team-assign-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ant-color-split);
+}
+
+.team-assign-row:last-child {
+  border-bottom: none;
+}
+
+.team-assign-row__user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.team-assign-row__meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.team-assign-row__name {
+  font-weight: 500;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-assign-row__email {
+  font-size: 12px;
+  color: var(--ant-color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-assign-row__control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .team-assign-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .team-assign-row__control {
+    justify-content: flex-end;
+  }
+}

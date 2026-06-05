@@ -13,6 +13,9 @@ export { ActivityBadge } from './ui/ActivityBadge';
 export {
   getProfile,
   getUserCommits,
+  getUsers,
+  setUserTeam,
   type ProfilePeriod,
 } from './api/user.api';
 export { useProfileStore } from './model/profile.store';
+export { useUsersStore } from './model/users.store';

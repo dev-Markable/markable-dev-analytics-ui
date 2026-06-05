@@ -42,3 +42,13 @@ export const formatPctDelta = (pct: number): string => {
   const sign = rounded > 0 ? '+' : rounded < 0 ? '−' : '';
   return `${sign}${Math.abs(rounded)}%`;
 };
+
+/**
+ * Человекочитаемое время в часах. < 24ч → «N ч», иначе → «N.N дн».
+ * 0 / отрицательное (нет данных) → «—».
+ */
+export const formatHours = (hours: number): string => {
+  if (!Number.isFinite(hours) || hours <= 0) return '—';
+  if (hours < 24) return `${Math.round(hours)} ч`;
+  return `${(hours / 24).toFixed(1)} дн`;
+};

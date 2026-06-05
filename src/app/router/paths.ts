@@ -3,6 +3,7 @@ export const ROUTES = {
   weekly: '/weekly',
   activity: '/activity',
   compare: '/compare',
+  performanceReview: '/performance-review',
   profile: (email = ':email') => `/users/${email}`,
   profileMask: '/users/:email',
   collection: '/collection',

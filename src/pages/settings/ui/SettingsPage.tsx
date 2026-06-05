@@ -2,6 +2,7 @@ import { PageHeader, PageSection } from '@/shared/ui';
 import { useDocumentTitle } from '@/shared/hooks';
 import { AppearanceCard } from '@/widgets/settings-appearance';
 import { FiltersCard } from '@/widgets/settings-filters';
+import { TeamManagementCard } from '@/widgets/settings-teams';
 import { SystemCard } from '@/widgets/settings-system';
 
 export function SettingsPage() {
@@ -17,6 +18,10 @@ export function SettingsPage() {
 
       <PageSection>
         <FiltersCard />
+      </PageSection>
+
+      <PageSection>
+        <TeamManagementCard />
       </PageSection>
 
       <PageSection>
