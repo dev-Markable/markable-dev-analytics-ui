@@ -38,9 +38,13 @@ export function FilterUrlSync() {
       if (isValidRange({ from, to })) setCustom({ from, to });
     }
 
+    // Скоп команды читаем из URL ТОЛЬКО когда параметр явно указан. Иначе
+    // переходы по ссылкам без ?team= (например, ссылки на профиль из
+    // карточек авторов) сбрасывали бы выбранную команду — а persistent
+    // store-значение должно пережить такие переходы. Если параметра нет,
+    // эффект «store → URL» допишет его сам.
     const team = searchParams.get('team');
-    const nextScope = team && team.length > 0 ? team : ALL_TEAMS;
-    if (nextScope !== scope) setScope(nextScope);
+    if (team && team.length > 0 && team !== scope) setScope(team);
     // Намеренно зависим только от searchParams: реагируем на изменение URL,
     // а не на изменение стора (обратное направление — во втором эффекте).
     // eslint-disable-next-line react-hooks/exhaustive-deps
