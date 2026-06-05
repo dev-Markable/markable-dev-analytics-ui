@@ -3,7 +3,7 @@ import { Card, Typography } from 'antd';
 import { Link } from 'react-router-dom';
 import { Trophy } from 'lucide-react';
 import type { DailyStat } from '@/entities/stats';
-import { useTeamFilter } from '@/features/team-filter';
+import { useTeamScopeFilter } from '@/features/team-scope';
 import { UserAvatar, userDisplayName } from '@/entities/user';
 import { buildProfilePath } from '@/app/router/paths';
 import { EmptyState } from '@/shared/ui';
@@ -98,7 +98,7 @@ export function ContributorsList({
     () => detectAnomaliesByAuthor(daily, range),
     [daily, range],
   );
-  const teamFiltered = useTeamFilter<ContributorActivity>(all, (c) => c.email);
+  const teamFiltered = useTeamScopeFilter<ContributorActivity>(all, (c) => c.team);
   const items = teamFiltered.slice(0, topN);
 
   const EMPTY: readonly Anomaly[] = [];

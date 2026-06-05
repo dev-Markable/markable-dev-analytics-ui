@@ -6,7 +6,7 @@ import { PageHeader, PageSection, EmptyState, ErrorState, ExportButton, LoadingS
 import { useDocumentTitle, useApiErrorNotification, useNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
 import { applyTeamFilterToWeekly, useWeeklyStore } from '@/entities/stats';
-import { useTeamFilterStore, useTeamMembersStore } from '@/features/team-filter';
+import { ALL_TEAMS, matchesScope, useTeamScope } from '@/features/team-scope';
 import type { AsyncState } from '@/shared/api';
 import type { WeeklyStat } from '@/entities/stats';
 import { downloadSvgAsPng, formatRange } from '@/shared/lib';
@@ -20,8 +20,8 @@ export function WeeklyPage() {
   const state = useWeeklyStore(useShallow((s) => s.state));
   const fetchWeekly = useWeeklyStore((s) => s.fetch);
 
-  const teamEnabled = useTeamFilterStore((s) => s.enabled);
-  const members = useTeamMembersStore((s) => s.members);
+  const scope = useTeamScope();
+  const teamEnabled = scope !== ALL_TEAMS;
   const notification = useNotification();
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -37,17 +37,17 @@ export function WeeklyPage() {
   );
 
   /**
-   * Если team-filter включён, пересчитываем per-week totals из
-   * отфильтрованных авторов. WeeklyChart и WeeklyTable получают
+   * Если выбран конкретный скоп команды, пересчитываем per-week totals
+   * из отфильтрованных авторов. WeeklyChart и WeeklyTable получают
    * уже консистентные с фильтром числа.
    */
   const filteredState = useMemo<AsyncState<WeeklyStat[]>>(() => {
     if (!teamEnabled || !state.data) return state;
-    const memberSet = new Set(members.map((m) => m.toLowerCase()));
-    const isMember = (email: string): boolean => memberSet.has(email.toLowerCase());
-    const filtered = applyTeamFilterToWeekly(state.data, isMember);
+    const filtered = applyTeamFilterToWeekly(state.data, (a) =>
+      matchesScope(a.team, scope),
+    );
     return { ...state, data: filtered };
-  }, [state, teamEnabled, members]);
+  }, [state, teamEnabled, scope]);
 
   const weeks = filteredState.data ?? [];
 
@@ -67,9 +67,9 @@ export function WeeklyPage() {
 
   const subtitle = useMemo(() => {
     const note = weeks.length > 0 ? ` · ${weeks.length} недель` : '';
-    const teamNote = teamEnabled ? ' · только команда' : '';
+    const teamNote = teamEnabled ? ` · команда «${scope}»` : '';
     return `${formatRange(range.from, range.to)}${note}${teamNote}`;
-  }, [range.from, range.to, weeks.length, teamEnabled]);
+  }, [range.from, range.to, weeks.length, teamEnabled, scope]);
 
   return (
     <>
@@ -104,7 +104,7 @@ export function WeeklyPage() {
                 title="Нет данных"
                 description={
                   teamEnabled
-                    ? 'В команде нет активности в выбранном периоде.'
+                    ? `В команде «${scope}» нет активности в выбранном периоде.`
                     : 'Выберите период с хотя бы одной активной неделей.'
                 }
               />

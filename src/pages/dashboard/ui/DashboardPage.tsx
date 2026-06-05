@@ -5,7 +5,7 @@ import { TrendingDown, TrendingUp } from 'lucide-react';
 import { PageHeader, PageSection } from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
-import { useTeamFilter, useTeamFilterStore } from '@/features/team-filter';
+import { ALL_TEAMS, useTeamScope, useTeamScopeFilter } from '@/features/team-scope';
 import {
   aggregateAuthors,
   selectDashboardSections,
@@ -22,7 +22,8 @@ export function DashboardPage() {
   useDocumentTitle('Дашборд');
 
   const range = useDateRange();
-  const teamEnabled = useTeamFilterStore((s) => s.enabled);
+  const scope = useTeamScope();
+  const teamEnabled = scope !== ALL_TEAMS;
 
   const { state, prev } = useDashboardStore(
     useShallow((s) => ({ state: s.state, prev: s.prev })),
@@ -39,12 +40,12 @@ export function DashboardPage() {
   /**
    * Фильтр команды применяется ДО агрегации. Все производные —
    * totals в карточках, top/outsiders, таблица — считаются от уже
-   * отфильтрованного списка. Так «только команда» консистентно
-   * влияет на каждое число на странице.
+   * отфильтрованного списка. Так выбор команды консистентно влияет
+   * на каждое число на странице.
    */
-  const filteredItems = useTeamFilter<AuthorActivity>(allItems, (a) => a.email);
-  // Предыдущий период — для PoP-дельт. Фильтруем тем же фильтром команды.
-  const prevItems = useTeamFilter<AuthorActivity>(prev.data?.items, (a) => a.email);
+  const filteredItems = useTeamScopeFilter<AuthorActivity>(allItems, (a) => a.team);
+  // Предыдущий период — для PoP-дельт. Фильтруем тем же скопом команды.
+  const prevItems = useTeamScopeFilter<AuthorActivity>(prev.data?.items, (a) => a.team);
 
   const totals = useMemo(() => aggregateAuthors(filteredItems), [filteredItems]);
   const prevTotals = useMemo(
@@ -66,13 +67,14 @@ export function DashboardPage() {
     const totalAll = state.data?.totalElements ?? allItems.length;
     const filteredCount = filteredItems.length;
     const countNote = teamEnabled
-      ? ` · команда: ${filteredCount} из ${totalAll}`
+      ? ` · ${scope}: ${filteredCount} из ${totalAll}`
       : ` · ${totalAll} авторов`;
     const deltaNote = prevTotals ? ' · ↕ к пред. периоду' : '';
     return `${formatRange(range.from, range.to)}${countNote}${deltaNote}`;
   }, [
     range.from,
     range.to,
+    scope,
     teamEnabled,
     state.data?.totalElements,
     allItems.length,
@@ -110,7 +112,7 @@ export function DashboardPage() {
               range={range}
               emptyDescription={
                 teamEnabled
-                  ? 'В команде нет активности в этом периоде.'
+                  ? `В команде «${scope}» нет активности в этом периоде.`
                   : 'За выбранный период активность не зафиксирована.'
               }
             />
@@ -128,7 +130,7 @@ export function DashboardPage() {
               range={range}
               emptyDescription={
                 teamEnabled
-                  ? 'Все в команде — Активен или Топ.'
+                  ? `Все в команде «${scope}» — Активен или Топ.`
                   : 'Все авторы — Активен или Топ. Никто не попал в Неактивен/Ниже среднего.'
               }
             />

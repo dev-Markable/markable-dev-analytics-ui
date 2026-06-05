@@ -32,6 +32,8 @@ export function makeAuthor(over: Partial<AuthorActivity> = {}): AuthorActivity {
     addedLines: 100,
     deletedLines: 20,
     testAddedLines: 10,
+    team: null,
+    isLead: false,
     activity: null,
     ...over,
   };

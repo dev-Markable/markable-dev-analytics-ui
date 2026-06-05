@@ -6,7 +6,7 @@ import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
 import { useDailyStore, useHourlyStore, useReviewsStore } from '@/entities/stats';
 import { useDashboardStore } from '@/entities/dashboard';
-import { useTeamFilterStore, useTeamMembersStore } from '@/features/team-filter';
+import { ALL_TEAMS, matchesScope, useTeamScope } from '@/features/team-scope';
 import { formatRange, rangeDays } from '@/shared/lib';
 import { ActivitySummary } from '@/widgets/activity-summary';
 import { ActivityHeatmap } from '@/widgets/activity-heatmap';
@@ -30,16 +30,16 @@ export function ActivityPage() {
   const fetchDashboard = useDashboardStore((s) => s.fetch);
 
   // Hourly — командный агрегат (без авторской разбивки), поэтому клиентский
-  // team-filter к нему не применяется: показываем паттерн всей команды по времени.
+  // фильтр скопа к нему не применяется: показываем паттерн всей команды по времени.
   const hourlyData = useHourlyStore((s) => s.state.data);
   const fetchHourly = useHourlyStore((s) => s.fetch);
 
-  // Ревью-метрики (B2) — есть авторская разбивка, team-filter применяется внутри виджета.
+  // Ревью-метрики (B2) — есть авторская разбивка, скоп применяется внутри виджета.
   const reviewsState = useReviewsStore(useShallow((s) => s.state));
   const fetchReviews = useReviewsStore((s) => s.fetch);
 
-  const teamEnabled = useTeamFilterStore((s) => s.enabled);
-  const members = useTeamMembersStore((s) => s.members);
+  const scope = useTeamScope();
+  const teamEnabled = scope !== ALL_TEAMS;
 
   useEffect(() => {
     void fetchDaily({ from: range.from, to: range.to });
@@ -57,16 +57,11 @@ export function ActivityPage() {
 
   const rawDaily = useMemo(() => dailyState.data ?? [], [dailyState.data]);
 
-  const daily = useMemo(() => {
-    if (!teamEnabled) return rawDaily;
-    const memberSet = new Set(members.map((m) => m.toLowerCase()));
-    return rawDaily.filter((d) => memberSet.has(d.email.toLowerCase()));
-  }, [rawDaily, teamEnabled, members]);
-
   /**
-   * email (lowercase) → displayName + avatarUrl. Используется в ContributorsList
-   * для аватарок/имён. Daily-эндпоинт enrichment не отдаёт, поэтому подсасываем
-   * из dashboard.items[]. Совпадение по email (нечувствительно к регистру).
+   * email (lowercase) → displayName + avatarUrl + team + isLead. Используется
+   * в ContributorsList (аватарки/имена/команда/значок лида) и здесь же — для
+   * фильтрации daily по скопу команды (у DailyStat нет team напрямую).
+   * Источник данных — /dashboard items (AuthorSummary с team/isLead).
    */
   const enrichmentByEmail = useMemo<ReadonlyMap<string, AuthorEnrichment>>(() => {
     const map = new Map<string, AuthorEnrichment>();
@@ -75,10 +70,20 @@ export function ActivityPage() {
       map.set(a.email.toLowerCase(), {
         displayName: a.displayName ?? null,
         avatarUrl: a.avatarUrl ?? null,
+        team: a.team ?? null,
+        isLead: a.isLead,
       });
     }
     return map;
   }, [dashboardData]);
+
+  const daily = useMemo(() => {
+    if (!teamEnabled) return rawDaily;
+    return rawDaily.filter((d) => {
+      const enrich = enrichmentByEmail.get(d.email.toLowerCase());
+      return matchesScope(enrich?.team ?? null, scope);
+    });
+  }, [rawDaily, teamEnabled, scope, enrichmentByEmail]);
 
   const isInitialLoading = dailyState.status === 'loading' && rawDaily.length === 0;
   const isInitialError = dailyState.status === 'error' && rawDaily.length === 0;
@@ -86,9 +91,9 @@ export function ActivityPage() {
   const daysInRange = useMemo(() => rangeDays(range), [range]);
 
   const subtitle = useMemo(() => {
-    const teamNote = teamEnabled ? ' · только команда' : '';
+    const teamNote = teamEnabled ? ` · команда «${scope}»` : '';
     return `${formatRange(range.from, range.to)} · ${daysInRange} ${daysInRange === 1 ? 'день' : 'дней'}${teamNote}`;
-  }, [range.from, range.to, daysInRange, teamEnabled]);
+  }, [range.from, range.to, daysInRange, teamEnabled, scope]);
 
   if (isInitialLoading) {
     return (

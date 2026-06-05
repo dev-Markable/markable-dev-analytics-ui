@@ -3,6 +3,10 @@ import type { DailyStat } from '@/entities/stats';
 export interface AuthorEnrichment {
   displayName: string | null;
   avatarUrl: string | null;
+  /** Команда автора (из /dashboard AuthorSummary). null — не задана. */
+  team: string | null;
+  /** Является ли автор лидом своей команды. */
+  isLead: boolean;
 }
 
 export interface ContributorActivity extends AuthorEnrichment {
@@ -70,6 +74,8 @@ export function aggregateByContributor(
         email: e.email,
         displayName: enrich?.displayName ?? null,
         avatarUrl: enrich?.avatarUrl ?? null,
+        team: enrich?.team ?? null,
+        isLead: enrich?.isLead ?? false,
         commits: e.commits,
         nonMergeCommits: e.commits - e.mergeCommits,
         mergeCommits: e.mergeCommits,
