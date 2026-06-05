@@ -5,6 +5,8 @@ import { APP_NAME, env } from '@/shared/config';
 const PERSIST_KEYS = [
   'devpulse.theme',
   'devpulse.date-range',
+  'devpulse.team-scope',
+  // Устаревшие ключи (clientside allowlist) — чистим, если они остались с прошлых версий.
   'devpulse.team-filter',
   'devpulse.team-members',
 ];
@@ -19,7 +21,7 @@ export function SystemCard() {
     modal.confirm({
       title: 'Сбросить все настройки?',
       content:
-        'Тема, диапазон дат и фильтр команды вернутся к значениям по умолчанию. Страница перезагрузится.',
+        'Тема, диапазон дат и выбранная команда вернутся к значениям по умолчанию. Страница перезагрузится.',
       okText: 'Сбросить',
       okButtonProps: { danger: true },
       cancelText: 'Отмена',

@@ -2469,3 +2469,95 @@ body {
   font-style: italic;
   color: var(--ant-color-text-quaternary);
 }
+
+/* ============================================================
+   Teams page
+   ============================================================ */
+.team-card__header {
+  position: relative;
+}
+
+.team-card__actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.team-card__members {
+  display: flex;
+  flex-direction: column;
+}
+
+.team-member {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ant-color-split);
+}
+
+.team-member:last-child {
+  border-bottom: none;
+}
+
+.team-member__user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+  color: inherit;
+}
+
+.team-member__user:hover .team-member__name {
+  color: var(--ant-color-primary);
+}
+
+.team-member__identity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.team-member__name.ant-typography {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.team-member__lead-mark {
+  display: inline-flex;
+  align-items: center;
+  color: var(--ant-color-warning);
+}
+
+.team-member__email.ant-typography {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-member__assign {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .team-member {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .team-member__assign {
+    justify-content: flex-end;
+  }
+}
