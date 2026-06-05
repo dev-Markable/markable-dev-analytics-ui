@@ -18,8 +18,8 @@ import type { DashboardData, DashboardPeriod } from './types';
 interface DashboardStore {
   /**
    * Полный paginated-ответ за текущий период (size=500). Все срезы — top,
-   * outsiders, таблица, totals — вычисляются на клиенте, чтобы team-filter
-   * корректно пересчитывал агрегации без дополнительных запросов.
+   * outsiders, таблица, totals — вычисляются на клиенте, чтобы клиентский
+   * скоп команды пересчитывал агрегации без дополнительных запросов.
    */
   state: AsyncState<DashboardData>;
   /**
