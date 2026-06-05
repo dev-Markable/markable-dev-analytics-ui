@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { DatePicker, Segmented, Select, Space, Switch, Typography } from 'antd';
 import { useShallow } from 'zustand/react/shallow';
-import { useUsersStore } from '@/entities/user';
-import { userDisplayName } from '@/entities/user';
+import { UserAvatar, userDisplayName, useUsersStore } from '@/entities/user';
 import { dayjs, toISODate, type DateRange } from '@/shared/lib';
 import {
   DEFAULT_PERF_PERIOD,
@@ -34,6 +33,8 @@ export function PerfControls({
   const usersState = useUsersStore(useShallow((s) => s.state));
   const users = useMemo(() => usersState.data ?? [], [usersState.data]);
 
+  // Опции с привязкой целого пользователя — нужен для optionRender (аватар, лид, команда)
+  // и для filterOption (поиск по имени + email).
   const options = useMemo(
     () =>
       [...users]
@@ -41,7 +42,7 @@ export function PerfControls({
         .map((u) => ({
           value: u.email,
           label: userDisplayName(u),
-          team: u.team,
+          user: u,
         })),
     [users],
   );
@@ -69,6 +70,32 @@ export function PerfControls({
           optionFilterProp="label"
           style={{ width: '100%' }}
           size="large"
+          filterOption={(input, option) => {
+            const q = input.toLowerCase();
+            const u = option?.user;
+            if (!u) return false;
+            return (
+              u.email.toLowerCase().includes(q) ||
+              userDisplayName(u).toLowerCase().includes(q) ||
+              (u.team?.toLowerCase().includes(q) ?? false)
+            );
+          }}
+          optionRender={(opt) => {
+            const u = opt.data.user;
+            return (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+                <UserAvatar user={u} size={28} isLead={u.isLead} />
+                <span style={{ display: 'inline-flex', flexDirection: 'column', lineHeight: 1.2, minWidth: 0 }}>
+                  <span>{userDisplayName(u)}</span>
+                  <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+                    {u.email}
+                    {u.team && <> · {u.team}</>}
+                  </Typography.Text>
+                </span>
+              </span>
+            );
+          }}
+          notFoundContent="Никого не найдено"
         />
       </div>
 
