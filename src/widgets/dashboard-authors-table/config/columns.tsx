@@ -9,6 +9,7 @@ import {
   userDisplayName,
   type AuthorActivity,
 } from '@/entities/user';
+import { TeamChip } from '@/entities/team';
 import { formatNumber } from '@/shared/lib';
 import type { DateRange } from '@/shared/lib';
 
@@ -42,7 +43,7 @@ export const buildAuthorsColumns = ({
           className="authors-table__author"
           aria-label={`Профиль ${record.email}`}
         >
-          <UserAvatar user={user} size={32} />
+          <UserAvatar user={user} size={32} isLead={record.isLead} />
           <span className="authors-table__identity">
             <Typography.Text className="authors-table__name">
               {userDisplayName(user)}
@@ -54,6 +55,13 @@ export const buildAuthorsColumns = ({
         </Link>
       );
     },
+  },
+  {
+    key: 'team',
+    title: 'Команда',
+    dataIndex: 'team',
+    width: 160,
+    render: (_value, record) => <TeamChip team={record.team} />,
   },
   {
     key: 'activity',

@@ -1,5 +1,5 @@
 import { Card, Space, Tag, Typography } from 'antd';
-import { AtSign, Hash } from 'lucide-react';
+import { AtSign, Crown, Hash, Users } from 'lucide-react';
 import {
   UserAvatar,
   userDisplayName,
@@ -16,7 +16,7 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
   return (
     <Card variant="borderless" className="profile-header">
       <div className="profile-header__main">
-        <UserAvatar user={user} size={72} />
+        <UserAvatar user={user} size={72} isLead={user.isLead} />
         <div className="profile-header__identity">
           <Typography.Title level={2} className="profile-header__name">
             {name}
@@ -25,6 +25,16 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
             {user.email}
           </Typography.Text>
           <Space size={6} wrap className="profile-header__badges">
+            {user.team && user.isLead && (
+              <Tag bordered={false} icon={<Crown size={12} />} color="gold">
+                Лид команды «{user.team}»
+              </Tag>
+            )}
+            {user.team && !user.isLead && (
+              <Tag bordered={false} icon={<Users size={12} />} color="blue">
+                {user.team}
+              </Tag>
+            )}
             {user.username && (
               <Tag bordered={false} icon={<AtSign size={12} />}>
                 {user.username}

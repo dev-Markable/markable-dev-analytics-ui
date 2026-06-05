@@ -1,4 +1,5 @@
 import { Card, Tag, Typography } from 'antd';
+import { Crown, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { UserAvatar, userDisplayName } from '@/entities/user';
 import type { PerformanceReview } from '@/entities/performance-review';
@@ -15,14 +16,23 @@ export function PerfSubject({ review }: PerfSubjectProps) {
   return (
     <Card variant="borderless" className="perf-subject">
       <div className="perf-subject__main">
-        <UserAvatar user={subject} size={64} />
+        <UserAvatar user={subject} size={64} isLead={subject.isLead} />
         <div className="perf-subject__meta">
           <Typography.Title level={3} className="perf-subject__name">
             {userDisplayName(subject)}
           </Typography.Title>
           <div className="perf-subject__sub">
             <Typography.Text type="secondary">{subject.email}</Typography.Text>
-            {subject.team && <Tag color="blue">{subject.team}</Tag>}
+            {subject.team && subject.isLead && (
+              <Tag color="gold" icon={<Crown size={12} />}>
+                Лид команды «{subject.team}»
+              </Tag>
+            )}
+            {subject.team && !subject.isLead && (
+              <Tag color="blue" icon={<Users size={12} />}>
+                {subject.team}
+              </Tag>
+            )}
           </div>
         </div>
       </div>

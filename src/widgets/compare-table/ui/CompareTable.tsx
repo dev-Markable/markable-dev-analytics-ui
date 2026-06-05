@@ -47,7 +47,7 @@ export function CompareTable({ authors, range }: CompareTableProps) {
                         to={buildProfilePath(a.email, range)}
                         className="compare-table__author"
                       >
-                        <UserAvatar user={user} size={28} />
+                        <UserAvatar user={user} size={28} isLead={a.isLead} />
                         <span className="compare-table__author-name">
                           {userDisplayName(user)}
                         </span>
