@@ -40,50 +40,55 @@ export function TeamsPage() {
       .sort((a, b) => (a.name ?? a.email).localeCompare(b.name ?? b.email));
   }, [usersState.data]);
 
-  // После любого мутирующего действия команда/лид могут перестроиться на бэке
-  // (move перевешивает участника, assignLead — лида). Самый честный путь —
-  // перезагрузить teams. Юзеров тоже, чтобы синхронизировать поле team.
-  const refetch = useCallback(async () => {
-    await Promise.all([fetchTeams(true), fetchUsers()]);
-  }, [fetchTeams, fetchUsers]);
-
+  /**
+   * Стратегия мутаций: оптимистично обновляем то, что вернул бэк, а параллельно
+   * (без await) тянем свежий список команд. Это даёт мгновенный фидбек, но
+   * гарантирует консистентность для случаев, которые точечный optimistic не
+   * покрывает: например, при назначении лида участник может прийти из другой
+   * команды — у неё тоже состав изменился, и эту команду assignLead в кэше
+   * не трогает. Refetch с force=true инвалидирует TTL-кэш.
+   *
+   * Гонки между быстрыми кликами защищены `raceGuard` внутри useTeamsStore.fetch
+   * (только последний ответ запишется в state).
+   */
   const handleAssignLead = useCallback(
     async (team: string, email: string | null) => {
       try {
         await assignLeadStore(team, email);
-        await refetch();
+        void fetchTeams(true);
         void message.success(email ? 'Лид назначен' : 'Лид снят');
       } catch {
         void message.error('Не удалось обновить лида');
       }
     },
-    [assignLeadStore, refetch, message],
+    [assignLeadStore, fetchTeams, message],
   );
 
   const handleMoveMember = useCallback(
     async (email: string, team: string | null) => {
       try {
         await assignTeamStore(email, team);
-        await refetch();
+        // Move перевешивает участника между командами — затрагивает обе.
+        void fetchTeams(true);
         void message.success(team ? `Перенесён в «${team}»` : 'Исключён из команды');
       } catch {
         void message.error('Не удалось обновить команду');
       }
     },
-    [assignTeamStore, refetch, message],
+    [assignTeamStore, fetchTeams, message],
   );
 
   const handleAssignToTeam = useCallback(
     async (email: string, team: string) => {
       try {
         await assignTeamStore(email, team);
-        await refetch();
+        void fetchTeams(true);
         void message.success(`Добавлен в «${team}»`);
       } catch {
         void message.error('Не удалось добавить в команду');
       }
     },
-    [assignTeamStore, refetch, message],
+    [assignTeamStore, fetchTeams, message],
   );
 
   const isInitialLoading =
