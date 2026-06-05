@@ -7,6 +7,7 @@ import {
   userDisplayName,
   type AuthorActivity,
 } from '@/entities/user';
+import { TeamChip } from '@/entities/team';
 import { formatLinesDelta, formatNumber } from '@/shared/lib';
 import type { DateRange } from '@/shared/lib';
 
@@ -34,14 +35,17 @@ export function WeekAuthorsBreakdown({ authors, range }: WeekAuthorsBreakdownPro
             to={buildProfilePath(a.email, range)}
             className="week-breakdown__row"
           >
-            <UserAvatar user={user} size={28} />
+            <UserAvatar user={user} size={28} isLead={a.isLead} />
             <span className="week-breakdown__identity">
               <Typography.Text strong style={{ fontSize: 13 }}>
                 {userDisplayName(user)}
               </Typography.Text>
-              <Typography.Text type="secondary" style={{ fontSize: 11 }}>
-                {a.email}
-              </Typography.Text>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+                  {a.email}
+                </Typography.Text>
+                <TeamChip team={a.team} compact />
+              </span>
             </span>
             <span className="week-breakdown__metric">
               <Typography.Text strong style={{ fontSize: 13 }}>

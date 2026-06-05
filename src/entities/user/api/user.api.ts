@@ -1,10 +1,28 @@
 import { apiClient } from '@/shared/api';
 import type { UserProfile, UserCommitsQuery } from '../model/profile';
+import type { UnifiedUser } from '../model/types';
 import type { Commit } from '@/entities/commit/model/types';
 
 export interface ProfilePeriod {
   from?: string;
   to?: string;
+}
+
+/** Список пользователей (для picker'а и управления командами). */
+export async function getUsers(team?: string): Promise<UnifiedUser[]> {
+  const params: Record<string, string> = {};
+  if (team) params.team = team;
+  const { data } = await apiClient.get<UnifiedUser[]>('/users', { params });
+  return data;
+}
+
+/** Назначить/снять команду пользователю. `team = null` — снять. */
+export async function setUserTeam(email: string, team: string | null): Promise<UnifiedUser> {
+  const { data } = await apiClient.put<UnifiedUser>(
+    `/users/${encodeURIComponent(email)}/team`,
+    { team },
+  );
+  return data;
 }
 
 export async function getProfile(email: string, period?: ProfilePeriod): Promise<UserProfile> {

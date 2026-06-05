@@ -4,8 +4,9 @@ import type { ColumnsType } from 'antd/es/table';
 import { Link } from 'react-router-dom';
 import { MessagesSquare } from 'lucide-react';
 import type { ReviewAuthor, ReviewStats } from '@/entities/stats';
-import { useTeamFilter } from '@/features/team-filter';
+import { useTeamScopeFilter } from '@/features/team-scope';
 import { UserAvatar, userDisplayName } from '@/entities/user';
+import { TeamChip } from '@/entities/team';
 import { buildProfilePath } from '@/app/router/paths';
 import { EmptyState, ErrorState, SkeletonTable } from '@/shared/ui';
 import { formatNumber, type DateRange } from '@/shared/lib';
@@ -34,7 +35,7 @@ function buildColumns(range: DateRange): ColumnsType<ReviewAuthor> {
         };
         return (
           <Link to={buildProfilePath(a.email, range)} className="authors-table__author">
-            <UserAvatar user={user} size={30} />
+            <UserAvatar user={user} size={30} isLead={a.isLead} />
             <span className="authors-table__identity">
               <Typography.Text className="authors-table__name">
                 {userDisplayName(user)}
@@ -44,6 +45,12 @@ function buildColumns(range: DateRange): ColumnsType<ReviewAuthor> {
           </Link>
         );
       },
+    },
+    {
+      key: 'team',
+      title: 'Команда',
+      width: 140,
+      render: (_v, a) => <TeamChip team={a.team} />,
     },
     {
       key: 'reviewsGiven',
@@ -102,7 +109,7 @@ function buildColumns(range: DateRange): ColumnsType<ReviewAuthor> {
 
 export function ReviewsCard({ state, range, onRetry }: ReviewsCardProps) {
   const authors = state.data?.authors ?? [];
-  const teamFiltered = useTeamFilter<ReviewAuthor>(authors, (a) => a.email);
+  const teamFiltered = useTeamScopeFilter<ReviewAuthor>(authors, (a) => a.team);
   const rows = useMemo(() => sortByEngagement(teamFiltered), [teamFiltered]);
   const columns = useMemo(() => buildColumns(range), [range]);
 

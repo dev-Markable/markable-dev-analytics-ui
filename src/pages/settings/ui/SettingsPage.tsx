@@ -1,7 +1,6 @@
 import { PageHeader, PageSection } from '@/shared/ui';
 import { useDocumentTitle } from '@/shared/hooks';
 import { AppearanceCard } from '@/widgets/settings-appearance';
-import { FiltersCard } from '@/widgets/settings-filters';
 import { SystemCard } from '@/widgets/settings-system';
 
 export function SettingsPage() {
@@ -9,14 +8,13 @@ export function SettingsPage() {
 
   return (
     <>
-      <PageHeader title="Настройки" subtitle="Параметры интерфейса и фильтрации" />
+      <PageHeader
+        title="Настройки"
+        subtitle="Параметры интерфейса и системная информация. Управление командами — на странице «Команды»."
+      />
 
       <PageSection>
         <AppearanceCard />
-      </PageSection>
-
-      <PageSection>
-        <FiltersCard />
       </PageSection>
 
       <PageSection>

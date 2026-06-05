@@ -92,6 +92,9 @@ export function AuthorsTable({
             rowKey={(row) => row.email}
             loading={loading}
             size="middle"
+            // 7 колонок (включая «Команда» 160px) на узких экранах не помещаются —
+            // даём горизонтальный скролл вместо ломки вёрстки.
+            scroll={{ x: 'max-content' }}
             pagination={{
               current: page + 1,
               pageSize: PAGE_SIZE,

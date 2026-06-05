@@ -1,22 +1,23 @@
 import { useEffect } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { useDateRangeStore } from '@/features/date-range-filter';
-import { useTeamFilterStore } from '@/features/team-filter';
+import { ALL_TEAMS, useTeamScopeStore } from '@/features/team-scope';
 import { isValidRange } from '@/shared/lib';
 
 /**
  * Двусторонняя синхронизация глобальных фильтров с URL query.
  *
- * `?from=YYYY-MM-DD&to=YYYY-MM-DD&team=1`
+ * `?from=YYYY-MM-DD&to=YYYY-MM-DD&team=<name|__none__>`
+ *
+ * Скоп `__all__` (вся компания) в URL не пишется — это значение по умолчанию,
+ * чистый URL = вся компания. `__none__` и имена команд пишутся как есть.
  *
  * - **URL → store:** при заходе по диплинку / навигации назад-вперёд параметры
  *   из URL применяются в сторы.
- * - **store → URL:** при смене фильтра (date picker, team toggle) или переходе
- *   на другую страницу URL переписывается из сторов — query «прилипает» к любому
- *   маршруту, остаётся актуальным диплинком.
+ * - **store → URL:** при смене фильтра или переходе на другую страницу URL
+ *   переписывается из сторов — query «прилипает» к любому маршруту.
  *
- * Циклы URL↔store↔URL затухают за счёт сравнения значений перед каждым `set`:
- * если значение уже совпадает — записи нет.
+ * Циклы URL↔store↔URL затухают за счёт сравнения значений перед каждым `set`.
  *
  * Рендерит `null`. Монтируется один раз внутри Router.
  */
@@ -26,8 +27,8 @@ export function FilterUrlSync() {
 
   const range = useDateRangeStore((s) => s.range);
   const setCustom = useDateRangeStore((s) => s.setCustom);
-  const teamEnabled = useTeamFilterStore((s) => s.enabled);
-  const setTeamEnabled = useTeamFilterStore((s) => s.setEnabled);
+  const scope = useTeamScopeStore((s) => s.scope);
+  const setScope = useTeamScopeStore((s) => s.setScope);
 
   // URL → store
   useEffect(() => {
@@ -37,8 +38,13 @@ export function FilterUrlSync() {
       if (isValidRange({ from, to })) setCustom({ from, to });
     }
 
-    const team = searchParams.get('team') === '1';
-    if (team !== teamEnabled) setTeamEnabled(team);
+    // Скоп команды читаем из URL ТОЛЬКО когда параметр явно указан. Иначе
+    // переходы по ссылкам без ?team= (например, ссылки на профиль из
+    // карточек авторов) сбрасывали бы выбранную команду — а persistent
+    // store-значение должно пережить такие переходы. Если параметра нет,
+    // эффект «store → URL» допишет его сам.
+    const team = searchParams.get('team');
+    if (team && team.length > 0 && team !== scope) setScope(team);
     // Намеренно зависим только от searchParams: реагируем на изменение URL,
     // а не на изменение стора (обратное направление — во втором эффекте).
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -57,7 +63,7 @@ export function FilterUrlSync() {
       next.set('to', range.to);
       changed = true;
     }
-    const teamParam = teamEnabled ? '1' : null;
+    const teamParam = scope === ALL_TEAMS ? null : scope;
     if (next.get('team') !== teamParam) {
       if (teamParam) next.set('team', teamParam);
       else next.delete('team');
@@ -66,7 +72,7 @@ export function FilterUrlSync() {
 
     if (changed) setSearchParams(next, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [range.from, range.to, teamEnabled, pathname]);
+  }, [range.from, range.to, scope, pathname]);
 
   return null;
 }

@@ -3,8 +3,9 @@ import { Card, Typography } from 'antd';
 import { Link } from 'react-router-dom';
 import { Trophy } from 'lucide-react';
 import type { DailyStat } from '@/entities/stats';
-import { useTeamFilter } from '@/features/team-filter';
+import { useTeamScopeFilter } from '@/features/team-scope';
 import { UserAvatar, userDisplayName } from '@/entities/user';
+import { TeamChip } from '@/entities/team';
 import { buildProfilePath } from '@/app/router/paths';
 import { EmptyState } from '@/shared/ui';
 import { formatLinesDelta, formatNumber, type DateRange } from '@/shared/lib';
@@ -49,7 +50,7 @@ function ContributorRow({
     >
       <span className="contributors-list__rank">{rank}</span>
       <span className="leaderboard-row__author">
-        <UserAvatar user={user} size={32} />
+        <UserAvatar user={user} size={32} isLead={data.isLead} />
         <span className="leaderboard-row__identity">
           <span className="leaderboard-row__name-line">
             <Typography.Text strong ellipsis className="leaderboard-row__name">
@@ -57,9 +58,12 @@ function ContributorRow({
             </Typography.Text>
             <AnomalyBadges anomalies={anomalies} />
           </span>
-          <Typography.Text type="secondary" ellipsis className="leaderboard-row__email">
-            {data.email} · {data.activeDays} дн · {data.repos} репо
-          </Typography.Text>
+          <span className="leaderboard-row__sub-line">
+            <Typography.Text type="secondary" ellipsis className="leaderboard-row__email">
+              {data.email} · {data.activeDays} дн · {data.repos} репо
+            </Typography.Text>
+            <TeamChip team={data.team} compact />
+          </span>
         </span>
       </span>
       <span className="leaderboard-row__metrics">
@@ -98,7 +102,7 @@ export function ContributorsList({
     () => detectAnomaliesByAuthor(daily, range),
     [daily, range],
   );
-  const teamFiltered = useTeamFilter<ContributorActivity>(all, (c) => c.email);
+  const teamFiltered = useTeamScopeFilter<ContributorActivity>(all, (c) => c.team);
   const items = teamFiltered.slice(0, topN);
 
   const EMPTY: readonly Anomaly[] = [];

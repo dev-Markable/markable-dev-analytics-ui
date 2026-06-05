@@ -1,17 +1,19 @@
+import type { AuthorActivity } from '@/entities/user';
 import type { WeeklyStat } from '../model/types';
 
 /**
- * Пересчитывает per-week totals из отфильтрованного по команде набора авторов.
- * Если фильтр выключен — возвращает исходный массив (без копий).
+ * Пересчитывает per-week totals из отфильтрованного набора авторов.
+ * Предикат передаётся снаружи — например, фильтр по полю `team` автора
+ * (для глобального скопа команды) или по любому другому полю.
  *
- * `isMember(email)` — предикат, передаётся снаружи (из team-filter store).
+ * Возвращает новый массив объектов недели с пересчитанными `total*`.
  */
 export function applyTeamFilterToWeekly(
   weeks: readonly WeeklyStat[],
-  isMember: (email: string) => boolean,
+  accept: (author: AuthorActivity) => boolean,
 ): WeeklyStat[] {
   return weeks.map((w) => {
-    const filtered = w.authors.filter((a) => isMember(a.email));
+    const filtered = w.authors.filter(accept);
     return {
       ...w,
       authors: filtered,

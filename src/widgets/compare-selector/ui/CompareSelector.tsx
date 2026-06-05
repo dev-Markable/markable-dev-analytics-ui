@@ -64,6 +64,7 @@ export function CompareSelector({
                 avatarUrl: a.avatarUrl ?? null,
               }}
               size={24}
+              isLead={a.isLead}
             />
             <span style={{ display: 'inline-flex', flexDirection: 'column', lineHeight: 1.2 }}>
               <span>{userDisplayName({ name: a.displayName ?? null, username: null, email: a.email })}</span>

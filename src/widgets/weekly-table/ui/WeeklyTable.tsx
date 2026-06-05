@@ -3,7 +3,7 @@ import { Card, Table, Typography } from 'antd';
 import { CalendarDays } from 'lucide-react';
 import type { AsyncState } from '@/shared/api';
 import type { WeeklyStat } from '@/entities/stats';
-import { useTeamFilter } from '@/features/team-filter';
+import { useTeamScopeFilter } from '@/features/team-scope';
 import { downloadCsv, type CsvColumn, type DateRange } from '@/shared/lib';
 import type { AuthorActivity } from '@/entities/user';
 import { EmptyState, ErrorState, ExportButton, SkeletonTable } from '@/shared/ui';
@@ -103,7 +103,7 @@ function WeekFilteredBreakdown({
   authors: AuthorActivity[];
   range: DateRange;
 }) {
-  const filtered = useTeamFilter<AuthorActivity>(authors, (a) => a.email);
+  const filtered = useTeamScopeFilter<AuthorActivity>(authors, (a) => a.team);
   return <WeekAuthorsBreakdown authors={filtered} range={range} />;
 }
 

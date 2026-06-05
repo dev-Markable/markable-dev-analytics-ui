@@ -8,6 +8,7 @@ import {
   userDisplayName,
   type AuthorActivity,
 } from '@/entities/user';
+import { TeamChip } from '@/entities/team';
 import type { DateRange } from '@/shared/lib';
 import { formatLinesDelta, formatNumber } from '@/shared/lib';
 import { RankBadge } from './RankBadge';
@@ -32,7 +33,7 @@ export function LeaderboardRow({ rank, data, range, variant }: LeaderboardRowPro
       <RankBadge rank={rank} variant={variant} />
 
       <span className="leaderboard-row__author">
-        <UserAvatar user={user} size={32} />
+        <UserAvatar user={user} size={32} isLead={data.isLead} />
         <span className="leaderboard-row__identity">
           <span className="leaderboard-row__name-line">
             <Typography.Text strong ellipsis className="leaderboard-row__name">
@@ -40,9 +41,12 @@ export function LeaderboardRow({ rank, data, range, variant }: LeaderboardRowPro
             </Typography.Text>
             {data.activity && <ActivityBadge activity={data.activity} compact />}
           </span>
-          <Typography.Text type="secondary" ellipsis className="leaderboard-row__email">
-            {data.email}
-          </Typography.Text>
+          <span className="leaderboard-row__sub-line">
+            <Typography.Text type="secondary" ellipsis className="leaderboard-row__email">
+              {data.email}
+            </Typography.Text>
+            <TeamChip team={data.team} compact />
+          </span>
         </span>
       </span>
 
