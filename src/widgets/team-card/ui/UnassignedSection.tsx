@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { App, AutoComplete, Button, Card, Empty, Typography } from 'antd';
 import { UserPlus, UserX } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { UserAvatar, userDisplayName, type UnifiedUser } from '@/entities/user';
-import { buildProfilePath } from '@/app/router/paths';
+import type { UnifiedUser } from '@/entities/user';
+import { MemberIdentity } from './MemberIdentity';
 
 interface UnassignedSectionProps {
   users: readonly UnifiedUser[];
@@ -41,17 +40,7 @@ function UnassignedRow({
 
   return (
     <div className="team-member">
-      <Link to={buildProfilePath(user.email)} className="team-member__user">
-        <UserAvatar user={user} size={32} />
-        <span className="team-member__identity">
-          <Typography.Text strong className="team-member__name">
-            {userDisplayName(user)}
-          </Typography.Text>
-          <Typography.Text type="secondary" className="team-member__email">
-            {user.email}
-          </Typography.Text>
-        </span>
-      </Link>
+      <MemberIdentity user={user} />
 
       <div className="team-member__assign">
         <AutoComplete

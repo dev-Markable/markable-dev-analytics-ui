@@ -1,16 +1,12 @@
 import { useState } from 'react';
-import { App, Button, Dropdown, Tooltip, Typography } from 'antd';
+import { App, Button, Dropdown, Input } from 'antd';
 import type { MenuProps } from 'antd';
-import { Crown, MoreHorizontal, UserMinus, UserPen } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { UserAvatar, userDisplayName } from '@/entities/user';
-import type { Schemas } from '@/shared/api/schema';
-import { buildProfilePath } from '@/app/router/paths';
-
-type UserProfile = Schemas['UserProfile'];
+import { Crown, FolderPlus, MoreHorizontal, UserMinus, UserPen } from 'lucide-react';
+import { userDisplayName, type UnifiedUser } from '@/entities/user';
+import { MemberIdentity } from './MemberIdentity';
 
 interface TeamMemberRowProps {
-  member: UserProfile;
+  member: UnifiedUser;
   team: string;
   /** Список доступных команд для пункта меню «Перенести». */
   allTeams: readonly string[];
@@ -18,7 +14,7 @@ interface TeamMemberRowProps {
   isLead: boolean;
   /** Назначить этого пользователя лидом команды. */
   onAssignLead: () => Promise<void>;
-  /** Перевести в другую команду. */
+  /** Перевести в другую команду (или создать новую — имя свободно). */
   onMoveToTeam: (team: string | null) => Promise<void>;
 }
 
@@ -51,6 +47,9 @@ export function TeamMemberRow({
     }
   };
 
+  // Promise.reject в onOk оставляет confirm открытым (стандартный UX antd).
+  // Ошибка тоста показывается из caller'а (handleAssignLead/handleMoveMember
+  // в TeamsPage) — у них есть try/catch вокруг store-операций.
   const confirmExclude = () => {
     modal.confirm({
       title: 'Исключить из команды?',
@@ -62,12 +61,46 @@ export function TeamMemberRow({
     });
   };
 
+  const promptNewTeam = () => {
+    let value = '';
+    modal.confirm({
+      title: 'В новую команду',
+      content: (
+        <div style={{ marginTop: 12 }}>
+          <Input
+            autoFocus
+            placeholder="Имя новой команды"
+            onChange={(e) => {
+              value = e.target.value;
+            }}
+          />
+        </div>
+      ),
+      okText: 'Перенести',
+      cancelText: 'Отмена',
+      onOk: () => {
+        const trimmed = value.trim();
+        if (!trimmed) return Promise.reject(new Error('Имя команды обязательно'));
+        return handleMove(trimmed);
+      },
+    });
+  };
+
   const moveTargets = allTeams.filter((t) => t !== team);
-  const moveItems: MenuProps['items'] = moveTargets.map((t) => ({
-    key: `move:${t}`,
-    label: t,
-    onClick: () => handleMove(t),
-  }));
+  const moveItems: MenuProps['items'] = [
+    ...moveTargets.map((t) => ({
+      key: `move:${t}`,
+      label: t,
+      onClick: () => handleMove(t),
+    })),
+    ...(moveTargets.length > 0 ? [{ type: 'divider' as const, key: 'move-div' }] : []),
+    {
+      key: 'move:new',
+      label: 'В новую команду…',
+      icon: <FolderPlus size={14} />,
+      onClick: promptNewTeam,
+    },
+  ];
 
   const menuItems: MenuProps['items'] = [
     ...(isLead
@@ -80,16 +113,12 @@ export function TeamMemberRow({
             onClick: handleAssignLead,
           },
         ]),
-    ...(moveItems.length > 0
-      ? [
-          {
-            key: 'move',
-            label: 'Перенести в',
-            icon: <UserPen size={14} />,
-            children: moveItems,
-          },
-        ]
-      : []),
+    {
+      key: 'move',
+      label: 'Перенести в',
+      icon: <UserPen size={14} />,
+      children: moveItems,
+    },
     { type: 'divider' as const },
     {
       key: 'exclude',
@@ -102,24 +131,7 @@ export function TeamMemberRow({
 
   return (
     <div className="team-member">
-      <Link to={buildProfilePath(member.email)} className="team-member__user">
-        <UserAvatar user={member} size={32} isLead={isLead} />
-        <span className="team-member__identity">
-          <Typography.Text strong className="team-member__name">
-            {userDisplayName(member)}
-            {isLead && (
-              <Tooltip title="Лид команды">
-                <span className="team-member__lead-mark">
-                  <Crown size={12} />
-                </span>
-              </Tooltip>
-            )}
-          </Typography.Text>
-          <Typography.Text type="secondary" className="team-member__email">
-            {member.email}
-          </Typography.Text>
-        </span>
-      </Link>
+      <MemberIdentity user={member} isLead={isLead} />
 
       <Dropdown
         menu={{ items: menuItems }}

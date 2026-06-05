@@ -6,6 +6,7 @@ import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
 import { useDailyStore, useHourlyStore, useReviewsStore } from '@/entities/stats';
 import { useDashboardStore } from '@/entities/dashboard';
+import { useUsersStore } from '@/entities/user';
 import { ALL_TEAMS, matchesScope, useTeamScope } from '@/features/team-scope';
 import { formatRange, rangeDays } from '@/shared/lib';
 import { ActivitySummary } from '@/widgets/activity-summary';
@@ -38,6 +39,12 @@ export function ActivityPage() {
   const reviewsState = useReviewsStore(useShallow((s) => s.state));
   const fetchReviews = useReviewsStore((s) => s.fetch);
 
+  // /users — fallback по team/isLead для разработчиков, которые не попали в
+  // топ-500 /dashboard (либо сменили email). Без него ContributorActivity.team
+  // у таких авторов будет null, и фильтр по команде их потеряет.
+  const usersData = useUsersStore((s) => s.state.data);
+  const fetchUsers = useUsersStore((s) => s.fetch);
+
   const scope = useTeamScope();
   const teamEnabled = scope !== ALL_TEAMS;
 
@@ -47,6 +54,11 @@ export function ActivityPage() {
     void fetchHourly({ from: range.from, to: range.to });
     void fetchReviews({ from: range.from, to: range.to });
   }, [range.from, range.to, fetchDaily, fetchDashboard, fetchHourly, fetchReviews]);
+
+  useEffect(() => {
+    // Не зависит от периода — грузим один раз, переживает повторные монтирования.
+    void fetchUsers();
+  }, [fetchUsers]);
 
   useApiErrorNotification(dailyState.error, 'Не удалось загрузить активность');
 
@@ -58,24 +70,42 @@ export function ActivityPage() {
   const rawDaily = useMemo(() => dailyState.data ?? [], [dailyState.data]);
 
   /**
-   * email (lowercase) → displayName + avatarUrl + team + isLead. Используется
-   * в ContributorsList (аватарки/имена/команда/значок лида) и здесь же — для
-   * фильтрации daily по скопу команды (у DailyStat нет team напрямую).
-   * Источник данных — /dashboard items (AuthorSummary с team/isLead).
+   * email (lowercase) → displayName + avatarUrl + team + isLead.
+   *
+   * Источник 1: /dashboard items (AuthorSummary с team/isLead) — основной,
+   *   потому что у dashboard есть displayName/avatarUrl и сортировка top-500.
+   * Источник 2 (fallback): /users — заполняет team/isLead для разработчиков,
+   *   которые не попали в dashboard (вне топ-500, либо без активности
+   *   за период). avatar/name из /users добираем тоже, если в dashboard'е их нет.
+   *
+   * Используется в ContributorsList (UI) и здесь же — для фильтрации daily
+   * по скопу команды (у DailyStat нет team напрямую).
    */
   const enrichmentByEmail = useMemo<ReadonlyMap<string, AuthorEnrichment>>(() => {
     const map = new Map<string, AuthorEnrichment>();
-    if (!dashboardData) return map;
-    for (const a of dashboardData.items) {
-      map.set(a.email.toLowerCase(), {
-        displayName: a.displayName ?? null,
-        avatarUrl: a.avatarUrl ?? null,
-        team: a.team ?? null,
-        isLead: a.isLead,
-      });
+    // Сначала users — даём dashboard перетереть точнее заполненные поля сверху.
+    if (usersData) {
+      for (const u of usersData) {
+        map.set(u.email.toLowerCase(), {
+          displayName: u.name ?? null,
+          avatarUrl: u.avatarUrl ?? null,
+          team: u.team ?? null,
+          isLead: u.isLead,
+        });
+      }
+    }
+    if (dashboardData) {
+      for (const a of dashboardData.items) {
+        map.set(a.email.toLowerCase(), {
+          displayName: a.displayName ?? null,
+          avatarUrl: a.avatarUrl ?? null,
+          team: a.team ?? null,
+          isLead: a.isLead,
+        });
+      }
     }
     return map;
-  }, [dashboardData]);
+  }, [dashboardData, usersData]);
 
   const daily = useMemo(() => {
     if (!teamEnabled) return rawDaily;

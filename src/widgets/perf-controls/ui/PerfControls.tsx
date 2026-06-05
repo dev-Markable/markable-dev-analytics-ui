@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { DatePicker, Segmented, Select, Space, Switch, Typography } from 'antd';
 import { useShallow } from 'zustand/react/shallow';
 import { UserAvatar, userDisplayName, useUsersStore } from '@/entities/user';
-import { useTeamsStore } from '@/entities/team';
-import { ALL_TEAMS, NO_TEAM, matchesScope } from '@/features/team-scope';
+import { matchesScope, useTeamScope } from '@/features/team-scope';
 import { dayjs, toISODate, type DateRange } from '@/shared/lib';
 import {
   DEFAULT_PERF_PERIOD,
@@ -33,42 +32,25 @@ export function PerfControls({
   onCompareChange,
 }: PerfControlsProps) {
   const usersState = useUsersStore(useShallow((s) => s.state));
-  const teamsState = useTeamsStore(useShallow((s) => s.state));
-  const fetchTeams = useTeamsStore((s) => s.fetch);
-
-  // Список команд — для фильтра в picker'е (локальный, без URL-синка).
-  useEffect(() => {
-    void fetchTeams();
-  }, [fetchTeams]);
-
-  const [teamFilter, setTeamFilter] = useState<string>(ALL_TEAMS);
+  // Команда — из глобального скопа в топбаре; локального дубля нет.
+  const scope = useTeamScope();
 
   const users = useMemo(() => usersState.data ?? [], [usersState.data]);
 
   // Опции с привязкой целого пользователя — нужен для optionRender (аватар, лид, команда)
-  // и для filterOption (поиск по имени + email).
+  // и для filterOption (поиск по имени + email + команде).
   const options = useMemo(
     () =>
       [...users]
-        .filter((u) => matchesScope(u.team ?? null, teamFilter))
+        .filter((u) => matchesScope(u.team ?? null, scope))
         .sort((a, b) => userDisplayName(a).localeCompare(userDisplayName(b)))
         .map((u) => ({
           value: u.email,
           label: userDisplayName(u),
           user: u,
         })),
-    [users, teamFilter],
+    [users, scope],
   );
-
-  const teamOptions = useMemo(() => {
-    const teams = teamsState.data ?? [];
-    const sorted = [...teams].sort((a, b) => a.name.localeCompare(b.name));
-    return [
-      { value: ALL_TEAMS, label: 'Все команды' },
-      ...sorted.map((t) => ({ value: t.name, label: t.name })),
-      { value: NO_TEAM, label: 'Без команды' },
-    ];
-  }, [teamsState.data]);
 
   const periodKey: PerfPeriodKey = detectPeriodKey(range);
 
@@ -83,57 +65,43 @@ export function PerfControls({
         <Typography.Text type="secondary" className="perf-controls__label">
           Разработчик
         </Typography.Text>
-        <Space.Compact style={{ width: '100%' }}>
-          <Select
-            value={teamFilter}
-            onChange={setTeamFilter}
-            options={teamOptions}
-            size="large"
-            style={{ width: 200, flexShrink: 0 }}
-            popupMatchSelectWidth={false}
-          />
-          <Select
-            showSearch
-            value={email ?? undefined}
-            placeholder="Выберите разработчика"
-            loading={usersState.status === 'loading'}
-            options={options}
-            onChange={onEmailChange}
-            optionFilterProp="label"
-            style={{ flex: 1 }}
-            size="large"
-            filterOption={(input, option) => {
-              const q = input.toLowerCase();
-              const u = option?.user;
-              if (!u) return false;
-              return (
-                u.email.toLowerCase().includes(q) ||
-                userDisplayName(u).toLowerCase().includes(q) ||
-                (u.team?.toLowerCase().includes(q) ?? false)
-              );
-            }}
-            optionRender={(opt) => {
-              const u = opt.data.user;
-              return (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-                  <UserAvatar user={u} size={28} isLead={u.isLead} />
-                  <span style={{ display: 'inline-flex', flexDirection: 'column', lineHeight: 1.2, minWidth: 0 }}>
-                    <span>{userDisplayName(u)}</span>
-                    <Typography.Text type="secondary" style={{ fontSize: 11 }}>
-                      {u.email}
-                      {u.team && <> · {u.team}</>}
-                    </Typography.Text>
-                  </span>
+        <Select
+          showSearch
+          value={email ?? undefined}
+          placeholder="Выберите разработчика"
+          loading={usersState.status === 'loading'}
+          options={options}
+          onChange={onEmailChange}
+          optionFilterProp="label"
+          style={{ width: '100%' }}
+          size="large"
+          filterOption={(input, option) => {
+            const q = input.toLowerCase();
+            const u = option?.user;
+            if (!u) return false;
+            return (
+              u.email.toLowerCase().includes(q) ||
+              userDisplayName(u).toLowerCase().includes(q) ||
+              (u.team?.toLowerCase().includes(q) ?? false)
+            );
+          }}
+          optionRender={(opt) => {
+            const u = opt.data.user;
+            return (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+                <UserAvatar user={u} size={28} isLead={u.isLead} />
+                <span style={{ display: 'inline-flex', flexDirection: 'column', lineHeight: 1.2, minWidth: 0 }}>
+                  <span>{userDisplayName(u)}</span>
+                  <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+                    {u.email}
+                    {u.team && <> · {u.team}</>}
+                  </Typography.Text>
                 </span>
-              );
-            }}
-            notFoundContent={
-              teamFilter !== ALL_TEAMS
-                ? 'В этой команде нет подходящих разработчиков'
-                : 'Никого не найдено'
-            }
-          />
-        </Space.Compact>
+              </span>
+            );
+          }}
+          notFoundContent="Никого не найдено"
+        />
       </div>
 
       <div className="perf-controls__field">
