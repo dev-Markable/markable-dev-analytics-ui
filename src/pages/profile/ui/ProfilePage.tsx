@@ -6,8 +6,11 @@ import { ArrowLeft } from 'lucide-react';
 import { PageHeader, PageSection, ErrorState, LoadingState } from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
+import { ALL_TEAMS, matchesScope, useTeamScope } from '@/features/team-scope';
 import { useProfileStore, userDisplayName } from '@/entities/user';
 import { useReviewsStore } from '@/entities/stats';
+import type { AsyncState } from '@/shared/api';
+import type { ReviewStats } from '@/entities/stats';
 import { formatRange } from '@/shared/lib';
 import { ROUTES } from '@/app/router/paths';
 import { ProfileHeader } from '@/widgets/profile-header';
@@ -22,6 +25,7 @@ export function ProfilePage() {
   const navigate = useNavigate();
 
   const range = useDateRange();
+  const scope = useTeamScope();
   const state = useProfileStore(useShallow((s) => s.state));
   const fetchProfile = useProfileStore((s) => s.fetch);
 
@@ -58,6 +62,23 @@ export function ProfilePage() {
       Назад
     </Button>
   );
+
+  /**
+   * Если в топбаре выбрана конкретная команда, ревью-сравнение должно
+   * считаться внутри неё, а не по всей компании. Фильтруем authors
+   * стора по matchesScope, но субъект профиля ВСЕГДА оставляем — иначе
+   * виджет не найдёт строку автора и вернёт null.
+   */
+  const subjectEmail = profile?.user.email ?? null;
+  const scopedReviewsState = useMemo<AsyncState<ReviewStats>>(() => {
+    if (scope === ALL_TEAMS || !reviewsState.data) return reviewsState;
+    const filteredAuthors = reviewsState.data.authors.filter(
+      (a) =>
+        matchesScope(a.team, scope) ||
+        (subjectEmail && a.email.toLowerCase() === subjectEmail.toLowerCase()),
+    );
+    return { ...reviewsState, data: { ...reviewsState.data, authors: filteredAuthors } };
+  }, [reviewsState, scope, subjectEmail]);
 
   const subtitle = useMemo(() => {
     if (!email) return null;
@@ -134,7 +155,7 @@ export function ProfilePage() {
       </PageSection>
 
       <PageSection>
-        <ProfileReviews state={reviewsState} email={profile.user.email} />
+        <ProfileReviews state={scopedReviewsState} email={profile.user.email} />
       </PageSection>
 
       <PageSection>

@@ -54,6 +54,11 @@ export function PerfMetricTile({
     .filter(Boolean)
     .join(' ');
 
+  // Сравнение возможно, только если бэк прислал previous (включён compareToPrevious
+  // и метрика историческая). Иначе foot ничего не показывает — иначе фраза
+  // «без изменений» вводила бы в заблуждение, когда сравнение не запрашивалось.
+  const hasComparison = !snapshot && metric.previous != null;
+
   return (
     <div className={className}>
       <div className="perf-kpi__label">{label}</div>
@@ -76,9 +81,9 @@ export function PerfMetricTile({
           </span>
         ) : snapshot ? (
           <span className="perf-kpi__snapshot">снапшот</span>
-        ) : (
-          <span className="perf-kpi__flat">без изменений</span>
-        )}
+        ) : hasComparison ? (
+          <span className="perf-kpi__flat">на уровне прошлого периода</span>
+        ) : null}
       </div>
     </div>
   );

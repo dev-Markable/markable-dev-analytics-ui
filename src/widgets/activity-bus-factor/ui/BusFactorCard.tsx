@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { Card, Progress, Tag, Typography } from 'antd';
-import { ShieldAlert } from 'lucide-react';
+import { Card, Progress, Tag, Tooltip, Typography } from 'antd';
+import { Info, ShieldAlert } from 'lucide-react';
 import type { DailyStat } from '@/entities/stats';
 import { EmptyState } from '@/shared/ui';
 import { formatNumber, formatPercent } from '@/shared/lib';
@@ -63,6 +63,31 @@ export function BusFactorCard({ daily }: BusFactorCardProps) {
           <Typography.Title level={4} className="leaderboard-card__title-text">
             Bus factor по репозиториям
           </Typography.Title>
+          <Tooltip
+            title={
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <span>
+                  <strong>Bus factor</strong> — минимальное число людей, чьего внезапного
+                  ухода («попал под автобус») достаточно, чтобы половина коммитов в репо
+                  осталась без живого носителя знаний.
+                </span>
+                <span>
+                  Считаем по доле коммитов: сортируем авторов от крупных к мелким и
+                  набираем сверху, пока не накопим ≥ 50% — это и есть bus factor.
+                </span>
+                <span>
+                  <strong>Топ-контрибьютор</strong> — доля коммитов одного человека.
+                  Если ≥ 70%, репо «висит» на нём — высокий риск.
+                </span>
+              </div>
+            }
+            placement="bottomLeft"
+            overlayStyle={{ maxWidth: 360 }}
+          >
+            <span className="bus-factor__title-info" aria-label="Что такое bus factor">
+              <Info size={14} />
+            </span>
+          </Tooltip>
         </div>
         <Typography.Text type="secondary" className="leaderboard-card__description">
           {atRisk > 0

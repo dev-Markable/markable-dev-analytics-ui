@@ -6,6 +6,7 @@ const PERSIST_KEYS = [
   'devpulse.theme',
   'devpulse.date-range',
   'devpulse.team-scope',
+  'devpulse.sidebar',
   // Устаревшие ключи (clientside allowlist) — чистим, если они остались с прошлых версий.
   'devpulse.team-filter',
   'devpulse.team-members',

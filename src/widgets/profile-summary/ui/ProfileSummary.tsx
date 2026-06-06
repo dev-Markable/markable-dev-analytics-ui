@@ -23,10 +23,21 @@ const typeBreakdown = (dev: number, defect: number): string => {
   return parts.join(' · ');
 };
 
+/**
+ * Шестизначные числа (≥ 100 000) не влезают в xl=4 при стандартном
+ * value-размере. Триггер по числу, а не по длине строки —
+ * однозначно, без зависимости от формата группировки разрядов.
+ */
+const LINES_COMPACT_FROM = 100_000;
+
 export function ProfileSummary({ summary, cards }: ProfileSummaryProps) {
   const mergeRatio = safeDiv(summary.mergeCommits, summary.commits) * 100;
   const testRatio = safeDiv(summary.testAddedLines, summary.addedLines) * 100;
   const nonMerge = summary.commits - summary.mergeCommits;
+
+  const linesCompact =
+    summary.addedLines >= LINES_COMPACT_FROM ||
+    summary.deletedLines >= LINES_COMPACT_FROM;
 
   const c = useMemo(() => summarizeCards(cards), [cards]);
   const activeHint = typeBreakdown(c.activeDev, c.activeDefect) || `из ${formatNumber(c.total)} всего`;
@@ -57,11 +68,11 @@ export function ProfileSummary({ summary, cards }: ProfileSummaryProps) {
         <MetricCard
           label="Добавлено / удалено"
           value={
-            <span style={{ whiteSpace: 'nowrap' }}>
+            <span
+              className={`profile-summary__lines${linesCompact ? ' profile-summary__lines--compact' : ''}`}
+            >
               {formatNumber(summary.addedLines)}
-              <span style={{ color: 'var(--ant-color-text-tertiary)', fontWeight: 500 }}>
-                {' / '}
-              </span>
+              <span className="profile-summary__lines-sep"> / </span>
               {formatNumber(summary.deletedLines)}
             </span>
           }

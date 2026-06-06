@@ -177,6 +177,25 @@ body {
   color: var(--ant-color-text);
 }
 
+/* По умолчанию — стандартный value-размер. Сжатие включается только
+   когда строка не влезает в узкую колонку xl=4 (см. ProfileSummary).
+   Специфичность поднята до `.metric-card__value` parent, чтобы гарантированно
+   победить родительский font-size: 28px по каскаду. */
+.profile-summary__lines {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  letter-spacing: -0.02em;
+}
+
+.metric-card__value .profile-summary__lines--compact {
+  font-size: 22px;
+}
+
+.profile-summary__lines-sep {
+  color: var(--ant-color-text-tertiary);
+  font-weight: 500;
+}
+
 .metric-card__foot {
   display: flex;
   align-items: center;
@@ -313,6 +332,29 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   border-right: 1px solid var(--ant-color-border-secondary);
+  display: flex;
+  flex-direction: column;
+}
+
+.app-sider.ant-layout-sider .ant-layout-sider-children {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100vh;
+}
+
+.app-sider__nav-divider {
+  height: 1px;
+  background: var(--ant-color-split);
+  margin: 12px 8px;
+}
+
+.app-sider__collapse-bar {
+  display: flex;
+  align-items: center;
+  padding: 12px 12px;
+  border-top: 1px solid var(--ant-color-split);
+  margin-top: auto;
 }
 
 .app-sider.ant-layout-sider::-webkit-scrollbar {
@@ -1786,6 +1828,18 @@ body {
 .bus-factor {
   display: flex;
   flex-direction: column;
+}
+
+.bus-factor__title-info {
+  display: inline-flex;
+  align-items: center;
+  color: var(--ant-color-text-quaternary);
+  cursor: help;
+  transition: color 0.15s ease;
+}
+
+.bus-factor__title-info:hover {
+  color: var(--ant-color-text-secondary);
 }
 
 .bus-factor__row {
