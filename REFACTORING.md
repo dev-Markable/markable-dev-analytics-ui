@@ -14,8 +14,8 @@
 | 1 | Удалить dead deps (`framer-motion`, `@ant-design/icons`) | 57 | ✅ |
 | 2 | `ErrorBoundary` в `AppLayout` | 58 | ✅ |
 | 3 | `axios-retry` для idempotent GET | 59 | ✅ |
-| 4 | Тип-комментарий о расхождении `AuthorSummary` / `AuthorActivity` со схемой | 60 | 🔜 |
-| 5 | Confirm-модалка для «Сделать лидом» (защита от случайного клика) | 61 | ⬜ |
+| 4 | Тип-комментарий о расхождении `AuthorSummary` / `AuthorActivity` со схемой | 60 | ✅ |
+| 5 | Confirm-модалка для «Сделать лидом» (защита от случайного клика) | 61 | 🔜 |
 
 ## Среднесрочные (1-2 дня каждый)
 
