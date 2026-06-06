@@ -23,7 +23,7 @@
 |---|---|---|---|
 | 6 | Вынести `useScopedAuthors` — закрывает дубль фильтра на 4 страницах | 62 | ✅ |
 | 7 | Разрезать `global.css` на per-widget CSS-файлы (или подключить CSS Modules для новых виджетов) | 63, 65 | ✅ |
-| 8 | `@testing-library/react` + smoke-тесты топ-страниц (Dashboard / Profile / Activity / Performance Review / Teams) | 64 | ✅ (инфра + 3 файла) |
+| 8 | `@testing-library/react` + smoke-тесты топ-страниц (Dashboard / Profile / Activity / Performance Review / Teams) | 64, 66 | ✅ |
 
 > #7 — закрыт полностью. `global.css` разрезан на 12 доменных файлов:
 > `base.css` 28 · `shared-ui.css` 338 · `app-layout.css` 208 · `dashboard.css` 434 ·
@@ -32,11 +32,11 @@
 > Сам `global.css` удалён, порядок импорта явный в `main.tsx`.
 | 9 | `FilterUrlSync` — один направленный поток, убрать `eslint-disable` | 65 | 🔜 |
 
-> #8 — текущий статус: подключены RTL + jsdom + jest-dom matchers, vitest умеет per-file
-> environment (`*.test.tsx → jsdom`, `*.test.ts → node`). Написаны 3 smoke-файла как шаблон:
-> `EmptyState`, `ErrorBoundary`, `TeamScopePicker`. Page-level smoke (Dashboard / Profile /
-> Activity / Perf-review / Teams) — следующая итерация: им нужны моки сторов или общая
-> testing-render-обёртка с MemoryRouter + AntdProvider.
+> #8 — закрыт. Инфра: RTL + jsdom + jest-dom matchers + `renderWithProviders` helper
+> (MemoryRouter + AntApp + ConfigProvider) + matchMedia/ResizeObserver-полифилы в setup.
+> Покрытие: shared (EmptyState, ErrorBoundary, TeamScopePicker) + 5 page-level smoke
+> (Dashboard, Profile, Activity, Performance Review, Teams). Тесты мокают
+> `@/shared/api/client` глобально и заполняют сторы напрямую через `setState`.
 | 10 | `AbortController` в `apiClient` (отмена устаревших запросов) | 66 | ⬜ |
 
 ## Долгосрочные (через 3-6 месяцев, по триггеру роста кодбазы)

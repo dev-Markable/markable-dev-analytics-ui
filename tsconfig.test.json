@@ -10,6 +10,7 @@
     "src/**/*.test.ts",
     "src/**/*.test.tsx",
     "src/shared/test/**/*.ts",
+    "src/shared/test/**/*.tsx",
     "src/shared/test/global.d.ts",
     "vitest.config.ts"
   ],
