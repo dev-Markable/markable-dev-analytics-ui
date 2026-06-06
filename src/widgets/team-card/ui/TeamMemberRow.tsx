@@ -50,6 +50,18 @@ export function TeamMemberRow({
   // Promise.reject в onOk оставляет confirm открытым (стандартный UX antd).
   // Ошибка тоста показывается из caller'а (handleAssignLead/handleMoveMember
   // в TeamsPage) — у них есть try/catch вокруг store-операций.
+  // Защита от случайного клика в Dropdown: лида сменить так же дёшево, как
+  // и нажать «не туда». Confirm с понятной фразой «прежний будет снят».
+  const confirmAssignLead = () => {
+    modal.confirm({
+      title: 'Сделать лидом?',
+      content: `${userDisplayName(member)} станет лидом команды «${team}». Прежний лид (если был) будет снят автоматически.`,
+      okText: 'Сделать лидом',
+      cancelText: 'Отмена',
+      onOk: handleAssignLead,
+    });
+  };
+
   const confirmExclude = () => {
     modal.confirm({
       title: 'Исключить из команды?',
@@ -110,7 +122,7 @@ export function TeamMemberRow({
             key: 'assign-lead',
             label: 'Сделать лидом',
             icon: <Crown size={14} />,
-            onClick: handleAssignLead,
+            onClick: confirmAssignLead,
           },
         ]),
     {
