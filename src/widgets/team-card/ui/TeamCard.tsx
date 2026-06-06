@@ -1,5 +1,5 @@
-import { App, Button, Card, Empty, Typography } from 'antd';
-import { Crown, Users } from 'lucide-react';
+import { Card, Empty, Typography } from 'antd';
+import { Users } from 'lucide-react';
 import type { Team } from '@/entities/team';
 import { TeamMemberRow } from './TeamMemberRow';
 
@@ -12,8 +12,6 @@ interface TeamCardProps {
 }
 
 export function TeamCard({ team, allTeams, onAssignLead, onMoveMember }: TeamCardProps) {
-  const { modal } = App.useApp();
-
   // Сортируем: лид — наверх, далее по имени.
   const sortedMembers = [...team.members].sort((a, b) => {
     const aLead = a.email === team.lead?.email ? 0 : 1;
@@ -22,20 +20,9 @@ export function TeamCard({ team, allTeams, onAssignLead, onMoveMember }: TeamCar
     return (a.name ?? a.email).localeCompare(b.name ?? b.email);
   });
 
-  const confirmClearLead = () => {
-    modal.confirm({
-      title: 'Снять лида?',
-      content: `Команда «${team.name}» останется без лида.`,
-      okText: 'Снять',
-      okButtonProps: { danger: true },
-      cancelText: 'Отмена',
-      onOk: () => onAssignLead(team.name, null),
-    });
-  };
-
   return (
     <Card variant="borderless" className="leaderboard-card team-card">
-      <header className="leaderboard-card__header team-card__header">
+      <header className="leaderboard-card__header">
         <div className="leaderboard-card__title">
           <span className="leaderboard-card__icon">
             <Users size={16} />
@@ -56,13 +43,6 @@ export function TeamCard({ team, allTeams, onAssignLead, onMoveMember }: TeamCar
             ' · лид не назначен'
           )}
         </Typography.Text>
-        {team.lead && (
-          <div className="team-card__actions">
-            <Button size="small" icon={<Crown size={14} />} onClick={confirmClearLead} danger>
-              Снять лида
-            </Button>
-          </div>
-        )}
       </header>
 
       <div className="leaderboard-card__body team-card__members">

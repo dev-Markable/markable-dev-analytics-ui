@@ -9,7 +9,12 @@ export type PerformanceMetrics = Schemas['PerformanceMetrics'];
 export type MetricDelta = Schemas['MetricDelta'];
 export type TaskTypeBreakdown = Schemas['TaskTypeBreakdown'];
 export type TaskStatusCounts = Schemas['TaskStatusCounts'];
-export type PerformanceHighlight = Schemas['PerformanceHighlight'];
+
+/** Заметные результаты (2.0.0): firefighting + deliveredFeatures. */
+export type NotableResults = Schemas['NotableResults'];
+export type FirefightingItem = Schemas['FirefightingItem'];
+export type DeliveredFeature = Schemas['DeliveredFeature'];
+export type FirefightingUrgency = FirefightingItem['urgency'];
 
 /** Углублённая Kaiten-аналитика (1.8.0): defects, development, cycleTime, balance. */
 export type KaitenInsights = Schemas['KaitenInsights'];

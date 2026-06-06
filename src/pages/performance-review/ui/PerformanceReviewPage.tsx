@@ -16,7 +16,7 @@ import { DefectsByUrgency } from '@/widgets/perf-kaiten-defects';
 import { DevelopmentRollupCard } from '@/widgets/perf-kaiten-development';
 import { CycleTimeCard } from '@/widgets/perf-kaiten-cycle';
 import { WorkBalanceCard } from '@/widgets/perf-kaiten-balance';
-import { PerfHighlights } from '@/widgets/perf-highlights';
+import { DeliveredFeaturesCard, FirefightingCard } from '@/widgets/perf-notable';
 
 const DEFAULT_RANGE = presetRange(DEFAULT_PERF_PERIOD === 'custom' ? 'quarter' : DEFAULT_PERF_PERIOD);
 
@@ -157,7 +157,14 @@ export function PerformanceReviewPage() {
           </PageSection>
 
           <PageSection>
-            <PerfHighlights highlights={review.highlights} />
+            <Row gutter={[16, 16]}>
+              <Col xs={24} xl={12}>
+                <FirefightingCard items={review.notable.firefighting} />
+              </Col>
+              <Col xs={24} xl={12}>
+                <DeliveredFeaturesCard items={review.notable.deliveredFeatures} />
+              </Col>
+            </Row>
           </PageSection>
         </div>
       )}
