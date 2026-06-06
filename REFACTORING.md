@@ -24,27 +24,27 @@
 | 6 | Вынести `useScopedAuthors` — закрывает дубль фильтра на 4 страницах | 62 | ✅ |
 | 7 | Разрезать `global.css` на per-widget CSS-файлы (или подключить CSS Modules для новых виджетов) | 63, 65 | ✅ |
 | 8 | `@testing-library/react` + smoke-тесты топ-страниц (Dashboard / Profile / Activity / Performance Review / Teams) | 64, 66 | ✅ |
-
+| 9 | `FilterUrlSync` — один направленный поток, убрать `eslint-disable` | 67 | ✅ |
+| 10 | `AbortController` в `apiClient` (отмена устаревших запросов) | 68 | ✅ |
 > #7 — закрыт полностью. `global.css` разрезан на 12 доменных файлов:
 > `base.css` 28 · `shared-ui.css` 338 · `app-layout.css` 208 · `dashboard.css` 434 ·
 > `weekly.css` 61 · `activity.css` 289 · `profile.css` 399 · `compare.css` 80 ·
 > `perf-review.css` 883 · `teams.css` 214 · `collection.css` 90 · `settings.css` 142.
 > Сам `global.css` удалён, порядок импорта явный в `main.tsx`.
-| 9 | `FilterUrlSync` — один направленный поток, убрать `eslint-disable` | 67 | ✅ |
 
 > #8 — закрыт. Инфра: RTL + jsdom + jest-dom matchers + `renderWithProviders` helper
 > (MemoryRouter + AntApp + ConfigProvider) + matchMedia/ResizeObserver-полифилы в setup.
 > Покрытие: shared (EmptyState, ErrorBoundary, TeamScopePicker) + 5 page-level smoke
 > (Dashboard, Profile, Activity, Performance Review, Teams). Тесты мокают
 > `@/shared/api/client` глобально и заполняют сторы напрямую через `setState`.
-| 10 | `AbortController` в `apiClient` (отмена устаревших запросов) | 68 | 🔜 |
+
 
 ## Долгосрочные (через 3-6 месяцев, по триггеру роста кодбазы)
 
 | # | Что | Стейдж | Статус |
 |---|---|---|---|
-| 11 | Миграция на TanStack Query (порог 5+ эндпоинт-сторов пройден) | 67 | ⬜ |
-| 12 | Подгруппировка `widgets/` по доменам (`perf/`, `dashboard/`, `activity/`) | 68 | ⬜ |
+| 11 | Миграция на TanStack Query (порог 5+ эндпоинт-сторов пройден) | 69 | 🔜 |
+| 12 | Подгруппировка `widgets/` по доменам (`perf/`, `dashboard/`, `activity/`) | 70 | ⬜ |
 | 13 | CSS Modules для всех виджетов (если CSS вырос ещё на 50%) | 69 | ⬜ |
 | 14 | Виртуализация `TasksTimeline` (`@tanstack/react-virtual`) | 70 | ⬜ |
 

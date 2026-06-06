@@ -6,6 +6,7 @@ import {
   asyncSuccess,
   createRaceGuard,
   idleAsyncState,
+  isAbortError,
   isFresh,
   toApiError,
   type AsyncState,
@@ -20,10 +21,12 @@ interface TeamsStore {
   fetch: (force?: boolean) => Promise<void>;
   /** Назначить лида и обновить локальный кэш. */
   assignLead: (team: string, email: string | null) => Promise<void>;
+  cancel: () => void;
   reset: () => void;
 }
 
 const guard = createRaceGuard();
+let currentAbort: AbortController | null = null;
 
 export const useTeamsStore = create<TeamsStore>((set, get) => ({
   state: idleAsyncState<Team[]>(),
@@ -32,14 +35,20 @@ export const useTeamsStore = create<TeamsStore>((set, get) => ({
     const current = get().state;
     if (!force && current.status === 'success' && isFresh(current, STORE_CACHE_TTL_MS)) return;
 
+    currentAbort?.abort();
+    const abort = new AbortController();
+    currentAbort = abort;
+
     const requestId = guard.next();
     set((s) => ({ state: asyncLoading(s.state) }));
     try {
-      const data = await getTeams();
+      const data = await getTeams(abort.signal);
       if (!guard.isCurrent(requestId)) return;
+      currentAbort = null;
       set({ state: asyncSuccess(data) });
     } catch (e) {
       if (!guard.isCurrent(requestId)) return;
+      if (isAbortError(e)) return;
       set((s) => ({ state: asyncFailure(s.state, e instanceof ApiError ? e : toApiError(e)) }));
     }
   },
@@ -57,5 +66,14 @@ export const useTeamsStore = create<TeamsStore>((set, get) => ({
     }
   },
 
-  reset: () => set({ state: idleAsyncState<Team[]>() }),
+  cancel: () => {
+    currentAbort?.abort();
+    currentAbort = null;
+  },
+
+  reset: () => {
+    currentAbort?.abort();
+    currentAbort = null;
+    set({ state: idleAsyncState<Team[]>() });
+  },
 }));

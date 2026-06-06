@@ -11,3 +11,4 @@ export {
   isFresh,
 } from './async-state';
 export { createRaceGuard, type RaceGuard } from './race';
+export { isAbortError } from './abort';

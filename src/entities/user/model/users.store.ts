@@ -6,6 +6,7 @@ import {
   asyncSuccess,
   createRaceGuard,
   idleAsyncState,
+  isAbortError,
   toApiError,
   type AsyncState,
 } from '@/shared/api';
@@ -17,23 +18,31 @@ interface UsersStore {
   fetch: () => Promise<void>;
   /** Назначить команду и обновить запись в кэше списка локально. */
   assignTeam: (email: string, team: string | null) => Promise<void>;
+  cancel: () => void;
   reset: () => void;
 }
 
 const guard = createRaceGuard();
+let currentAbort: AbortController | null = null;
 
 export const useUsersStore = create<UsersStore>((set, get) => ({
   state: idleAsyncState<UnifiedUser[]>(),
 
   fetch: async () => {
+    currentAbort?.abort();
+    const abort = new AbortController();
+    currentAbort = abort;
+
     const requestId = guard.next();
     set((s) => ({ state: asyncLoading(s.state) }));
     try {
-      const data = await getUsers();
+      const data = await getUsers(undefined, abort.signal);
       if (!guard.isCurrent(requestId)) return;
+      currentAbort = null;
       set({ state: asyncSuccess(data) });
     } catch (e) {
       if (!guard.isCurrent(requestId)) return;
+      if (isAbortError(e)) return;
       set((s) => ({ state: asyncFailure(s.state, e instanceof ApiError ? e : toApiError(e)) }));
     }
   },
@@ -51,5 +60,14 @@ export const useUsersStore = create<UsersStore>((set, get) => ({
     }
   },
 
-  reset: () => set({ state: idleAsyncState<UnifiedUser[]>() }),
+  cancel: () => {
+    currentAbort?.abort();
+    currentAbort = null;
+  },
+
+  reset: () => {
+    currentAbort?.abort();
+    currentAbort = null;
+    set({ state: idleAsyncState<UnifiedUser[]>() });
+  },
 }));

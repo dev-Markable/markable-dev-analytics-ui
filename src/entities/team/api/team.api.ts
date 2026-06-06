@@ -2,8 +2,8 @@ import { apiClient } from '@/shared/api';
 import type { Team } from '../model/types';
 
 /** Список всех команд с лидом и участниками. */
-export async function getTeams(): Promise<Team[]> {
-  const { data } = await apiClient.get<Team[]>('/teams');
+export async function getTeams(signal?: AbortSignal): Promise<Team[]> {
+  const { data } = await apiClient.get<Team[]>('/teams', { signal });
   return data;
 }
 

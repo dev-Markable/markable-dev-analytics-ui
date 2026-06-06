@@ -8,13 +8,16 @@ import type { DashboardData, DashboardQuery } from '../model/types';
  */
 const DEFAULT_DASHBOARD_SIZE = 500;
 
-export async function getDashboard(query: DashboardQuery = {}): Promise<DashboardData> {
+export async function getDashboard(
+  query: DashboardQuery = {},
+  signal?: AbortSignal,
+): Promise<DashboardData> {
   const params: Record<string, string> = {};
   if (query.from) params.from = query.from;
   if (query.to) params.to = query.to;
   params.size = String(query.size ?? DEFAULT_DASHBOARD_SIZE);
   if (query.page != null) params.page = String(query.page);
 
-  const { data } = await apiClient.get<DashboardData>('/dashboard', { params });
+  const { data } = await apiClient.get<DashboardData>('/dashboard', { params, signal });
   return data;
 }

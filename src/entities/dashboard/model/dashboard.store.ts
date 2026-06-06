@@ -6,6 +6,7 @@ import {
   asyncSuccess,
   createRaceGuard,
   idleAsyncState,
+  isAbortError,
   isFresh,
   toApiError,
   type AsyncState,
@@ -28,12 +29,17 @@ interface DashboardStore {
    */
   prev: AsyncState<DashboardData>;
   fetch: (period: DashboardPeriod) => Promise<void>;
+  /** Отменить inflight-запрос (используется при unmount). */
+  cancel: () => void;
   reset: () => void;
 }
 
 const guard = createRaceGuard();
 // Ключ последней успешной загрузки — для TTL-кэша при возврате на страницу.
 let lastKey: string | null = null;
+// Контроллер inflight-запроса. Новый fetch гасит предыдущий, чтобы устаревший
+// тяжёлый /dashboard?size=500 не висел в сети при быстрой смене периода.
+let currentAbort: AbortController | null = null;
 
 export const useDashboardStore = create<DashboardStore>((set, get) => ({
   state: idleAsyncState<DashboardData>(),
@@ -47,18 +53,24 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       return;
     }
 
+    currentAbort?.abort();
+    const abort = new AbortController();
+    currentAbort = abort;
+
     const requestId = guard.next();
     set((s) => ({ state: asyncLoading(s.state), prev: asyncLoading(s.prev) }));
     try {
       const [data, prevData] = await Promise.all([
-        getDashboard(period),
-        getDashboard(previousPeriod(period)),
+        getDashboard(period, abort.signal),
+        getDashboard(previousPeriod(period), abort.signal),
       ]);
       if (!guard.isCurrent(requestId)) return;
       lastKey = key;
+      currentAbort = null;
       set({ state: asyncSuccess(data), prev: asyncSuccess(prevData) });
     } catch (e) {
       if (!guard.isCurrent(requestId)) return;
+      if (isAbortError(e)) return;
       const error = e instanceof ApiError ? e : toApiError(e);
       // Дельты — вторичны: если упал основной, показываем ошибку основного.
       // prev-фейл не критичен, но помечаем тоже, чтобы UI не ждал.
@@ -69,8 +81,15 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     }
   },
 
+  cancel: () => {
+    currentAbort?.abort();
+    currentAbort = null;
+  },
+
   reset: () => {
     lastKey = null;
+    currentAbort?.abort();
+    currentAbort = null;
     set({
       state: idleAsyncState<DashboardData>(),
       prev: idleAsyncState<DashboardData>(),
