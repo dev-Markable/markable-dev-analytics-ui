@@ -10,8 +10,12 @@ import { useUsersStore } from '@/entities/user';
 import { usePerformanceStore } from '@/entities/performance-review';
 import { PerfControls, DEFAULT_PERF_PERIOD, presetRange } from '@/widgets/perf-controls';
 import { PerfSubject } from '@/widgets/perf-subject';
-import { PerfKpiGrid } from '@/widgets/perf-kpi-grid';
-import { TaskBreakdown } from '@/widgets/perf-task-breakdown';
+import { CodeSummaryCard } from '@/widgets/perf-code-summary';
+import { ReviewSummaryCard } from '@/widgets/perf-review-summary';
+import { DefectsByUrgency } from '@/widgets/perf-kaiten-defects';
+import { DevelopmentRollupCard } from '@/widgets/perf-kaiten-development';
+import { CycleTimeCard } from '@/widgets/perf-kaiten-cycle';
+import { WorkBalanceCard } from '@/widgets/perf-kaiten-balance';
 import { PerfHighlights } from '@/widgets/perf-highlights';
 
 const DEFAULT_RANGE = presetRange(DEFAULT_PERF_PERIOD === 'custom' ? 'quarter' : DEFAULT_PERF_PERIOD);
@@ -123,18 +127,37 @@ export function PerformanceReviewPage() {
           </PageSection>
 
           <PageSection>
-            <PerfKpiGrid metrics={review.metrics} />
+            <Row gutter={[16, 16]}>
+              <Col xs={24} xl={12}>
+                <CodeSummaryCard metrics={review.metrics} />
+              </Col>
+              <Col xs={24} xl={12}>
+                <ReviewSummaryCard metrics={review.metrics} />
+              </Col>
+            </Row>
+          </PageSection>
+
+          <PageSection>
+            <DefectsByUrgency defects={review.kaiten.defects} />
+          </PageSection>
+
+          <PageSection>
+            <DevelopmentRollupCard rollup={review.kaiten.development} />
           </PageSection>
 
           <PageSection>
             <Row gutter={[16, 16]}>
               <Col xs={24} xl={12}>
-                <TaskBreakdown breakdown={review.taskBreakdown} />
+                <CycleTimeCard cycle={review.kaiten.cycleTime} />
               </Col>
               <Col xs={24} xl={12}>
-                <PerfHighlights highlights={review.highlights} />
+                <WorkBalanceCard balance={review.kaiten.balance} />
               </Col>
             </Row>
+          </PageSection>
+
+          <PageSection>
+            <PerfHighlights highlights={review.highlights} />
           </PageSection>
         </div>
       )}

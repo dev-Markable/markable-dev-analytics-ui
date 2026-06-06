@@ -11,6 +11,18 @@ export type TaskTypeBreakdown = Schemas['TaskTypeBreakdown'];
 export type TaskStatusCounts = Schemas['TaskStatusCounts'];
 export type PerformanceHighlight = Schemas['PerformanceHighlight'];
 
+/** Углублённая Kaiten-аналитика (1.8.0): defects, development, cycleTime, balance. */
+export type KaitenInsights = Schemas['KaitenInsights'];
+export type DefectsSummary = Schemas['DefectsSummary'];
+export type UrgencyCounts = Schemas['UrgencyCounts'];
+export type DevelopmentRollup = Schemas['DevelopmentRollup'];
+export type RootTask = Schemas['RootTask'];
+export type UseCaseRef = Schemas['UseCaseRef'];
+export type CycleTime = Schemas['CycleTime'];
+export type WorkBalance = Schemas['WorkBalance'];
+export type UseCaseStatus = UseCaseRef['status'];
+export type UseCaseType = UseCaseRef['type'];
+
 /** Ключ метрики в PerformanceMetrics — для типобезопасного перебора. */
 export type MetricKey = keyof PerformanceMetrics;
 
