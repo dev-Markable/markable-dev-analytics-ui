@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import { Tag, Tooltip } from 'antd';
-import { Bug, Code, MoreHorizontal } from 'lucide-react';
+import { Bug, Code, MoreHorizontal, Wrench } from 'lucide-react';
 import type { KaitenCardType } from '../model/types';
 
 interface TypeMeta {
@@ -19,6 +19,11 @@ const TYPE_META: Record<KaitenCardType, TypeMeta> = {
     label: 'Дефект',
     color: 'error',
     icon: <Bug size={11} strokeWidth={2} />,
+  },
+  TASK: {
+    label: 'Задача',
+    color: 'cyan',
+    icon: <Wrench size={11} strokeWidth={2} />,
   },
   OTHER: {
     label: 'Прочее',
