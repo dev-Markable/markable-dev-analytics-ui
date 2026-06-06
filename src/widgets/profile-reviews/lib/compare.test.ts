@@ -10,6 +10,7 @@ const author = (over: Partial<ReviewAuthor>): ReviewAuthor => ({
   commentsGiven: 0,
   reviewsReceived: 0,
   avgTimeToMergeHours: 0,
+  isLead: false,
   ...over,
 });
 

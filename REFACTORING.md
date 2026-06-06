@@ -23,12 +23,18 @@
 |---|---|---|---|
 | 6 | Вынести `useScopedAuthors` — закрывает дубль фильтра на 4 страницах | 62 | ✅ |
 | 7 | Разрезать `global.css` на per-widget CSS-файлы (или подключить CSS Modules для новых виджетов) | 63 | ✅ (частично) |
-| 8 | `@testing-library/react` + smoke-тесты топ-страниц (Dashboard / Profile / Activity / Performance Review / Teams) | 64 | 🔜 |
+| 8 | `@testing-library/react` + smoke-тесты топ-страниц (Dashboard / Profile / Activity / Performance Review / Teams) | 64 | ✅ (инфра + 3 файла) |
 
 > #7 — текущий статус: вынесены два больших куска (`perf-review.css` 883 стр., `teams.css` 214 стр.).
 > `global.css` ужался 3156 → 2060. Остальные блоки (Dashboard/Activity/Profile) — кандидаты на дальнейший
 > распил по тому же шаблону: подкрасить файл по домену, добавить импорт в `main.tsx`.
-| 9 | `FilterUrlSync` — один направленный поток, убрать `eslint-disable` | 65 | ⬜ |
+| 9 | `FilterUrlSync` — один направленный поток, убрать `eslint-disable` | 65 | 🔜 |
+
+> #8 — текущий статус: подключены RTL + jsdom + jest-dom matchers, vitest умеет per-file
+> environment (`*.test.tsx → jsdom`, `*.test.ts → node`). Написаны 3 smoke-файла как шаблон:
+> `EmptyState`, `ErrorBoundary`, `TeamScopePicker`. Page-level smoke (Dashboard / Profile /
+> Activity / Perf-review / Teams) — следующая итерация: им нужны моки сторов или общая
+> testing-render-обёртка с MemoryRouter + AntdProvider.
 | 10 | `AbortController` в `apiClient` (отмена устаревших запросов) | 66 | ⬜ |
 
 ## Долгосрочные (через 3-6 месяцев, по триггеру роста кодбазы)
