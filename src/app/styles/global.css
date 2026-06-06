@@ -2642,16 +2642,6 @@ body {
 /* ============================================================
    Teams page
    ============================================================ */
-.team-card__header {
-  position: relative;
-}
-
-.team-card__actions {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
 .team-card__members {
   display: flex;
   flex-direction: column;
