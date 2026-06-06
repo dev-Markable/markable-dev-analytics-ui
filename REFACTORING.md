@@ -30,14 +30,14 @@
 > `weekly.css` 61 · `activity.css` 289 · `profile.css` 399 · `compare.css` 80 ·
 > `perf-review.css` 883 · `teams.css` 214 · `collection.css` 90 · `settings.css` 142.
 > Сам `global.css` удалён, порядок импорта явный в `main.tsx`.
-| 9 | `FilterUrlSync` — один направленный поток, убрать `eslint-disable` | 65 | 🔜 |
+| 9 | `FilterUrlSync` — один направленный поток, убрать `eslint-disable` | 67 | ✅ |
 
 > #8 — закрыт. Инфра: RTL + jsdom + jest-dom matchers + `renderWithProviders` helper
 > (MemoryRouter + AntApp + ConfigProvider) + matchMedia/ResizeObserver-полифилы в setup.
 > Покрытие: shared (EmptyState, ErrorBoundary, TeamScopePicker) + 5 page-level smoke
 > (Dashboard, Profile, Activity, Performance Review, Teams). Тесты мокают
 > `@/shared/api/client` глобально и заполняют сторы напрямую через `setState`.
-| 10 | `AbortController` в `apiClient` (отмена устаревших запросов) | 66 | ⬜ |
+| 10 | `AbortController` в `apiClient` (отмена устаревших запросов) | 68 | 🔜 |
 
 ## Долгосрочные (через 3-6 месяцев, по триггеру роста кодбазы)
 
