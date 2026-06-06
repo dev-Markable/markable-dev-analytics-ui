@@ -16,6 +16,7 @@ export type {
   UseCaseStatus,
   UseCaseType,
   CycleTime,
+  CycleTimeBreakdown,
   WorkBalance,
 } from './model/types';
 export { getPerformanceReview } from './api/performance.api';

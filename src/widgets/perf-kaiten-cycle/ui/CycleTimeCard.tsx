@@ -1,15 +1,15 @@
 import { Card, Typography } from 'antd';
-import { Timer } from 'lucide-react';
-import type { CycleTime } from '@/entities/performance-review';
-import { formatDays } from '../lib/format-days';
+import { Bug, Code, Timer } from 'lucide-react';
+import type { CycleTimeBreakdown } from '@/entities/performance-review';
+import { CycleTimeSection } from './CycleTimeSection';
 
 interface CycleTimeCardProps {
-  cycle: CycleTime;
+  cycle: CycleTimeBreakdown;
 }
 
 export function CycleTimeCard({ cycle }: CycleTimeCardProps) {
-  const { medianDays, meanDays, count } = cycle;
-  const isEmpty = count === 0 || (medianDays == null && meanDays == null);
+  const { defects, development } = cycle;
+  const isEmpty = defects.count === 0 && development.count === 0;
 
   return (
     <Card variant="borderless" className="leaderboard-card">
@@ -23,29 +23,27 @@ export function CycleTimeCard({ cycle }: CycleTimeCardProps) {
           </Typography.Title>
         </div>
         <Typography.Text type="secondary" className="leaderboard-card__description">
-          От первого перехода «в работу» до «готово» по закрытым в периоде карточкам.
+          От первого перехода «в работу» до «готово». Дефекты и разработка считаются раздельно — длительность у них разная.
         </Typography.Text>
       </header>
 
       <div className="leaderboard-card__body">
         {isEmpty ? (
           <Typography.Text type="secondary">
-            Нет данных за период — никто из карточек не дошёл «в работу → готово».
+            Нет закрытых карточек за период — нечего показывать.
           </Typography.Text>
         ) : (
           <div className="cycle-time">
-            <div className="cycle-time__primary">
-              <span className="cycle-time__label">Медиана</span>
-              <span className="cycle-time__value">{formatDays(medianDays)}</span>
-              <span className="cycle-time__hint">
-                по {count} {count === 1 ? 'карточке' : 'карточкам'}
-              </span>
-            </div>
-            <div className="cycle-time__secondary">
-              <span className="cycle-time__label">Среднее</span>
-              <span className="cycle-time__value">{formatDays(meanDays)}</span>
-              <span className="cycle-time__hint">подвержено выбросам</span>
-            </div>
+            <CycleTimeSection
+              title="Дефекты"
+              icon={<Bug size={14} />}
+              cycle={defects}
+            />
+            <CycleTimeSection
+              title="Разработка"
+              icon={<Code size={14} />}
+              cycle={development}
+            />
           </div>
         )}
       </div>

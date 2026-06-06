@@ -19,6 +19,7 @@ export type DevelopmentRollup = Schemas['DevelopmentRollup'];
 export type RootTask = Schemas['RootTask'];
 export type UseCaseRef = Schemas['UseCaseRef'];
 export type CycleTime = Schemas['CycleTime'];
+export type CycleTimeBreakdown = Schemas['CycleTimeBreakdown'];
 export type WorkBalance = Schemas['WorkBalance'];
 export type UseCaseStatus = UseCaseRef['status'];
 export type UseCaseType = UseCaseRef['type'];
