@@ -44,17 +44,40 @@ export function matchesScope(team: string | null | undefined, scope: string): bo
 }
 
 /**
- * Фильтрует массив по текущему скопу команды.
- * `getTeam` — экстрактор поля `team` (string|null) из элемента.
+ * Pure-фильтр по скопу команды. Вынесен из хука, чтобы тестировать без React.
+ *
+ * - `getTeam` — экстрактор поля `team` из элемента.
+ * - `alwaysKeep` (опц.) — элементы, для которых вернёт true, проходят
+ *   фильтр независимо от скопа. Пример: на странице профиля субъект
+ *   ВСЕГДА должен остаться в выборке для сравнения со средним по команде,
+ *   даже если его команда не совпадает со скопом.
+ */
+export function filterByScope<T>(
+  items: readonly T[] | null | undefined,
+  scope: string,
+  getTeam: (item: T) => string | null | undefined,
+  alwaysKeep?: (item: T) => boolean,
+): T[] {
+  if (!items) return [];
+  if (scope === ALL_TEAMS) return items as T[];
+  return (items as T[]).filter(
+    (item) =>
+      matchesScope(getTeam(item), scope) || (alwaysKeep ? alwaysKeep(item) : false),
+  );
+}
+
+/**
+ * Хук-обёртка над `filterByScope`: подмешивает текущий скоп из стора +
+ * мемоизация результата.
  */
 export function useTeamScopeFilter<T>(
   items: readonly T[] | null | undefined,
   getTeam: (item: T) => string | null | undefined,
+  alwaysKeep?: (item: T) => boolean,
 ): T[] {
   const scope = useTeamScope();
-  return useMemo(() => {
-    if (!items) return [];
-    if (scope === ALL_TEAMS) return items as T[];
-    return (items as T[]).filter((item) => matchesScope(getTeam(item), scope));
-  }, [items, scope, getTeam]);
+  return useMemo(
+    () => filterByScope(items, scope, getTeam, alwaysKeep),
+    [items, scope, getTeam, alwaysKeep],
+  );
 }

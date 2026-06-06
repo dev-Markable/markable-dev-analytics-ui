@@ -6,7 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { PageHeader, PageSection, ErrorState, LoadingState } from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
-import { ALL_TEAMS, matchesScope, useTeamScope } from '@/features/team-scope';
+import { ALL_TEAMS, filterByScope, useTeamScope } from '@/features/team-scope';
 import { useProfileStore, userDisplayName } from '@/entities/user';
 import { useReviewsStore } from '@/entities/stats';
 import type { AsyncState } from '@/shared/api';
@@ -65,17 +65,19 @@ export function ProfilePage() {
 
   /**
    * Если в топбаре выбрана конкретная команда, ревью-сравнение должно
-   * считаться внутри неё, а не по всей компании. Фильтруем authors
-   * стора по matchesScope, но субъект профиля ВСЕГДА оставляем — иначе
-   * виджет не найдёт строку автора и вернёт null.
+   * считаться внутри неё, а не по всей компании. Через alwaysKeep
+   * субъект профиля проходит фильтр независимо от скопа — иначе виджет
+   * не найдёт строку автора и вернёт null.
    */
   const subjectEmail = profile?.user.email ?? null;
   const scopedReviewsState = useMemo<AsyncState<ReviewStats>>(() => {
     if (scope === ALL_TEAMS || !reviewsState.data) return reviewsState;
-    const filteredAuthors = reviewsState.data.authors.filter(
+    const filteredAuthors = filterByScope(
+      reviewsState.data.authors,
+      scope,
+      (a) => a.team,
       (a) =>
-        matchesScope(a.team, scope) ||
-        (subjectEmail && a.email.toLowerCase() === subjectEmail.toLowerCase()),
+        subjectEmail != null && a.email.toLowerCase() === subjectEmail.toLowerCase(),
     );
     return { ...reviewsState, data: { ...reviewsState.data, authors: filteredAuthors } };
   }, [reviewsState, scope, subjectEmail]);

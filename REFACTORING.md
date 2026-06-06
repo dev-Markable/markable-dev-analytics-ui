@@ -15,14 +15,14 @@
 | 2 | `ErrorBoundary` в `AppLayout` | 58 | ✅ |
 | 3 | `axios-retry` для idempotent GET | 59 | ✅ |
 | 4 | Тип-комментарий о расхождении `AuthorSummary` / `AuthorActivity` со схемой | 60 | ✅ |
-| 5 | Confirm-модалка для «Сделать лидом» (защита от случайного клика) | 61 | 🔜 |
+| 5 | Confirm-модалка для «Сделать лидом» (защита от случайного клика) | 61 | ✅ |
 
 ## Среднесрочные (1-2 дня каждый)
 
 | # | Что | Стейдж | Статус |
 |---|---|---|---|
-| 6 | Вынести `useScopedAuthors` — закрывает дубль фильтра на 4 страницах | 62 | ⬜ |
-| 7 | Разрезать `global.css` на per-widget CSS-файлы (или подключить CSS Modules для новых виджетов) | 63 | ⬜ |
+| 6 | Вынести `useScopedAuthors` — закрывает дубль фильтра на 4 страницах | 62 | ✅ |
+| 7 | Разрезать `global.css` на per-widget CSS-файлы (или подключить CSS Modules для новых виджетов) | 63 | 🔜 |
 | 8 | `@testing-library/react` + smoke-тесты топ-страниц (Dashboard / Profile / Activity / Performance Review / Teams) | 64 | ⬜ |
 | 9 | `FilterUrlSync` — один направленный поток, убрать `eslint-disable` | 65 | ⬜ |
 | 10 | `AbortController` в `apiClient` (отмена устаревших запросов) | 66 | ⬜ |
