@@ -22,12 +22,14 @@
 | # | Что | Стейдж | Статус |
 |---|---|---|---|
 | 6 | Вынести `useScopedAuthors` — закрывает дубль фильтра на 4 страницах | 62 | ✅ |
-| 7 | Разрезать `global.css` на per-widget CSS-файлы (или подключить CSS Modules для новых виджетов) | 63 | ✅ (частично) |
+| 7 | Разрезать `global.css` на per-widget CSS-файлы (или подключить CSS Modules для новых виджетов) | 63, 65 | ✅ |
 | 8 | `@testing-library/react` + smoke-тесты топ-страниц (Dashboard / Profile / Activity / Performance Review / Teams) | 64 | ✅ (инфра + 3 файла) |
 
-> #7 — текущий статус: вынесены два больших куска (`perf-review.css` 883 стр., `teams.css` 214 стр.).
-> `global.css` ужался 3156 → 2060. Остальные блоки (Dashboard/Activity/Profile) — кандидаты на дальнейший
-> распил по тому же шаблону: подкрасить файл по домену, добавить импорт в `main.tsx`.
+> #7 — закрыт полностью. `global.css` разрезан на 12 доменных файлов:
+> `base.css` 28 · `shared-ui.css` 338 · `app-layout.css` 208 · `dashboard.css` 434 ·
+> `weekly.css` 61 · `activity.css` 289 · `profile.css` 399 · `compare.css` 80 ·
+> `perf-review.css` 883 · `teams.css` 214 · `collection.css` 90 · `settings.css` 142.
+> Сам `global.css` удалён, порядок импорта явный в `main.tsx`.
 | 9 | `FilterUrlSync` — один направленный поток, убрать `eslint-disable` | 65 | 🔜 |
 
 > #8 — текущий статус: подключены RTL + jsdom + jest-dom matchers, vitest умеет per-file

@@ -1,0 +1,399 @@
+/* ──────────────────────────────────────────────────────────── */
+/*  Profile header                                             */
+/* ──────────────────────────────────────────────────────────── */
+
+.profile-header.ant-card {
+  border: 1px solid var(--ant-color-border);
+  border-radius: 12px;
+  background: var(--ant-color-bg-container);
+  box-shadow:
+    0 1px 2px rgba(15, 17, 21, 0.04),
+    0 4px 12px rgba(15, 17, 21, 0.05);
+}
+
+[data-theme='dark'] .profile-header.ant-card {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.profile-header .ant-card-body {
+  padding: 24px 28px;
+}
+
+.profile-header__main {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.profile-header__identity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.profile-header__name.ant-typography {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--ant-color-text);
+}
+
+.profile-header__email {
+  font-size: 13px;
+}
+
+.profile-header__badges {
+  margin-top: 6px;
+}
+
+/* ──────────────────────────────────────────────────────────── */
+/*  Kaiten cards board                                         */
+/* ──────────────────────────────────────────────────────────── */
+
+.kaiten-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.kaiten-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 10px;
+  background: var(--ant-color-bg-layout);
+}
+
+.kaiten-column__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-inline: 4px;
+}
+
+.kaiten-column__name.ant-typography {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ant-color-text-secondary);
+}
+
+.kaiten-column__count.ant-typography {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  background: var(--ant-color-bg-container);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.kaiten-column__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kaiten-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 10px;
+  background: var(--ant-color-bg-container);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+}
+
+.kaiten-card--linked:hover {
+  border-color: var(--ant-color-primary);
+  box-shadow: 0 4px 12px rgba(91, 108, 255, 0.12);
+}
+
+.kaiten-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kaiten-card__id {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--ant-color-text-tertiary);
+  font-weight: 500;
+}
+
+.kaiten-card__title.ant-typography {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ant-color-text);
+  letter-spacing: -0.005em;
+}
+
+.kaiten-card__description.ant-typography {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ant-color-text-secondary);
+}
+
+.kaiten-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.kaiten-card__location.ant-typography,
+.kaiten-card__updated.ant-typography {
+  font-size: 11px;
+  color: var(--ant-color-text-tertiary);
+}
+
+.kaiten-card__link-icon {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  color: var(--ant-color-text-quaternary);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.kaiten-card--linked:hover .kaiten-card__link-icon {
+  opacity: 1;
+  color: var(--ant-color-primary);
+}
+
+/* ──────────────────────────────────────────────────────────── */
+/*  Tasks timeline                                             */
+/* ──────────────────────────────────────────────────────────── */
+
+.task-row__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.task-row__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.task-row__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--ant-color-bg-layout);
+  color: var(--ant-color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.task-row__tag.ant-tag {
+  margin: 0;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.task-row__identity {
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.task-row__name.ant-typography {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ant-color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 480px;
+  transition: color 120ms ease;
+}
+
+.task-row__meta.ant-typography {
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 480px;
+}
+
+.task-row__link:hover .task-row__name {
+  color: var(--ant-color-primary);
+}
+
+.task-row__link-icon {
+  color: var(--ant-color-text-quaternary);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.task-row__link:hover .task-row__link-icon {
+  opacity: 1;
+  color: var(--ant-color-primary);
+}
+
+/* Развёрнутая строка — список коммитов задачи */
+
+.task-commits {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 0;
+}
+
+.task-commits__row {
+  display: grid;
+  grid-template-columns: 140px 120px minmax(0, 1fr) 140px;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  transition: background 120ms ease;
+}
+
+.task-commits__row:hover {
+  background: var(--ant-color-bg-layout);
+}
+
+.task-commits__date.ant-typography {
+  font-size: 12px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.task-commits__repo.ant-tag {
+  margin: 0;
+  font-size: 11px;
+}
+
+.task-commits__message {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.task-commits__lines {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  white-space: nowrap;
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  .task-commits__row {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto;
+    gap: 4px;
+    padding: 8px;
+  }
+}
+
+
+/* ──────────────────────────────────────────────────────────── */
+/*  Profile reviews                                            */
+/* ──────────────────────────────────────────────────────────── */
+
+.profile-reviews {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.profile-reviews__metric {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 10px;
+  background: var(--ant-color-bg-layout);
+}
+
+.profile-reviews__metric-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.profile-reviews__metric-value {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ant-color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.profile-reviews__metric-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.profile-reviews__metric-hint {
+  font-size: 12px;
+}
+
+.standing-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.standing-badge__avg {
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
+.standing-badge--up {
+  color: var(--ant-color-success);
+  background: var(--ant-color-success-bg);
+}
+.standing-badge--down {
+  color: var(--ant-color-error);
+  background: var(--ant-color-error-bg);
+}
+.standing-badge--flat {
+  color: var(--ant-color-text-secondary);
+  background: var(--ant-color-fill-tertiary);
+}
+
+@media (max-width: 768px) {
+  .profile-reviews {
+    grid-template-columns: 1fr;
+  }
+}
+
