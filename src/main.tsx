@@ -3,6 +3,8 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
 import './app/styles/global.css';
+import './app/styles/perf-review.css';
+import './app/styles/teams.css';
 
 const container = document.getElementById('root');
 if (!container) {

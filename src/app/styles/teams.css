@@ -1,0 +1,214 @@
+/* ============================================================
+   Team management (Settings)
+   ============================================================ */
+.team-management__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.team-management__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.team-assign-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ant-color-split);
+}
+
+.team-assign-row:last-child {
+  border-bottom: none;
+}
+
+.team-assign-row__user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.team-assign-row__meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.team-assign-row__name {
+  font-weight: 500;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-assign-row__email {
+  font-size: 12px;
+  color: var(--ant-color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-assign-row__control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .team-assign-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .team-assign-row__control {
+    justify-content: flex-end;
+  }
+}
+
+/* ============================================================
+   User avatar — lead badge
+   ============================================================ */
+.user-avatar {
+  position: relative;
+  display: inline-flex;
+}
+
+.user-avatar__lead-badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f6c453 0%, #e89c1f 100%);
+  color: #2a1d00;
+  box-shadow: 0 0 0 2px var(--ant-color-bg-container);
+}
+
+/* ============================================================
+   Team chip
+   ============================================================ */
+.team-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--ant-color-fill-quaternary);
+  border: 1px solid var(--ant-color-border-secondary);
+  color: var(--ant-color-text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  max-width: 160px;
+  vertical-align: middle;
+}
+
+.team-chip__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.team-chip--compact {
+  padding: 0 6px;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.team-chip--empty {
+  font-style: italic;
+  color: var(--ant-color-text-quaternary);
+}
+
+/* ============================================================
+   Teams page
+   ============================================================ */
+.team-card__members {
+  display: flex;
+  flex-direction: column;
+}
+
+.team-member {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ant-color-split);
+}
+
+.team-member:last-child {
+  border-bottom: none;
+}
+
+.team-member__user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+  color: inherit;
+}
+
+.team-member__user:hover .team-member__name {
+  color: var(--ant-color-primary);
+}
+
+.team-member__identity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.team-member__name.ant-typography {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.team-member__lead-mark {
+  display: inline-flex;
+  align-items: center;
+  color: var(--ant-color-warning);
+}
+
+.team-member__email.ant-typography {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-member__assign {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .team-member {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .team-member__assign {
+    justify-content: flex-end;
+  }
+}
+
