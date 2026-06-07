@@ -9,8 +9,8 @@ import axios from 'axios';
  * - DOM `AbortError.name === 'AbortError'` или `code === 'ERR_CANCELED'`
  *   — fallback для путей, где axios не успел обернуть в Cancel.
  *
- * Использование в сторах: если catch'нутая ошибка — это отмена, **не пишем
- * в state как failure**, просто молча выходим. Это то поведение, которое
+ * Используется в `QueryProvider.retry`: отменённый (смена ключа/unmount)
+ * запрос не ретраим и не показываем как ошибку — это то поведение, которое
  * пользователь ждёт: «я переключил период до возврата, ошибки не хочу видеть».
  */
 export function isAbortError(error: unknown): boolean {

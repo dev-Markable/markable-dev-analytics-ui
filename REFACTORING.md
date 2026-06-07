@@ -92,7 +92,7 @@
 
 | # | Что | Стейдж | Статус |
 |---|---|---|---|
-| 18 | Завершить миграцию: `collection.store` → `useMutation`/`useQuery`, удалить `async-state.ts` + `race.ts` | 76 | ⬜ |
+| 18 | Завершить миграцию: `collection.store` → `useMutation`/`useQuery`, удалить хелперы `async-state` + `race.ts` | 76 | ✅ |
 | 19 | Унифицировать async-UI-контракт + извлечь `SectionCard`/`AsyncContent` (убить дубль card-shell в 5 виджетах) | 77 | ⬜ |
 
 ## Долгосрочные (по триггеру)

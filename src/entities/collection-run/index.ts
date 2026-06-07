@@ -9,6 +9,12 @@ export {
   getCollectionRun,
   syncKaitenUsers,
 } from './api/collection.api';
-export { useCollectionStore } from './model/collection.store';
+export {
+  useCurrentRun,
+  useTriggerCollection,
+  useRefreshRun,
+  useSyncKaiten,
+  TRIGGER_MUTATION_KEY,
+} from './model/use-collection';
 export { RunStatusTag } from './ui/RunStatusTag';
 export { durationSeconds, formatDuration } from './lib/duration';

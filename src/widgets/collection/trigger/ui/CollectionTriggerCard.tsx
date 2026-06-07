@@ -2,33 +2,38 @@ import { useState } from 'react';
 import { Alert, Button, Card, DatePicker, Space, Typography } from 'antd';
 import type { Dayjs } from 'dayjs';
 import { Play } from 'lucide-react';
-import { useShallow } from 'zustand/react/shallow';
-import { useCollectionStore } from '@/entities/collection-run';
-import { useNotification } from '@/shared/hooks';
+import { useTriggerCollection } from '@/entities/collection-run';
+import { useApiError } from '@/shared/api';
+import { useNotification, useApiErrorNotification } from '@/shared/hooks';
 
 export function CollectionTriggerCard() {
-  const { lastRun } = useCollectionStore(useShallow((s) => ({ lastRun: s.lastRun })));
-  const trigger = useCollectionStore((s) => s.trigger);
+  const trigger = useTriggerCollection();
   const notification = useNotification();
 
+  // Сетевой/серверный сбой самого POST (≠ run.status === 'FAILED') —
+  // показываем тостом, как раньше делал page-level useApiErrorNotification.
+  const triggerError = useApiError(trigger.error);
+  useApiErrorNotification(triggerError, 'Сбор завершился ошибкой');
+
   const [since, setSince] = useState<Dayjs | null>(null);
-  const isRunning = lastRun.status === 'loading';
+  const isRunning = trigger.isPending;
 
   const handleTrigger = async (): Promise<void> => {
-    await trigger(since ? since.format('YYYY-MM-DDTHH:mm:ss') : undefined);
-    const { lastRun: finished } = useCollectionStore.getState();
-    if (finished.status === 'success' && finished.data) {
-      if (finished.data.status === 'SUCCESS') {
-        notification.success({
-          message: 'Сбор завершён',
-          description: `Прогон ${finished.data.id} завершён успешно.`,
-        });
-      } else if (finished.data.status === 'FAILED') {
-        notification.error({
-          message: 'Сбор завершился ошибкой',
-          description: finished.data.errorMessage ?? 'Подробности в логах сервера.',
-        });
-      }
+    const run = await trigger
+      .mutateAsync(since ? since.format('YYYY-MM-DDTHH:mm:ss') : undefined)
+      .catch(() => null); // сетевой сбой уже уйдёт тостом через triggerError
+    if (!run) return;
+
+    if (run.status === 'SUCCESS') {
+      notification.success({
+        message: 'Сбор завершён',
+        description: `Прогон ${run.id} завершён успешно.`,
+      });
+    } else if (run.status === 'FAILED') {
+      notification.error({
+        message: 'Сбор завершился ошибкой',
+        description: run.errorMessage ?? 'Подробности в логах сервера.',
+      });
     }
   };
 

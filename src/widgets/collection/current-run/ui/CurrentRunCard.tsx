@@ -1,20 +1,27 @@
 import { Button, Card, Typography } from 'antd';
+import { useIsMutating } from '@tanstack/react-query';
 import { Activity, RefreshCw } from 'lucide-react';
-import type { AsyncState } from '@/shared/api';
+import { useApiError } from '@/shared/api';
 import {
   RunStatusTag,
   formatDuration,
+  useCurrentRun,
+  useRefreshRun,
+  TRIGGER_MUTATION_KEY,
   type CollectionRun,
 } from '@/entities/collection-run';
 import { EmptyState, ErrorState } from '@/shared/ui';
 import { formatDateTime, formatRelative } from '@/shared/lib';
 
-interface CurrentRunCardProps {
-  state: AsyncState<CollectionRun>;
-  onRefresh: (id: string) => void;
-}
-
-function RunDetails({ run, onRefresh }: { run: CollectionRun; onRefresh: () => void }) {
+function RunDetails({
+  run,
+  onRefresh,
+  refreshing,
+}: {
+  run: CollectionRun;
+  onRefresh: () => void;
+  refreshing: boolean;
+}) {
   return (
     <>
       <div className="run-card__head">
@@ -55,6 +62,7 @@ function RunDetails({ run, onRefresh }: { run: CollectionRun; onRefresh: () => v
         <Button
           icon={<RefreshCw size={14} />}
           onClick={onRefresh}
+          loading={refreshing}
           style={{ alignSelf: 'flex-start' }}
         >
           Обновить статус
@@ -64,9 +72,13 @@ function RunDetails({ run, onRefresh }: { run: CollectionRun; onRefresh: () => v
   );
 }
 
-export function CurrentRunCard({ state, onRefresh }: CurrentRunCardProps) {
-  const run = state.data;
-  const isLoading = state.status === 'loading';
+export function CurrentRunCard() {
+  const { data: run } = useCurrentRun();
+  const refresh = useRefreshRun();
+  // Триггер сбора живёт в соседнем CollectionTriggerCard — узнаём о его
+  // выполнении через глобальный счётчик мутаций по ключу.
+  const triggering = useIsMutating({ mutationKey: TRIGGER_MUTATION_KEY }) > 0;
+  const refreshError = useApiError(refresh.error);
 
   return (
     <Card variant="borderless" className="leaderboard-card">
@@ -80,7 +92,7 @@ export function CurrentRunCard({ state, onRefresh }: CurrentRunCardProps) {
           </Typography.Title>
         </div>
         <Typography.Text type="secondary" className="leaderboard-card__description">
-          {isLoading
+          {triggering
             ? 'Цикл в процессе…'
             : run
               ? 'Информация о последнем запуске'
@@ -90,10 +102,10 @@ export function CurrentRunCard({ state, onRefresh }: CurrentRunCardProps) {
 
       <div className="leaderboard-card__body">
         <div className="run-card">
-          {state.status === 'error' && !run && (
-            <ErrorState error={state.error} title="Не удалось получить прогон" />
+          {refreshError && !run && (
+            <ErrorState error={refreshError} title="Не удалось получить прогон" />
           )}
-          {!run && state.status !== 'error' && (
+          {!run && !refreshError && (
             <EmptyState
               title="Прогонов нет в кэше"
               description="Запустите сбор через форму ниже — здесь появится статус."
@@ -102,7 +114,8 @@ export function CurrentRunCard({ state, onRefresh }: CurrentRunCardProps) {
           {run && (
             <RunDetails
               run={run}
-              onRefresh={() => onRefresh(run.id)}
+              onRefresh={() => refresh.mutate(run.id)}
+              refreshing={refresh.isPending}
             />
           )}
         </div>

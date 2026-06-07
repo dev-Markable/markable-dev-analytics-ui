@@ -1,29 +1,29 @@
 import { Button, Card, Typography } from 'antd';
-import { useShallow } from 'zustand/react/shallow';
 import { RefreshCcw } from 'lucide-react';
-import { useCollectionStore } from '@/entities/collection-run';
+import { useSyncKaiten } from '@/entities/collection-run';
+import { ApiError, toApiError } from '@/shared/api';
 import { useNotification } from '@/shared/hooks';
 import { formatNumber } from '@/shared/lib';
 
 export function KaitenSyncCard() {
-  const { kaitenSync } = useCollectionStore(useShallow((s) => ({ kaitenSync: s.kaitenSync })));
-  const syncKaiten = useCollectionStore((s) => s.syncKaiten);
+  const sync = useSyncKaiten();
   const notification = useNotification();
 
-  const isRunning = kaitenSync.status === 'loading';
+  const isRunning = sync.isPending;
+  const lastResult = sync.data;
 
   const handleSync = async (): Promise<void> => {
-    await syncKaiten();
-    const fresh = useCollectionStore.getState().kaitenSync;
-    if (fresh.status === 'success' && fresh.data) {
+    try {
+      const result = await sync.mutateAsync();
       notification.success({
         message: 'Kaiten-пользователи синхронизированы',
-        description: `Обновлено ${formatNumber(fresh.data.synced)} записей.`,
+        description: `Обновлено ${formatNumber(result.synced)} записей.`,
       });
-    } else if (fresh.status === 'error') {
+    } catch (e) {
+      const apiError = e instanceof ApiError ? e : toApiError(e);
       notification.error({
         message: 'Синхронизация не удалась',
-        description: fresh.error?.detail ?? fresh.error?.title ?? 'Подробности в логах.',
+        description: apiError.detail ?? apiError.title ?? 'Подробности в логах.',
       });
     }
   };
@@ -51,18 +51,14 @@ export function KaitenSyncCard() {
             аватары / имена. Идемпотентно: upsert по `kaiten_id`.
           </Typography.Paragraph>
 
-          {kaitenSync.data && (
+          {lastResult && (
             <Typography.Text style={{ display: 'block', marginBottom: 12, fontSize: 13 }}>
-              Последняя синхронизация: <strong>{formatNumber(kaitenSync.data.synced)}</strong>{' '}
+              Последняя синхронизация: <strong>{formatNumber(lastResult.synced)}</strong>{' '}
               пользователей
             </Typography.Text>
           )}
 
-          <Button
-            icon={<RefreshCcw size={14} />}
-            onClick={handleSync}
-            loading={isRunning}
-          >
+          <Button icon={<RefreshCcw size={14} />} onClick={handleSync} loading={isRunning}>
             {isRunning ? 'Синхронизация…' : 'Синхронизировать'}
           </Button>
         </div>
