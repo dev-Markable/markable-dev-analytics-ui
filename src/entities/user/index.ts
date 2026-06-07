@@ -17,5 +17,4 @@ export {
   setUserTeam,
   type ProfilePeriod,
 } from './api/user.api';
-export { useProfileStore } from './model/profile.store';
-export { useUsersStore } from './model/users.store';
+export { usersQuery, profileQuery } from './api/queries';

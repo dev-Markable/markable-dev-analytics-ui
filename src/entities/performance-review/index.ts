@@ -23,4 +23,4 @@ export type {
   WorkBalance,
 } from './model/types';
 export { getPerformanceReview } from './api/performance.api';
-export { usePerformanceStore } from './model/performance.store';
+export { performanceReviewQuery } from './api/queries';

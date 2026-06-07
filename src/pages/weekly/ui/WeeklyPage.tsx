@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { Card, Typography } from 'antd';
-import { useShallow } from 'zustand/react/shallow';
+import { useQuery } from '@tanstack/react-query';
 import { LineChart } from 'lucide-react';
 import { PageHeader, PageSection, EmptyState, ErrorState, ExportButton, LoadingState } from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification, useNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
-import { applyTeamFilterToWeekly, useWeeklyStore } from '@/entities/stats';
+import { applyTeamFilterToWeekly, weeklyQuery } from '@/entities/stats';
 import { ALL_TEAMS, matchesScope, useTeamScope } from '@/features/team-scope';
+import { queryToAsyncState, useApiError } from '@/shared/api';
 import type { AsyncState } from '@/shared/api';
 import type { WeeklyStat } from '@/entities/stats';
 import { downloadSvgAsPng, formatRange } from '@/shared/lib';
@@ -17,24 +18,20 @@ export function WeeklyPage() {
   useDocumentTitle('Недели');
 
   const range = useDateRange();
-  const state = useWeeklyStore(useShallow((s) => s.state));
-  const fetchWeekly = useWeeklyStore((s) => s.fetch);
+  const weeklyQ = useQuery(weeklyQuery({ from: range.from, to: range.to }));
 
   const scope = useTeamScope();
   const teamEnabled = scope !== ALL_TEAMS;
   const notification = useNotification();
   const chartRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    void fetchWeekly({ from: range.from, to: range.to });
-  }, [range.from, range.to, fetchWeekly]);
+  const error = useApiError(weeklyQ.error);
+  useApiErrorNotification(error, 'Не удалось загрузить недельную статистику');
 
-  useApiErrorNotification(state.error, 'Не удалось загрузить недельную статистику');
+  const retry = useCallback((): void => void weeklyQ.refetch(), [weeklyQ]);
 
-  const retry = useCallback(
-    (): void => void fetchWeekly({ from: range.from, to: range.to }),
-    [fetchWeekly, range.from, range.to],
-  );
+  // Базовый AsyncState из query — далее, при необходимости, фильтруем по скопу.
+  const baseState = useMemo<AsyncState<WeeklyStat[]>>(() => queryToAsyncState(weeklyQ), [weeklyQ]);
 
   /**
    * Если выбран конкретный скоп команды, пересчитываем per-week totals
@@ -42,12 +39,10 @@ export function WeeklyPage() {
    * уже консистентные с фильтром числа.
    */
   const filteredState = useMemo<AsyncState<WeeklyStat[]>>(() => {
-    if (!teamEnabled || !state.data) return state;
-    const filtered = applyTeamFilterToWeekly(state.data, (a) =>
-      matchesScope(a.team, scope),
-    );
-    return { ...state, data: filtered };
-  }, [state, teamEnabled, scope]);
+    if (!teamEnabled || !baseState.data) return baseState;
+    const filtered = applyTeamFilterToWeekly(baseState.data, (a) => matchesScope(a.team, scope));
+    return { ...baseState, data: filtered };
+  }, [baseState, teamEnabled, scope]);
 
   const weeks = filteredState.data ?? [];
 
@@ -61,9 +56,9 @@ export function WeeklyPage() {
     }
   }, [range.from, range.to, notification]);
 
-  const isInitialLoading = state.status === 'loading' && weeks.length === 0;
-  const isError = state.status === 'error' && weeks.length === 0;
-  const isEmpty = state.status === 'success' && weeks.length === 0;
+  const isInitialLoading = baseState.status === 'loading' && weeks.length === 0;
+  const isError = baseState.status === 'error' && weeks.length === 0;
+  const isEmpty = baseState.status === 'success' && weeks.length === 0;
 
   const subtitle = useMemo(() => {
     const note = weeks.length > 0 ? ` · ${weeks.length} недель` : '';
@@ -98,7 +93,7 @@ export function WeeklyPage() {
 
           <div className="leaderboard-card__body" ref={chartRef}>
             {isInitialLoading && <LoadingState label="Загружаем недели" />}
-            {isError && <ErrorState error={state.error} onRetry={retry} />}
+            {isError && <ErrorState error={error} onRetry={retry} />}
             {isEmpty && (
               <EmptyState
                 title="Нет данных"
@@ -120,4 +115,3 @@ export function WeeklyPage() {
     </>
   );
 }
-

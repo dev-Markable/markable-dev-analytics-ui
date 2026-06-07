@@ -12,3 +12,5 @@ export {
 } from './async-state';
 export { createRaceGuard, type RaceGuard } from './race';
 export { isAbortError } from './abort';
+export { queryToAsyncState } from './query-adapter';
+export { useApiError } from './use-api-error';

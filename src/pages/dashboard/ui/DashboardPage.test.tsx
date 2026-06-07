@@ -1,13 +1,13 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
+import type { QueryClient } from '@tanstack/react-query';
 import { renderWithProviders } from '@/shared/test/render';
 import { DashboardPage } from './DashboardPage';
-import { useDashboardStore } from '@/entities/dashboard';
-import { asyncSuccess, idleAsyncState } from '@/shared/api';
+import { dashboardQuery, dashboardPrevQuery } from '@/entities/dashboard';
+import { useDateRangeStore } from '@/features/date-range-filter';
 import type { DashboardData } from '@/entities/dashboard/model/types';
 import { makeAuthor } from '@/shared/test/factories';
 
-// apiClient мокаем сразу — иначе сторы могут сходить в реальный axios.
 vi.mock('@/shared/api/client', () => ({
   apiClient: { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() },
 }));
@@ -27,32 +27,23 @@ const fixture = (): DashboardData => ({
 });
 
 describe('<DashboardPage> smoke', () => {
-  beforeEach(() => {
-    useDashboardStore.setState({
-      state: asyncSuccess(fixture()),
-      prev: asyncSuccess(fixture()),
-    });
-  });
-
-  afterEach(() => {
-    useDashboardStore.setState({
-      state: idleAsyncState(),
-      prev: idleAsyncState(),
-    });
-  });
+  const setup = (qc: QueryClient) => {
+    // Period динамический (lastNDays(30) от сегодня) — берём актуальный из стора,
+    // чтобы ключ совпал с тем, по которому страница запрашивает данные.
+    const range = useDateRangeStore.getState().range;
+    qc.setQueryData(dashboardQuery(range).queryKey, fixture());
+    qc.setQueryData(dashboardPrevQuery(range).queryKey, fixture());
+  };
 
   it('рендерится без падений и показывает заголовок «Дашборд»', async () => {
-    renderWithProviders(<DashboardPage />);
+    renderWithProviders(<DashboardPage />, { setupQueryCache: setup });
     await waitFor(() => {
       expect(screen.getByText('Дашборд')).toBeInTheDocument();
     });
   });
 
   it('видна метрика «Авторов» из summary (2 в фикстуре)', async () => {
-    renderWithProviders(<DashboardPage />);
-    // SummaryGrid содержит плитку «Авторов» с количеством — ищем по числу 2
-    // в контексте плитки. Делаем устойчиво: findAllByText, чтобы responsive
-    // или дубли не падали.
+    renderWithProviders(<DashboardPage />, { setupQueryCache: setup });
     await waitFor(() => {
       const matches = screen.queryAllByText('2');
       expect(matches.length).toBeGreaterThan(0);

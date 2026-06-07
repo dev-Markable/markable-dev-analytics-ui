@@ -1,13 +1,14 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Col, Row } from 'antd';
-import { useShallow } from 'zustand/react/shallow';
+import { useQuery } from '@tanstack/react-query';
 import { PageHeader, PageSection, ErrorState, LoadingState } from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
-import { useDailyStore, useHourlyStore, useReviewsStore } from '@/entities/stats';
-import { useDashboardStore } from '@/entities/dashboard';
-import { useUsersStore } from '@/entities/user';
+import { dailyQuery, hourlyQuery, reviewsQuery } from '@/entities/stats';
+import { dashboardQuery } from '@/entities/dashboard';
+import { usersQuery } from '@/entities/user';
 import { ALL_TEAMS, matchesScope, useTeamScope } from '@/features/team-scope';
+import { queryToAsyncState, useApiError } from '@/shared/api';
 import { formatRange, rangeDays } from '@/shared/lib';
 import { ActivitySummary } from '@/widgets/activity-summary';
 import { ActivityHeatmap } from '@/widgets/activity-heatmap';
@@ -22,70 +23,36 @@ export function ActivityPage() {
   useDocumentTitle('Активность');
 
   const range = useDateRange();
-  const dailyState = useDailyStore(useShallow((s) => s.state));
-  const fetchDaily = useDailyStore((s) => s.fetch);
-
-  // /dashboard тянем параллельно — только из-за displayName/avatarUrl.
-  // Daily-эндпоинт enrichment не возвращает (см. API.md).
-  const dashboardData = useDashboardStore((s) => s.state.data);
-  const fetchDashboard = useDashboardStore((s) => s.fetch);
-
-  // Hourly — командный агрегат (без авторской разбивки), поэтому клиентский
-  // фильтр скопа к нему не применяется: показываем паттерн всей команды по времени.
-  const hourlyData = useHourlyStore((s) => s.state.data);
-  const fetchHourly = useHourlyStore((s) => s.fetch);
-
-  // Ревью-метрики (B2) — есть авторская разбивка, скоп применяется внутри виджета.
-  const reviewsState = useReviewsStore(useShallow((s) => s.state));
-  const fetchReviews = useReviewsStore((s) => s.fetch);
-
-  // /users — fallback по team/isLead для разработчиков, которые не попали в
-  // топ-500 /dashboard (либо сменили email). Без него ContributorActivity.team
-  // у таких авторов будет null, и фильтр по команде их потеряет.
-  const usersData = useUsersStore((s) => s.state.data);
-  const fetchUsers = useUsersStore((s) => s.fetch);
-
   const scope = useTeamScope();
   const teamEnabled = scope !== ALL_TEAMS;
 
-  useEffect(() => {
-    void fetchDaily({ from: range.from, to: range.to });
-    void fetchDashboard({ from: range.from, to: range.to });
-    void fetchHourly({ from: range.from, to: range.to });
-    void fetchReviews({ from: range.from, to: range.to });
-  }, [range.from, range.to, fetchDaily, fetchDashboard, fetchHourly, fetchReviews]);
+  const dailyQ = useQuery(dailyQuery({ from: range.from, to: range.to }));
+  // /dashboard тянем параллельно — только из-за displayName/avatarUrl.
+  // Daily-эндпоинт enrichment не возвращает (см. API.md).
+  const dashboardQ = useQuery(dashboardQuery({ from: range.from, to: range.to }));
+  // Hourly — командный агрегат (без авторской разбивки), скоп к нему не применяется.
+  const hourlyQ = useQuery(hourlyQuery({ from: range.from, to: range.to }));
+  // Ревью-метрики — авторская разбивка фильтруется внутри виджета.
+  const reviewsQ = useQuery(reviewsQuery({ from: range.from, to: range.to }));
+  // /users — fallback по team/isLead для разработчиков, которые не попали в
+  // топ-500 /dashboard (либо сменили email). Без него ContributorActivity.team
+  // у таких авторов будет null, и фильтр по команде их потеряет.
+  const usersQ = useQuery(usersQuery());
 
-  useEffect(() => {
-    // Не зависит от периода — грузим один раз, переживает повторные монтирования.
-    void fetchUsers();
-  }, [fetchUsers]);
-
-  useApiErrorNotification(dailyState.error, 'Не удалось загрузить активность');
+  const dailyError = useApiError(dailyQ.error);
+  useApiErrorNotification(dailyError, 'Не удалось загрузить активность');
 
   const retry = useCallback((): void => {
-    void fetchDaily({ from: range.from, to: range.to });
-    void fetchDashboard({ from: range.from, to: range.to });
-  }, [fetchDaily, fetchDashboard, range.from, range.to]);
+    void dailyQ.refetch();
+    void dashboardQ.refetch();
+  }, [dailyQ, dashboardQ]);
 
-  const rawDaily = useMemo(() => dailyState.data ?? [], [dailyState.data]);
+  const rawDaily = useMemo(() => dailyQ.data ?? [], [dailyQ.data]);
 
-  /**
-   * email (lowercase) → displayName + avatarUrl + team + isLead.
-   *
-   * Источник 1: /dashboard items (AuthorSummary с team/isLead) — основной,
-   *   потому что у dashboard есть displayName/avatarUrl и сортировка top-500.
-   * Источник 2 (fallback): /users — заполняет team/isLead для разработчиков,
-   *   которые не попали в dashboard (вне топ-500, либо без активности
-   *   за период). avatar/name из /users добираем тоже, если в dashboard'е их нет.
-   *
-   * Используется в ContributorsList (UI) и здесь же — для фильтрации daily
-   * по скопу команды (у DailyStat нет team напрямую).
-   */
   const enrichmentByEmail = useMemo<ReadonlyMap<string, AuthorEnrichment>>(() => {
     const map = new Map<string, AuthorEnrichment>();
-    // Сначала users — даём dashboard перетереть точнее заполненные поля сверху.
-    if (usersData) {
-      for (const u of usersData) {
+    if (usersQ.data) {
+      for (const u of usersQ.data) {
         map.set(u.email.toLowerCase(), {
           displayName: u.name ?? null,
           avatarUrl: u.avatarUrl ?? null,
@@ -94,8 +61,8 @@ export function ActivityPage() {
         });
       }
     }
-    if (dashboardData) {
-      for (const a of dashboardData.items) {
+    if (dashboardQ.data) {
+      for (const a of dashboardQ.data.items) {
         map.set(a.email.toLowerCase(), {
           displayName: a.displayName ?? null,
           avatarUrl: a.avatarUrl ?? null,
@@ -105,7 +72,7 @@ export function ActivityPage() {
       }
     }
     return map;
-  }, [dashboardData, usersData]);
+  }, [dashboardQ.data, usersQ.data]);
 
   const daily = useMemo(() => {
     if (!teamEnabled) return rawDaily;
@@ -115,8 +82,8 @@ export function ActivityPage() {
     });
   }, [rawDaily, teamEnabled, scope, enrichmentByEmail]);
 
-  const isInitialLoading = dailyState.status === 'loading' && rawDaily.length === 0;
-  const isInitialError = dailyState.status === 'error' && rawDaily.length === 0;
+  const isInitialLoading = dailyQ.isPending && rawDaily.length === 0;
+  const isInitialError = dailyQ.isError && rawDaily.length === 0;
 
   const daysInRange = useMemo(() => rangeDays(range), [range]);
 
@@ -138,7 +105,7 @@ export function ActivityPage() {
     return (
       <>
         <PageHeader title="Активность" subtitle={subtitle} />
-        <ErrorState error={dailyState.error} onRetry={retry} />
+        <ErrorState error={dailyError} onRetry={retry} />
       </>
     );
   }
@@ -157,7 +124,7 @@ export function ActivityPage() {
             <ActivityHeatmap daily={daily} range={range} />
           </Col>
           <Col xs={24} xl={12}>
-            <HourlyHeatmap data={hourlyData} title="Активность по часам · команда" />
+            <HourlyHeatmap data={hourlyQ.data ?? null} title="Активность по часам · команда" />
           </Col>
         </Row>
       </PageSection>
@@ -168,11 +135,7 @@ export function ActivityPage() {
             <ReposChart daily={daily} />
           </Col>
           <Col xs={24} xl={15}>
-            <ContributorsList
-              daily={daily}
-              range={range}
-              enrichmentByEmail={enrichmentByEmail}
-            />
+            <ContributorsList daily={daily} range={range} enrichmentByEmail={enrichmentByEmail} />
           </Col>
         </Row>
       </PageSection>
@@ -182,7 +145,7 @@ export function ActivityPage() {
       </PageSection>
 
       <PageSection>
-        <ReviewsCard state={reviewsState} range={range} onRetry={retry} />
+        <ReviewsCard state={queryToAsyncState(reviewsQ)} range={range} onRetry={retry} />
       </PageSection>
     </>
   );

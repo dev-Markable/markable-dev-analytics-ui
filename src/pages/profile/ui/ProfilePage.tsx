@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from 'antd';
-import { useShallow } from 'zustand/react/shallow';
+import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { PageHeader, PageSection, ErrorState, LoadingState } from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
 import { ALL_TEAMS, filterByScope, useTeamScope } from '@/features/team-scope';
-import { useProfileStore, userDisplayName } from '@/entities/user';
-import { useReviewsStore } from '@/entities/stats';
+import { profileQuery, userDisplayName } from '@/entities/user';
+import { reviewsQuery } from '@/entities/stats';
+import { queryToAsyncState, useApiError } from '@/shared/api';
 import type { AsyncState } from '@/shared/api';
 import type { ReviewStats } from '@/entities/stats';
 import { formatRange } from '@/shared/lib';
@@ -26,34 +27,26 @@ export function ProfilePage() {
 
   const range = useDateRange();
   const scope = useTeamScope();
-  const state = useProfileStore(useShallow((s) => s.state));
-  const fetchProfile = useProfileStore((s) => s.fetch);
 
+  const profileQ = useQuery(profileQuery(email, { from: range.from, to: range.to }));
   // Ревью-метрики (вариант A): тянем командный /stats/reviews, виджет находит
-  // строку автора и сравнивает со средним. TTL-кэш стора → если юзер пришёл
-  // с Activity за тот же период, повторного запроса нет.
-  const reviewsState = useReviewsStore(useShallow((s) => s.state));
-  const fetchReviews = useReviewsStore((s) => s.fetch);
+  // строку автора и сравнивает со средним. TanStack сам кэширует тот же ключ —
+  // если юзер пришёл с Activity за тот же период, повторного запроса нет.
+  const reviewsQ = useQuery(reviewsQuery({ from: range.from, to: range.to }));
 
-  const profile = state.data;
+  const profile = profileQ.data ?? null;
   const isFreshData = profile?.user.email === email;
 
   useDocumentTitle(
     isFreshData && profile ? `Профиль · ${userDisplayName(profile.user)}` : email ?? 'Профиль',
   );
 
-  useEffect(() => {
-    if (!email) return;
-    void fetchProfile(email, { from: range.from, to: range.to });
-    void fetchReviews({ from: range.from, to: range.to });
-  }, [email, range.from, range.to, fetchProfile, fetchReviews]);
-
-  useApiErrorNotification(state.error, 'Не удалось загрузить профиль');
+  const profileError = useApiError(profileQ.error);
+  useApiErrorNotification(profileError, 'Не удалось загрузить профиль');
 
   const retry = useCallback(() => {
-    if (!email) return;
-    void fetchProfile(email, { from: range.from, to: range.to });
-  }, [email, fetchProfile, range.from, range.to]);
+    void profileQ.refetch();
+  }, [profileQ]);
 
   const handleBack = (): void => navigate(-1);
 
@@ -71,16 +64,16 @@ export function ProfilePage() {
    */
   const subjectEmail = profile?.user.email ?? null;
   const scopedReviewsState = useMemo<AsyncState<ReviewStats>>(() => {
-    if (scope === ALL_TEAMS || !reviewsState.data) return reviewsState;
+    const baseState = queryToAsyncState(reviewsQ);
+    if (scope === ALL_TEAMS || !baseState.data) return baseState;
     const filteredAuthors = filterByScope(
-      reviewsState.data.authors,
+      baseState.data.authors,
       scope,
       (a) => a.team,
-      (a) =>
-        subjectEmail != null && a.email.toLowerCase() === subjectEmail.toLowerCase(),
+      (a) => subjectEmail != null && a.email.toLowerCase() === subjectEmail.toLowerCase(),
     );
-    return { ...reviewsState, data: { ...reviewsState.data, authors: filteredAuthors } };
-  }, [reviewsState, scope, subjectEmail]);
+    return { ...baseState, data: { ...baseState.data, authors: filteredAuthors } };
+  }, [reviewsQ, scope, subjectEmail]);
 
   const subtitle = useMemo(() => {
     if (!email) return null;
@@ -104,7 +97,7 @@ export function ProfilePage() {
     );
   }
 
-  if (state.status === 'loading' && !isFreshData) {
+  if (profileQ.isPending && !isFreshData) {
     return (
       <>
         <PageHeader title={email} subtitle={subtitle} extra={backButton} />
@@ -113,13 +106,13 @@ export function ProfilePage() {
     );
   }
 
-  if (state.status === 'error' && !isFreshData) {
-    const is404 = state.error?.isNotFound;
+  if (profileQ.isError && !isFreshData) {
+    const is404 = profileError?.isNotFound;
     return (
       <>
         <PageHeader title={email} subtitle={subtitle} extra={backButton} />
         <ErrorState
-          error={state.error}
+          error={profileError}
           title={is404 ? 'Пользователь не найден' : 'Не удалось загрузить профиль'}
           onRetry={is404 ? undefined : retry}
         />

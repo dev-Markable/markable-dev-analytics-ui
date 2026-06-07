@@ -1,15 +1,17 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Col, Row } from 'antd';
-import { useShallow } from 'zustand/react/shallow';
+import { useQuery } from '@tanstack/react-query';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import { PageHeader, PageSection } from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
+import { useApiError } from '@/shared/api';
 import { useDateRange } from '@/features/date-range-filter';
 import { ALL_TEAMS, useTeamScope, useTeamScopeFilter } from '@/features/team-scope';
 import {
   aggregateAuthors,
   selectDashboardSections,
-  useDashboardStore,
+  dashboardQuery,
+  dashboardPrevQuery,
 } from '@/entities/dashboard';
 import type { AuthorActivity } from '@/entities/user';
 import { formatRange } from '@/shared/lib';
@@ -25,18 +27,13 @@ export function DashboardPage() {
   const scope = useTeamScope();
   const teamEnabled = scope !== ALL_TEAMS;
 
-  const { state, prev } = useDashboardStore(
-    useShallow((s) => ({ state: s.state, prev: s.prev })),
-  );
-  const fetchDashboard = useDashboardStore((s) => s.fetch);
+  const dashboardQ = useQuery(dashboardQuery({ from: range.from, to: range.to }));
+  const prevQ = useQuery(dashboardPrevQuery({ from: range.from, to: range.to }));
 
-  useEffect(() => {
-    void fetchDashboard({ from: range.from, to: range.to });
-  }, [range.from, range.to, fetchDashboard]);
+  const error = useApiError(dashboardQ.error);
+  useApiErrorNotification(error, 'Не удалось загрузить дашборд');
 
-  useApiErrorNotification(state.error, 'Не удалось загрузить дашборд');
-
-  const allItems = state.data?.items ?? [];
+  const allItems = dashboardQ.data?.items ?? [];
   /**
    * Фильтр команды применяется ДО агрегации. Все производные —
    * totals в карточках, top/outsiders, таблица — считаются от уже
@@ -45,12 +42,12 @@ export function DashboardPage() {
    */
   const filteredItems = useTeamScopeFilter<AuthorActivity>(allItems, (a) => a.team);
   // Предыдущий период — для PoP-дельт. Фильтруем тем же скопом команды.
-  const prevItems = useTeamScopeFilter<AuthorActivity>(prev.data?.items, (a) => a.team);
+  const prevItems = useTeamScopeFilter<AuthorActivity>(prevQ.data?.items, (a) => a.team);
 
   const totals = useMemo(() => aggregateAuthors(filteredItems), [filteredItems]);
   const prevTotals = useMemo(
-    () => (prev.data ? aggregateAuthors(prevItems) : null),
-    [prev.data, prevItems],
+    () => (prevQ.data ? aggregateAuthors(prevItems) : null),
+    [prevQ.data, prevItems],
   );
 
   /**
@@ -64,7 +61,7 @@ export function DashboardPage() {
   );
 
   const subtitle = useMemo(() => {
-    const totalAll = state.data?.totalElements ?? allItems.length;
+    const totalAll = dashboardQ.data?.totalElements ?? allItems.length;
     const filteredCount = filteredItems.length;
     const countNote = teamEnabled
       ? ` · ${scope}: ${filteredCount} из ${totalAll}`
@@ -76,17 +73,21 @@ export function DashboardPage() {
     range.to,
     scope,
     teamEnabled,
-    state.data?.totalElements,
+    dashboardQ.data?.totalElements,
     allItems.length,
     filteredItems.length,
     prevTotals,
   ]);
 
-  const retry = useCallback(() => {
-    void fetchDashboard({ from: range.from, to: range.to });
-  }, [fetchDashboard, range.from, range.to]);
-
-  const isLoading = state.status === 'loading';
+  // Адаптация TanStack Query → нашему контракту для LeaderboardCard.
+  const status: 'idle' | 'loading' | 'success' | 'error' = dashboardQ.isPending
+    ? 'loading'
+    : dashboardQ.isError
+      ? 'error'
+      : dashboardQ.isSuccess
+        ? 'success'
+        : 'idle';
+  const isLoading = dashboardQ.isFetching;
   const isLoadingInitial = isLoading && allItems.length === 0;
 
   return (
@@ -105,9 +106,9 @@ export function DashboardPage() {
               description="Категория Активен или Топ, по убыванию score"
               icon={<TrendingUp size={16} />}
               items={topItems}
-              status={state.status}
-              error={state.error}
-              onRetry={retry}
+              status={status}
+              error={error}
+              onRetry={() => void dashboardQ.refetch()}
               variant="top"
               range={range}
               emptyDescription={
@@ -123,9 +124,9 @@ export function DashboardPage() {
               description="Категория Неактивен или Ниже среднего"
               icon={<TrendingDown size={16} />}
               items={outsiderItems}
-              status={state.status}
-              error={state.error}
-              onRetry={retry}
+              status={status}
+              error={error}
+              onRetry={() => void dashboardQ.refetch()}
               variant="outsider"
               range={range}
               emptyDescription={

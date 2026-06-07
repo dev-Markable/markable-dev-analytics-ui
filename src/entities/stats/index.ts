@@ -16,10 +16,12 @@ export {
   type PeriodQuery,
   type HourlyQuery,
 } from './api/stats.api';
-export { useSummaryStore } from './model/summary.store';
-export { useWeeklyStore } from './model/weekly.store';
-export { useDailyStore } from './model/daily.store';
-export { useHourlyStore } from './model/hourly.store';
-export { useReviewsStore } from './model/reviews.store';
+export {
+  summaryQuery,
+  weeklyQuery,
+  dailyQuery,
+  hourlyQuery,
+  reviewsQuery,
+} from './api/queries';
 export { weekEnd, weekShortLabel, weekFullLabel } from './lib/week-label';
 export { applyTeamFilterToWeekly } from './lib/apply-team-filter';

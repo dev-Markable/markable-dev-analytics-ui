@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Col, Row } from 'antd';
+import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
-import { useShallow } from 'zustand/react/shallow';
 import { PageHeader, PageSection, EmptyState, ErrorState, LoadingState } from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
-import { useDashboardStore } from '@/entities/dashboard';
+import { dashboardQuery } from '@/entities/dashboard';
+import { useApiError } from '@/shared/api';
 import type { AuthorActivity } from '@/entities/user';
 import { formatRange } from '@/shared/lib';
 import { CompareSelector } from '@/widgets/compare-selector';
@@ -21,16 +22,11 @@ export function ComparePage() {
   const range = useDateRange();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const state = useDashboardStore(useShallow((s) => s.state));
-  const fetchDashboard = useDashboardStore((s) => s.fetch);
+  const dashboardQ = useQuery(dashboardQuery({ from: range.from, to: range.to }));
+  const error = useApiError(dashboardQ.error);
+  useApiErrorNotification(error, 'Не удалось загрузить данные для сравнения');
 
-  useEffect(() => {
-    void fetchDashboard({ from: range.from, to: range.to });
-  }, [range.from, range.to, fetchDashboard]);
-
-  useApiErrorNotification(state.error, 'Не удалось загрузить данные для сравнения');
-
-  const allItems = useMemo(() => state.data?.items ?? [], [state.data]);
+  const allItems = useMemo(() => dashboardQ.data?.items ?? [], [dashboardQ.data]);
 
   // Выбранные email — из URL (?ids=a@x5.ru,b@x5.ru). Источник правды для шаринга.
   const selected = useMemo(() => {
@@ -60,24 +56,24 @@ export function ComparePage() {
 
   const subtitle = `Side-by-side по периоду · ${formatRange(range.from, range.to)}`;
 
-  const isInitialLoading = state.status === 'loading' && allItems.length === 0;
-  const isError = state.status === 'error' && allItems.length === 0;
+  const isInitialLoading = dashboardQ.isPending && allItems.length === 0;
+  const isError = dashboardQ.isError && allItems.length === 0;
 
   return (
     <>
       <PageHeader title="Сравнение разработчиков" subtitle={subtitle} />
 
       <PageSection>
-        <CompareSelector options={allItems} selected={selected} onChange={setSelected} max={MAX_AUTHORS} />
+        <CompareSelector
+          options={allItems}
+          selected={selected}
+          onChange={setSelected}
+          max={MAX_AUTHORS}
+        />
       </PageSection>
 
       {isInitialLoading && <LoadingState label="Загружаем авторов" />}
-      {isError && (
-        <ErrorState
-          error={state.error}
-          onRetry={() => fetchDashboard({ from: range.from, to: range.to })}
-        />
-      )}
+      {isError && <ErrorState error={error} onRetry={() => void dashboardQ.refetch()} />}
 
       {!isInitialLoading && !isError && authors.length < 2 && (
         <EmptyState

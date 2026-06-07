@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { DatePicker, Segmented, Select, Space, Switch, Typography } from 'antd';
-import { useShallow } from 'zustand/react/shallow';
-import { UserAvatar, userDisplayName, useUsersStore } from '@/entities/user';
+import { useQuery } from '@tanstack/react-query';
+import { UserAvatar, userDisplayName, usersQuery } from '@/entities/user';
 import { matchesScope, useTeamScope } from '@/features/team-scope';
 import { dayjs, toISODate, type DateRange } from '@/shared/lib';
 import {
@@ -31,11 +31,11 @@ export function PerfControls({
   onRangeChange,
   onCompareChange,
 }: PerfControlsProps) {
-  const usersState = useUsersStore(useShallow((s) => s.state));
+  const usersQ = useQuery(usersQuery());
   // Команда — из глобального скопа в топбаре; локального дубля нет.
   const scope = useTeamScope();
 
-  const users = useMemo(() => usersState.data ?? [], [usersState.data]);
+  const users = useMemo(() => usersQ.data ?? [], [usersQ.data]);
 
   // Опции с привязкой целого пользователя — нужен для optionRender (аватар, лид, команда)
   // и для filterOption (поиск по имени + email + команде).
@@ -69,7 +69,7 @@ export function PerfControls({
           showSearch
           value={email ?? undefined}
           placeholder="Выберите разработчика"
-          loading={usersState.status === 'loading'}
+          loading={usersQ.isPending}
           options={options}
           onChange={onEmailChange}
           optionFilterProp="label"
