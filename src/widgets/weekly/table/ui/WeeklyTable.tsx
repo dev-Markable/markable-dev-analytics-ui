@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, type Key } from 'react';
 import { Card, Table, Typography } from 'antd';
 import { CalendarDays } from 'lucide-react';
 import type { AsyncState } from '@/shared/api';
@@ -29,7 +29,8 @@ interface WeeklyTableProps {
 }
 
 export function WeeklyTable({ state, range, onRetry }: WeeklyTableProps) {
-  const teamEnabled = useExpandedRowsReset();
+  // Локальное состояние раскрытых строк (keys для AntD Table).
+  const [expandedKeys, setExpandedKeys] = useState<Key[]>([]);
   const columns = useMemo(() => buildWeeklyColumns(), []);
   const data = useMemo(() => state.data ?? [], [state.data]);
 
@@ -80,8 +81,8 @@ export function WeeklyTable({ state, range, onRetry }: WeeklyTableProps) {
             size="middle"
             pagination={false}
             expandable={{
-              expandedRowKeys: teamEnabled.expandedKeys,
-              onExpandedRowsChange: (keys) => teamEnabled.setExpandedKeys([...keys]),
+              expandedRowKeys: expandedKeys,
+              onExpandedRowsChange: (keys) => setExpandedKeys([...keys]),
               expandedRowRender: (record) => (
                 <WeekFilteredBreakdown authors={record.authors} range={range} />
               ),
@@ -105,12 +106,4 @@ function WeekFilteredBreakdown({
 }) {
   const filtered = useTeamScopeFilter<AuthorActivity>(authors, (a) => a.team);
   return <WeekAuthorsBreakdown authors={filtered} range={range} />;
-}
-
-/**
- * Локальное состояние раскрытых строк. Хранит keys для AntD Table.
- */
-function useExpandedRowsReset() {
-  const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([]);
-  return { expandedKeys, setExpandedKeys };
 }
