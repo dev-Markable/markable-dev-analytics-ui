@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Card, Table, Tooltip, Typography } from 'antd';
+import { Table, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { Link } from 'react-router-dom';
 import { MessagesSquare } from 'lucide-react';
@@ -8,7 +8,7 @@ import { useTeamScopeFilter } from '@/features/team-scope';
 import { UserAvatar, userDisplayName } from '@/entities/user';
 import { TeamChip } from '@/entities/team';
 import { buildProfilePath } from '@/app/router/paths';
-import { EmptyState, ErrorState, SkeletonTable } from '@/shared/ui';
+import { AsyncContent, EmptyState, SectionCard, SkeletonTable } from '@/shared/ui';
 import { formatNumber, type DateRange } from '@/shared/lib';
 import type { AsyncState } from '@/shared/api';
 import { engagementOf, formatHours, sortByEngagement } from '../lib/reviews';
@@ -113,48 +113,44 @@ export function ReviewsCard({ state, range, onRetry }: ReviewsCardProps) {
   const rows = useMemo(() => sortByEngagement(teamFiltered), [teamFiltered]);
   const columns = useMemo(() => buildColumns(range), [range]);
 
-  const isInitialLoading = state.status === 'loading' && authors.length === 0;
-  const isError = state.status === 'error' && authors.length === 0;
   // Активные ревьюеры = с ненулевой вовлечённостью.
   const activeReviewers = rows.filter((a) => engagementOf(a) > 0).length;
 
   return (
-    <Card variant="borderless" className="leaderboard-card">
-      <header className="leaderboard-card__header">
-        <div className="leaderboard-card__title">
-          <span className="leaderboard-card__icon">
-            <MessagesSquare size={16} />
-          </span>
-          <Typography.Title level={4} className="leaderboard-card__title-text">
-            Ревью
-          </Typography.Title>
-        </div>
-        <Typography.Text type="secondary" className="leaderboard-card__description">
-          {activeReviewers > 0
-            ? `${activeReviewers} активных ревьюеров · approve + комментарии к чужим MR`
-            : 'Кто ревьюит, объём и время до merge (GitLab MR)'}
-        </Typography.Text>
-      </header>
-
-      <div className="leaderboard-card__body authors-table">
-        {isInitialLoading && <SkeletonTable rows={8} columns={5} />}
-        {isError && <ErrorState error={state.error} onRetry={onRetry} />}
-        {!isInitialLoading && !isError && rows.length === 0 && (
+    <SectionCard
+      title="Ревью"
+      icon={<MessagesSquare size={16} />}
+      description={
+        activeReviewers > 0
+          ? `${activeReviewers} активных ревьюеров · approve + комментарии к чужим MR`
+          : 'Кто ревьюит, объём и время до merge (GitLab MR)'
+      }
+      bodyClassName="authors-table"
+    >
+      <AsyncContent
+        status={state.status}
+        // «Пусто» — после фильтра команды; skeleton/error — только когда вообще
+        // нет загруженных авторов (hasData по сырому ответу, до фильтра).
+        isEmpty={rows.length === 0}
+        hasData={authors.length > 0}
+        error={state.error}
+        onRetry={onRetry}
+        skeleton={<SkeletonTable rows={8} columns={5} />}
+        empty={
           <EmptyState
             title="Нет данных о ревью"
             description="За выбранный период ревью-активности не зафиксировано."
           />
-        )}
-        {!isInitialLoading && !isError && rows.length > 0 && (
-          <Table<ReviewAuthor>
-            dataSource={rows}
-            columns={columns}
-            rowKey={(a) => a.email}
-            size="middle"
-            pagination={rows.length > 15 ? { pageSize: 15, showSizeChanger: false } : false}
-          />
-        )}
-      </div>
-    </Card>
+        }
+      >
+        <Table<ReviewAuthor>
+          dataSource={rows}
+          columns={columns}
+          rowKey={(a) => a.email}
+          size="middle"
+          pagination={rows.length > 15 ? { pageSize: 15, showSizeChanger: false } : false}
+        />
+      </AsyncContent>
+    </SectionCard>
   );
 }

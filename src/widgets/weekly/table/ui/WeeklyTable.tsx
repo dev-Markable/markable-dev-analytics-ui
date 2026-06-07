@@ -1,12 +1,12 @@
 import { useCallback, useMemo, useState, type Key } from 'react';
-import { Card, Table, Typography } from 'antd';
+import { Table } from 'antd';
 import { CalendarDays } from 'lucide-react';
 import type { AsyncState } from '@/shared/api';
 import type { WeeklyStat } from '@/entities/stats';
 import { useTeamScopeFilter } from '@/features/team-scope';
 import { downloadCsv, type CsvColumn, type DateRange } from '@/shared/lib';
 import type { AuthorActivity } from '@/entities/user';
-import { EmptyState, ErrorState, ExportButton, SkeletonTable } from '@/shared/ui';
+import { AsyncContent, EmptyState, ExportButton, SectionCard, SkeletonTable } from '@/shared/ui';
 import { buildWeeklyColumns } from '../config/columns';
 import { WeekAuthorsBreakdown } from './WeekAuthorsBreakdown';
 
@@ -33,64 +33,52 @@ export function WeeklyTable({ state, range, onRetry }: WeeklyTableProps) {
   const [expandedKeys, setExpandedKeys] = useState<Key[]>([]);
   const columns = useMemo(() => buildWeeklyColumns(), []);
   const data = useMemo(() => state.data ?? [], [state.data]);
-
-  const isInitialLoading = state.status === 'loading' && data.length === 0;
-  const isError = state.status === 'error' && data.length === 0;
-  const isEmpty = state.status === 'success' && data.length === 0;
+  const hasData = data.length > 0;
 
   const handleExportCsv = useCallback(() => {
     downloadCsv(`devpulse-недели_${range.from}_${range.to}.csv`, data, csvColumns);
   }, [data, range.from, range.to]);
 
   return (
-    <Card variant="borderless" className="leaderboard-card">
-      <header className="leaderboard-card__header">
-        <div className="leaderboard-card__title">
-          <span className="leaderboard-card__icon">
-            <CalendarDays size={16} />
-          </span>
-          <Typography.Title level={4} className="leaderboard-card__title-text">
-            Недели
-          </Typography.Title>
-        </div>
-        <Typography.Text type="secondary" className="leaderboard-card__description">
-          Каждая неделя раскрывается в разбивку по авторам
-        </Typography.Text>
-        {!isInitialLoading && !isError && !isEmpty && (
-          <div className="leaderboard-card__actions">
-            <ExportButton size="small" onExportCsv={handleExportCsv} />
-          </div>
-        )}
-      </header>
-
-      <div className="leaderboard-card__body authors-table">
-        {isInitialLoading && <SkeletonTable rows={6} columns={columns.length} />}
-        {isError && <ErrorState error={state.error} onRetry={onRetry} />}
-        {isEmpty && (
+    <SectionCard
+      title="Недели"
+      icon={<CalendarDays size={16} />}
+      description="Каждая неделя раскрывается в разбивку по авторам"
+      actions={
+        hasData ? <ExportButton size="small" onExportCsv={handleExportCsv} /> : undefined
+      }
+      bodyClassName="authors-table"
+    >
+      <AsyncContent
+        status={state.status}
+        isEmpty={!hasData}
+        error={state.error}
+        onRetry={onRetry}
+        skeleton={<SkeletonTable rows={6} columns={columns.length} />}
+        empty={
           <EmptyState
             title="Нет данных"
             description="За выбранный период недельных агрегатов нет."
           />
-        )}
-        {!isInitialLoading && !isError && !isEmpty && (
-          <Table<WeeklyStat>
-            dataSource={data as WeeklyStat[]}
-            columns={columns}
-            rowKey={(row) => `${row.year}-${row.week}`}
-            loading={state.status === 'loading'}
-            size="middle"
-            pagination={false}
-            expandable={{
-              expandedRowKeys: expandedKeys,
-              onExpandedRowsChange: (keys) => setExpandedKeys([...keys]),
-              expandedRowRender: (record) => (
-                <WeekFilteredBreakdown authors={record.authors} range={range} />
-              ),
-            }}
-          />
-        )}
-      </div>
-    </Card>
+        }
+      >
+        <Table<WeeklyStat>
+          dataSource={data as WeeklyStat[]}
+          columns={columns}
+          rowKey={(row) => `${row.year}-${row.week}`}
+          loading={state.status === 'loading'}
+          size="middle"
+          pagination={false}
+          expandable={{
+            expandedRowKeys: expandedKeys,
+            onExpandedRowsChange: (keys) => setExpandedKeys([...keys]),
+            expandedRowRender: (record) => (
+              <WeekFilteredBreakdown authors={record.authors} range={range} />
+            ),
+          }}
+        />
+      </AsyncContent>
+    </SectionCard>
   );
 }
 

@@ -93,7 +93,7 @@
 | # | Что | Стейдж | Статус |
 |---|---|---|---|
 | 18 | Завершить миграцию: `collection.store` → `useMutation`/`useQuery`, удалить хелперы `async-state` + `race.ts` | 76 | ✅ |
-| 19 | Унифицировать async-UI-контракт + извлечь `SectionCard`/`AsyncContent` (убить дубль card-shell в 5 виджетах) | 77 | ⬜ |
+| 19 | Унифицировать async-UI-контракт + извлечь `SectionCard`/`AsyncContent` (убить дубль card-shell в 5 виджетах) | 77 | ✅ |
 
 ## Долгосрочные (по триггеру)
 
@@ -115,3 +115,16 @@
 `LeaderboardCard` status+items) + ручная сборка `status` в `DashboardPage`. `DataTable` извлечён,
 но используется в 1 месте — нужен `SectionCard` (card-shell с header/actions) + `AsyncContent`
 (loading/error/empty), а не голая таблица. Закрывает дубль ~30 строк × 5 виджетов.
+
+> #19 — закрыт частично-по-ядру. Извлечены `shared/ui/SectionCard` (оболочка карточки:
+> иконка/заголовок/описание/actions + body) и `shared/ui/AsyncContent` (единый precedence
+> loading→error→empty→content со слотами под разные скелетоны; `hasData` отделён от `isEmpty`
+> для post-filter случаев — ReviewsCard). На них переведены 5 async-виджетов с триадой:
+> LeaderboardCard, AuthorsTable, WeeklyTable, ReviewsCard, ProfileReviews. Внешние props
+> виджетов не менялись — страницы не тронуты.
+>
+> **Осталось (опционально, инкрементально):** ~25 статичных карточек (perf/*, activity-charts,
+> team/*, compare/*, settings/*, collection/*) тоже рендерят `leaderboard-card__header` руками,
+> но без async-триады и часто с кастомными шапками (легенды, контролы). Переводить их на
+> `SectionCard` стоит по одной при следующем касании, а не пачкой — иначе риск визуальных
+> регрессий без QA. `DataTable` (1 потребитель) оставлен как есть — он про таблицу, а не оболочку.

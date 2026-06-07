@@ -1,5 +1,7 @@
 export { PageHeader } from './PageHeader';
 export { PageSection } from './PageSection';
+export { SectionCard } from './SectionCard';
+export { AsyncContent } from './AsyncContent';
 export { MetricCard } from './MetricCard';
 export { DeltaBadge } from './DeltaBadge';
 export { EmptyState } from './EmptyState';
