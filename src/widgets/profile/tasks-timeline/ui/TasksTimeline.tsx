@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useDeferredValue, useMemo, useState } from 'react';
 import { Card, Input, Typography } from 'antd';
 import { ListTree, Search } from 'lucide-react';
 import { extractCardId, type Commit } from '@/entities/commit';
@@ -48,6 +48,11 @@ const matchesQuery = (group: TaskGroup, q: string): boolean => {
 export function TasksTimeline({ commits, cards, email }: TasksTimelineProps) {
   const [query, setQuery] = useState('');
   const debounced = useDebouncedValue(query, SEARCH_DEBOUNCE_MS);
+  // useDeferredValue делает фильтрацию неблокирующей: React оставляет инпут
+  // отзывчивым, а тяжёлый refilter тысяч задач уходит в фоновую транзакцию.
+  // Пара с useDebouncedValue: debounce убирает дрожание ввода (250 мс),
+  // deferred — гарантирует что даже после debounce фильтр не лочит UI.
+  const deferredQuery = useDeferredValue(debounced);
 
   const handleExportCsv = useCallback(() => {
     const safeEmail = email.replace(/[^a-z0-9]+/gi, '-');
@@ -57,10 +62,10 @@ export function TasksTimeline({ commits, cards, email }: TasksTimelineProps) {
   const allGroups = useMemo(() => groupCommitsByTask(commits, cards), [commits, cards]);
 
   const filtered = useMemo(() => {
-    const q = debounced.trim();
+    const q = deferredQuery.trim();
     if (!q) return allGroups;
     return allGroups.filter((g) => matchesQuery(g, q));
-  }, [allGroups, debounced]);
+  }, [allGroups, deferredQuery]);
 
   const columns = useMemo(() => buildTaskColumns(), []);
 
@@ -108,7 +113,7 @@ export function TasksTimeline({ commits, cards, email }: TasksTimelineProps) {
           <EmptyState
             title="Ничего не найдено"
             description={
-              debounced
+              deferredQuery
                 ? 'Уточните запрос или очистите фильтр.'
                 : 'За выбранный период нет задач и коммитов.'
             }

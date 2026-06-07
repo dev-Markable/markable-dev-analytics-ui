@@ -46,7 +46,7 @@
 | 11 | Миграция на TanStack Query (порог 5+ эндпоинт-сторов пройден) | 69 | ✅ |
 | 12 | Подгруппировка `widgets/` по доменам (`perf/`, `dashboard/`, `activity/`) | 70 | ✅ |
 | 13 | CSS Modules для всех виджетов (если CSS вырос ещё на 50%) | 71 | ✅ (per-widget co-location) |
-| 14 | Виртуализация `TasksTimeline` (`@tanstack/react-virtual`) | 70 | ⬜ |
+| 14 | Виртуализация `TasksTimeline` (`@tanstack/react-virtual`) | 72 | ✅ |
 
 ---
 

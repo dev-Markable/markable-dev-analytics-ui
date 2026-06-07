@@ -207,6 +207,13 @@
   padding: 6px 0;
 }
 
+/* Virtual-режим: коммиты позиционируются absolute внутри ref-контейнера,
+   поэтому gap/flex здесь не нужны — высоту и top считает useVirtualizer. */
+.task-commits--virtual {
+  display: block;
+  padding: 0;
+}
+
 .task-commits__row {
   display: grid;
   grid-template-columns: 140px 120px minmax(0, 1fr) 140px;
