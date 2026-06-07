@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button, Card, Popconfirm, Spin, Typography } from 'antd';
 import { useIsMutating } from '@tanstack/react-query';
 import { Activity, Ban, RefreshCw } from 'lucide-react';
@@ -102,9 +103,17 @@ function RunDetails({
 }
 
 export function CurrentRunCard() {
-  const { data: run, error, isLoading, isFetching, refetch } = useLatestRun();
+  const { data: run, error, isLoading, refetch } = useLatestRun();
   const cancel = useCancelRun();
   const notification = useNotification();
+  // Ручное обновление отделено от фонового poll: `isFetching` истинно и на
+  // каждом 3-секундном refetchInterval, иначе кнопка спиннерила бы сама по себе.
+  const [manualRefreshing, setManualRefreshing] = useState(false);
+
+  const handleRefresh = (): void => {
+    setManualRefreshing(true);
+    void refetch().finally(() => setManualRefreshing(false));
+  };
   // Триггер сбора живёт в соседнем CollectionTriggerCard — узнаём о его
   // выполнении через глобальный счётчик мутаций по ключу.
   const triggering = useIsMutating({ mutationKey: TRIGGER_MUTATION_KEY }) > 0;
@@ -185,8 +194,8 @@ export function CurrentRunCard() {
           ) : (
             <RunDetails
               run={run}
-              onRefresh={() => void refetch()}
-              refreshing={isFetching}
+              onRefresh={handleRefresh}
+              refreshing={manualRefreshing}
               onCancel={handleCancel}
               cancelling={cancel.isPending}
               cancelRequested={cancelRequested}

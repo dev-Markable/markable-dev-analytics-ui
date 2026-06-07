@@ -143,7 +143,7 @@ typecheck/lint чисты, 212 тестов / 39 файлов. Блокеров 
 | # | Что | Стейдж | Статус |
 |---|---|---|---|
 | 22 | **Тест:** `AsyncContent` — прямое покрытие precedence-матрицы (loading/error/empty/hasData) | 80 | ✅ |
-| 23 | `CurrentRunCard`: кнопка «Обновить статус» мигает на каждом poll-тике (`refreshing={isFetching}`) | 81 | ⬜ |
+| 23 | `CurrentRunCard`: кнопка «Обновить статус» мигает на каждом poll-тике (`refreshing={isFetching}`) | 81 | ✅ |
 
 ## Бэклог (не блокеры)
 
