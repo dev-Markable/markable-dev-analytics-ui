@@ -6,13 +6,14 @@ export type {
 } from './model/types';
 export {
   triggerCollection,
-  getCollectionRun,
+  getLatestRun,
+  cancelCollectionRun,
   syncKaitenUsers,
 } from './api/collection.api';
 export {
-  useCurrentRun,
+  useLatestRun,
   useTriggerCollection,
-  useRefreshRun,
+  useCancelRun,
   useSyncKaiten,
   TRIGGER_MUTATION_KEY,
 } from './model/use-collection';

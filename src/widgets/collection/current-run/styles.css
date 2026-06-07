@@ -74,3 +74,25 @@
   line-height: 1.45;
   white-space: pre-wrap;
 }
+
+.run-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.run-card__cancel-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ant-color-warning) !important;
+}
+
+.run-card__loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 0;
+}

@@ -29,6 +29,11 @@ export function CollectionTriggerCard() {
         message: 'Сбор завершён',
         description: `Прогон ${run.id} завершён успешно.`,
       });
+    } else if (run.status === 'CANCELLED') {
+      notification.info({
+        message: 'Сбор отменён',
+        description: 'Прогон остановлен по запросу. Следующий запуск доберёт недостающее.',
+      });
     } else if (run.status === 'FAILED') {
       notification.error({
         message: 'Сбор завершился ошибкой',

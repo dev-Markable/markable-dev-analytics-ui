@@ -1,34 +1,49 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useIsMutating,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import type { ApiError } from '@/shared/api';
 import {
-  getCollectionRun,
+  cancelCollectionRun,
+  getLatestRun,
   syncKaitenUsers,
   triggerCollection,
 } from '../api/collection.api';
 import type { CollectionRun, KaitenSyncResult } from './types';
 
-/**
- * «Последний прогон, который пользователь видел в этой сессии» — это не
- * серверный ресурс с фиксированным URL (нет эндпоинта «дай последний прогон»),
- * а результат мутации `trigger`/`refresh`. Чтобы он был виден из CurrentRunCard,
- * хотя триггерит его соседний CollectionTriggerCard, держим его в кэше Query
- * под стабильным ключом: мутации пишут через `setQueryData`, карточка читает
- * через `useCurrentRun`. Сам этот «query» никогда не фетчит (`enabled: false`).
- */
-const CURRENT_RUN_KEY = ['collection', 'current-run'] as const;
+/** Кэш «самого свежего прогона» — общий для всех виджетов collection. */
+const LATEST_RUN_KEY = ['collection', 'latest'] as const;
 
-/** Ключ мутации сбора — по нему CurrentRunCard через `useIsMutating` узнаёт,
- *  что прямо сейчас идёт цикл (триггерится из другого виджета). */
+/** Ключ мутации сбора — по нему виджеты через `useIsMutating` узнают,
+ *  что прямо сейчас идёт цикл (триггерится из соседнего виджета). */
 export const TRIGGER_MUTATION_KEY = ['collection', 'trigger'] as const;
 
-export function useCurrentRun() {
-  return useQuery<CollectionRun | null>({
-    queryKey: CURRENT_RUN_KEY,
-    queryFn: () => null,
-    enabled: false,
-    initialData: null,
-    staleTime: Infinity,
-    gcTime: Infinity,
+/** Частота опроса статуса, пока прогон активен. */
+const RUN_POLL_INTERVAL_MS = 3000;
+
+/**
+ * Самый свежий прогон (он же — идущий, т.к. сбор single-flight).
+ *
+ * Поллим, пока:
+ * - прогон в `RUNNING` (наблюдаем переход к терминалу, в т.ч. RUNNING → CANCELLED), либо
+ * - висит сам синхронный POST `trigger`: его прогон ещё не «виден» как RUNNING
+ *   (строка появляется в начале цикла), и без этого условия poll не запустился бы.
+ *
+ * На монтировании экрана делает обычный GET — поэтому идущий сбор, запущенный
+ * из другой вкладки / другим оператором, тут же подхватывается (id для cancel).
+ */
+export function useLatestRun() {
+  const triggering = useIsMutating({ mutationKey: TRIGGER_MUTATION_KEY }) > 0;
+  return useQuery<CollectionRun | null, ApiError>({
+    queryKey: LATEST_RUN_KEY,
+    queryFn: getLatestRun,
+    refetchInterval: (query) => {
+      if (query.state.data?.status === 'RUNNING') return RUN_POLL_INTERVAL_MS;
+      return triggering ? RUN_POLL_INTERVAL_MS : false;
+    },
+    staleTime: 0,
   });
 }
 
@@ -37,15 +52,17 @@ export function useTriggerCollection() {
   return useMutation<CollectionRun, ApiError, string | undefined>({
     mutationKey: TRIGGER_MUTATION_KEY,
     mutationFn: (since) => triggerCollection(since ? { since } : {}),
-    onSuccess: (run) => qc.setQueryData(CURRENT_RUN_KEY, run),
+    onSuccess: (run) => qc.setQueryData(LATEST_RUN_KEY, run),
   });
 }
 
-export function useRefreshRun() {
+export function useCancelRun() {
   const qc = useQueryClient();
   return useMutation<CollectionRun, ApiError, string>({
-    mutationFn: (id) => getCollectionRun(id),
-    onSuccess: (run) => qc.setQueryData(CURRENT_RUN_KEY, run),
+    mutationFn: (id) => cancelCollectionRun(id),
+    // 202: прогон ещё RUNNING с поднятым флагом отмены — пишем в кэш, чтобы
+    // poll продолжился и сам поймал переход RUNNING → CANCELLED.
+    onSuccess: (run) => qc.setQueryData(LATEST_RUN_KEY, run),
   });
 }
 
