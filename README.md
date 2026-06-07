@@ -1,14 +1,27 @@
 # DevPulse — фронт
 
 [![CI](https://github.com/devpulse-dev/devpulse-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/devpulse-dev/devpulse-ui/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-216_passed-2ea44f?logo=vitest&logoColor=white)](#тесты)
+[![OAS](https://img.shields.io/badge/contract-%5E2.0.0-2ea44f?logo=openapiinitiative&logoColor=white)](#api-типы-devpulse-devapi-types)
+
+[![React](https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-5-646cff?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Ant Design](https://img.shields.io/badge/Ant_Design-5-0170fe?logo=antdesign&logoColor=white)](https://ant.design/)
+[![TanStack Query](https://img.shields.io/badge/TanStack_Query-5-ff4154?logo=reactquery&logoColor=white)](https://tanstack.com/query)
+[![Zustand](https://img.shields.io/badge/Zustand-5-443e38)](https://zustand-demo.pmnd.rs/)
+[![Axios](https://img.shields.io/badge/Axios-1.7-5a29e4?logo=axios&logoColor=white)](https://axios-http.com/)
+[![React Router](https://img.shields.io/badge/React_Router-6-ca4245?logo=reactrouter&logoColor=white)](https://reactrouter.com/)
+[![Vitest](https://img.shields.io/badge/Vitest-2-6e9f18?logo=vitest&logoColor=white)](https://vitest.dev/)
 
 Аналитика активности разработчиков: дашборд с activity-score, недельная динамика,
 профили, heatmap-календарь, сравнение, bus factor, ревью-метрики, **Performance
 Review** (досье к 1:1), **управление командами и лидами**, экспорт.
 Бэк — [`DevPulse-core`](../DevPulse-core), API v2 (REST + RFC 7807 problem+json),
-контракт `@devpulse-dev/api-types ^1.7.0`.
+контракт `@devpulse-dev/api-types ^2.0.0`.
 
 > Дорожная карта фич и прогресс — в [`FEATURES.md`](./FEATURES.md).
+> История рефакторингов из senior-review — в [`REFACTORING.md`](./REFACTORING.md).
 
 ---
 
@@ -19,10 +32,11 @@ Review** (досье к 1:1), **управление командами и ли�
 | UI | React 19 + TypeScript (strict) |
 | Сборка | Vite 5 |
 | Компоненты | Ant Design 5 (`cssVar: true`, `hashed: false`) |
-| Состояние | Zustand 5 (`persist` middleware) |
+| Данные | **TanStack Query 5** (запросы/кэш/dedupe) + **Zustand 5** для UI-state |
+| HTTP | Axios + `axios-retry` (3 попытки на 5xx/network для GET) + interceptor → RFC 7807 → `ApiError` |
 | Роутинг | React Router 6 (с v7 future flags) |
-| HTTP | Axios + interceptor → RFC 7807 → `ApiError` |
 | Графики | Recharts (темо-адаптивные через CSS variables) |
+| Виртуализация | `@tanstack/react-virtual` (TasksTimeline на длинных списках) |
 | Иконки | lucide-react |
 | Даты | dayjs + `isoWeek` + ru-локаль |
 
@@ -63,49 +77,60 @@ VITE_API_BASE_URL=/api/v2          # baseURL axios-клиента; в dev — о
 
 ```
 src/
-├── app/        # провайдеры, router, глобальные стили
+├── app/        # провайдеры (QueryProvider, AntdProvider, ErrorBoundary, FilterUrlSync),
+│               #         router, глобальные стили (base, app-layout, shared)
 ├── pages/      # роуты (Dashboard, Weekly, Activity, Compare, Performance Review,
 │               #         Teams, Profile, Collection, Settings, NotFound)
-├── widgets/    # самостоятельные UI-блоки (LeaderboardCard, ActivityHeatmap,
-│               #         PerfKpiGrid, TeamCard, …)
-├── features/   # пользовательские сценарии (theme-switch, date-range-filter, team-scope)
+├── widgets/    # самостоятельные UI-блоки, сгруппированные по доменам:
+│               #   activity/, collection/, compare/, dashboard/, perf/, profile/,
+│               #   settings/, team/, weekly/  + app-layout (shell)
+│               #   у каждого виджета свой styles.css co-located
+├── features/   # пользовательские сценарии (theme-switch, date-range-filter,
+│               #         team-scope, sidebar)
 ├── entities/   # бизнес-сущности (user, team, commit, kaiten-card, stats,
 │               #         dashboard, performance-review, collection-run)
-└── shared/     # api/, config/, lib/, hooks/, ui/, test/factories.ts
+└── shared/     # api/, config/, lib/, hooks/, ui/, test/factories.ts + render-helper
 ```
 
 **Правило слоёв:** import только сверху вниз (`pages → widgets → features → entities → shared`). Барелл `@/app/router` грузит весь router-граф, поэтому константы (`ROUTES`, `buildProfilePath`) импортируются из `@/app/router/paths` напрямую — это избегает циклической зависимости через `widgets/app-layout`.
 
-**Внутри slice'а:** `ui/` (компоненты), `model/` (Zustand + типы), `api/` (axios-обёртки), `lib/` (чистые утилиты), `config/` (константы, columns), `index.ts` (public API).
+**Внутри slice'а:** `ui/` (компоненты), `model/` (типы), `api/` (axios-обёртки + queryOptions), `lib/` (чистые утилиты), `config/` (константы, columns), `index.ts` (public API), `styles.css` (per-widget CSS).
 
 ### Состояние
 
-- **Filter stores** (`features/*/model/*.store.ts`) — глобальные настройки UI (`theme`, `dateRange`, `teamScope`). Persist в localStorage по ключам `devpulse.*`.
-- **Entity stores** (`entities/*/model/*.store.ts`) — кэш данных с бэка. Каждый держит `AsyncState<T>` (`status`, `data`, `error`, `lastFetchedAt`).
-- **Race protection.** Любой store с `fetch()` использует `createRaceGuard()` — если юзер переключит фильтр пока летит запрос, старый ответ молча игнорируется.
-- **TTL-кэш навигаций.** `fetch` за тот же период в пределах `STORE_CACHE_TTL_MS` (60с) — no-op (возврат на страницу не дёргает API). Stats-сторы (weekly/daily/summary/hourly/reviews) собраны общей фабрикой `createStatsStore` (race-guard + кэш).
-- **Optimistic updates.** Мутации в teams/users (assignLead, assignTeam) — точечный апдейт кэша + фоновый `fetchTeams(true)` для финальной консистентности между командами.
-- **Селекторы через `useShallow`** — не реренжем компонент, если объект-выборка не изменился по структуре.
+**Данные с бэка — TanStack Query.** Каждая entity-сущность экспортирует `queryOptions`-фабрики из `api/queries.ts`. Страницы используют `useQuery(dashboardQuery({from,to}))` напрямую.
+
+- **`staleTime: 60s`** — повторный mount страницы за тот же ключ не идёт в сеть.
+- **Request dedupe** — три виджета на одной странице с тем же ключом → один запрос.
+- **AbortController** встроен в `queryFn({ signal })` — при смене ключа старые запросы отменяются.
+- **Cross-page cache** — пришёл на Profile после Activity за тот же период → ревью-данные мгновенно из кэша.
+- **Мутации** через `useMutation` + `qc.invalidateQueries({ queryKey: teamsQueryKey })` — TanStack сам перетянет свежий список.
+
+**UI-state — Zustand с `persist` middleware.** Только то, что должно пережить перезагрузку:
+- `theme` (`devpulse.theme`) — light/dark
+- `dateRange` (`devpulse.date-range`) — выбранный период
+- `teamScope` (`devpulse.team-scope`) — глобальный фильтр команды
+- `sidebar` (`devpulse.sidebar`) — свёрнут/развёрнут
+
 - **Фильтры в URL.** `FilterUrlSync` (`app/providers`) двусторонне синхронит `dateRange` и `teamScope` с `?from&to&team=<name>` — диплинки, закладки, кнопка «назад». Скоп `ALL_TEAMS` (по умолчанию) в URL не пишется.
 - **Lazy-страницы.** Все роуты кроме стартового Dashboard — `React.lazy` + `Suspense`; recharts вынесен из инициального бандла.
 
 ### Поток данных
 
 ```
-backend → entity store fetch → AsyncState<T>
-                                 │
-                                 ▼
-                       Filter store (teamScope)
-                                 │
-                                 ▼ (фильтрация ДО агрегации)
-                  Aggregation libs (aggregateByContributor,
-                  groupCommitsByTask, applyTeamFilterToWeekly…)
-                                 │
-                                 ▼
-                       Widget принимает чистые данные
+useQuery(...)        ← @tanstack/react-query
+        │
+        ▼ (data, isPending, error, …)
+filterByScope(items, scope, getTeam)   ← features/team-scope (pure, тестируемо)
+        │
+        ▼ (отфильтрованный массив)
+Aggregation libs (aggregateByContributor, groupCommitsByTask, …)
+        │
+        ▼
+Widget принимает чистые данные
 ```
 
-**Принцип:** глобальный team-scope применяется на page-уровне ДО передачи данных в виджеты. Так все производные (totals, top-N, pagination) корректны без дополнительных запросов.
+**Принцип:** глобальный team-scope применяется на page-уровне ДО передачи данных в виджеты. Все производные (totals, top-N, pagination) корректны без дополнительных запросов.
 
 ---
 
@@ -115,11 +140,11 @@ backend → entity store fetch → AsyncState<T>
 |---|---|---|
 | `/` Дашборд | `pages/dashboard/` | `GET /dashboard?size=500` (×2 — текущий + предыдущий период для PoP-дельт) |
 | `/weekly` Недели | `pages/weekly/` | `GET /stats/weekly` |
-| `/activity` Активность | `pages/activity/` | `GET /stats/daily` + `GET /stats/hourly` + `GET /stats/reviews` + `GET /dashboard` + `GET /users` (enrichment / team fallback) |
-| `/compare` Сравнение | `pages/compare/` | — (из dashboard-стора, выбор в `?ids=`) |
+| `/activity` Активность | `pages/activity/` | `GET /stats/daily` + `GET /stats/hourly` + `GET /stats/reviews` + `GET /dashboard` + `GET /users` |
+| `/compare` Сравнение | `pages/compare/` | — (использует `dashboardQuery`, выбор в `?ids=`) |
 | `/performance-review` Performance Review | `pages/performance-review/` | `GET /performance/review?email&from&to&compareToPrevious` + `GET /users` |
 | `/teams` Команды | `pages/teams/` | `GET /teams`, `PUT /teams/lead`, `PUT /users/{email}/team` |
-| `/users/:email` Профиль | `pages/profile/` | `GET /users/{email}/profile` |
+| `/users/:email` Профиль | `pages/profile/` | `GET /users/{email}/profile` + `GET /stats/reviews` |
 | `/collection` Сбор | `pages/collection/` | `POST /collection/runs`, `GET /collection/runs/{id}`, `POST /kaiten/sync-users` |
 | `/settings` Настройки | `pages/settings/` | — (только localStorage) |
 | `*` 404 | `pages/not-found/` | — |
@@ -130,7 +155,7 @@ backend → entity store fetch → AsyncState<T>
 
 С API 1.7.0 команды — first-class сущность.
 
-- **`UserProfile.team`** (string|null) и **`UserProfile.isLead`** (boolean) теперь есть и в `AuthorSummary` (`/dashboard`, `/stats/summary`, `/stats/weekly`), и в `ReviewAuthor` (`/stats/reviews`) — кросс-резолв не нужен.
+- **`UserProfile.team`** (string|null) и **`UserProfile.isLead`** (boolean) есть и в `AuthorSummary` (`/dashboard`, `/stats/summary`, `/stats/weekly`), и в `ReviewAuthor` (`/stats/reviews`) — кросс-резолв не нужен.
 - **`GET /teams`** отдаёт `Team { name, lead: UserProfile|null, members: UserProfile[] }`. Источник имён для глобального пикера и экрана управления.
 - **`PUT /teams/lead`** body `{ team, email|null }` — назначить / снять лида (бэк держит инвариант «один лид»).
 - **`PUT /users/{email}/team`** body `{ team: string|null }` — добавить / перевести / исключить. Имя — свободный текст; новая команда появляется при первом назначении.
@@ -139,8 +164,8 @@ backend → entity store fetch → AsyncState<T>
 
 `features/team-scope` — единый источник правды:
 - значения: `ALL_TEAMS` (по умолчанию, в URL не пишется), `NO_TEAM` («без команды»), либо имя команды;
-- хук `useTeamScopeFilter(items, getTeam)` фильтрует массив по полю `team` элемента;
-- `matchesScope(team, scope)` — pure-функция, легко тестируется;
+- `filterByScope(items, scope, getTeam, alwaysKeep?)` — pure-функция фильтрации (тестируется без React);
+- `useTeamScopeFilter(items, getTeam, alwaysKeep?)` — мемоизированная обёртка-хук;
 - если в persisted-store сохранена пропавшая команда (переименована/удалена), `TeamScopePicker` мягко сбрасывается в `ALL_TEAMS` + info-тост.
 
 Серверного `?team=` на `/dashboard` и `/stats/*` нет — фильтрация чисто клиентская. `GET /users?team=` используется только для picker'а в Performance Review.
@@ -155,9 +180,18 @@ backend → entity store fetch → AsyncState<T>
 
 - **AntD ConfigProvider** с `cssVar: true` + `hashed: false` → AntD генерирует CSS-переменные `--ant-color-*`, `--ant-box-shadow` на `:root`. Кастомный CSS читает их без хешей.
 - **Light/dark** через `data-theme` атрибут на `<html>`. `:root[data-theme='dark'] .smth` — точечные оверрайды для shadow/borders.
+- **CSS co-location.** Каждый виджет/компонент имеет свой `styles.css` рядом и подключает его через `import './styles.css'` в `index.ts`. Vite склеивает всё в один бандл. Глобальных файлов — три: `base.css` (vars/html/body), `app-layout.css` (каркас приложения), `shared.css` (кросс-виджетные классы вроде `.leaderboard-card`, `.activity-badge`).
 - **Палитра:** Linear/Stripe-стиль. Page — серый/тёмный, sidebar и cards — белые/elevated. Topbar полупрозрачный с `backdrop-filter: blur` через `color-mix`.
 - **Шрифты:** Inter (UI) + JetBrains Mono (хеши коммитов, теги задач) — Google Fonts.
 - **Print-CSS** для `/performance-review` — скрывает sidebar/topbar/контролы, убирает тени, держит блоки `break-inside: avoid` для аккуратного PDF.
+
+---
+
+## Надёжность
+
+- **`ErrorBoundary`** в `AppLayout` (`shared/ui/ErrorBoundary`): runtime-ошибка в виджете не уносит каркас. AntD `Result` с двумя действиями: «Повторить» (reset state) и «Перезагрузить страницу». `resetKey={pathname}` — переход на другой маршрут автоматически сбрасывает фолбэк. Точка подключения Sentry — `componentDidCatch`.
+- **`axios-retry`** для GET: 3 попытки на 5xx, 429, network-errors с экспоненциальным backoff (300 → 900 → 2100 мс). POST/PUT/DELETE не ретраим — могут породить дубль. 4xx (404, 400) тоже не ретраим — устойчивые клиентские ошибки.
+- **`AbortController`** — TanStack Query прокидывает `signal` в `queryFn({ signal })`, axios понимает signal из коробки. Старый запрос отменяется при смене ключа или unmount страницы.
 
 ---
 
@@ -189,7 +223,13 @@ export const extractCardId = (commit) =>
 
 ### Performance Review
 
-Раздел `/performance-review` — досье к 1:1. Picker разработчика подхватывает глобальный team-scope из топбара (одна точка правды). Метрики (`PerformanceMetrics`) — 14 полей `MetricDelta { current, previous?, delta?, deltaPct? }`. У снапшот-метрик (`defectsInWork`, `devTasksInWork`) `previous/delta/deltaPct = null` — дельту не рисуем, ставим бейдж «снапшот». У `avgTimeToMergeHours` инвертирован тон (меньше = лучше).
+Раздел `/performance-review` — досье к 1:1. Picker разработчика подхватывает глобальный team-scope из топбара (одна точка правды). Метрики (`PerformanceMetrics`) — 14 полей `MetricDelta { current, previous?, delta?, deltaPct? }`. У снапшот-метрик (`defectsInWork`, `devTasksInWork`) `previous/delta/deltaPct = null` — дельту не рисуем. У `avgTimeToMergeHours` инвертирован тон (меньше = лучше). При отсутствии PoP-сравнения foot плитки молчит (не пишем «без изменений» — невозможно отличить от настоящего равенства).
+
+С API 2.0.0 «заметные результаты» — два типизированных среза:
+- **`notable.firefighting`** — закрытые critical/high дефекты;
+- **`notable.deliveredFeatures`** — корневые задачи с done-юскейсами.
+
+С API 1.9.0 cycle-time раздельный: `cycleTime: { defects, development }` — длительность у них принципиально разная.
 
 Честные подписи в UI: «дефекты/задачи — по текущему состоянию карточек», «тесты — строки тест-кода, не число тестов».
 
@@ -206,6 +246,15 @@ export const extractCardId = (commit) =>
 
 Фронт показывает `<ActivityBadge>` (`entities/user/ui/ActivityBadge.tsx`) — Tag с цветом по категории + tooltip с разбивкой компонент. Используется в `LeaderboardRow` (компактно, inline с именем) и в столбце AuthorsTable.
 
+### TasksTimeline и виртуализация
+
+`widgets/profile/tasks-timeline` рендерит «коммиты по задачам» на профиле. На больших проектах в раскрытой строке (`TaskCommitsBreakdown`) могут быть сотни коммитов:
+
+- **При < 50** — рендерим все строки как обычно.
+- **При ≥ 50** — `useVirtualizer` из `@tanstack/react-virtual`, скролл-контейнер 480px, overscan: 8. В DOM только видимые строки.
+
+Главный список задач остаётся на `<DataTable>` с `pagination=25` — это уже эффективно. Фильтрация по поиску — через `useDeferredValue(debounced)`: React 19 делает её неблокирующей, инпут остаётся отзывчивым.
+
 ---
 
 ## Скрипты
@@ -216,7 +265,7 @@ npm run build       # tsc -b && vite build → dist/
 npm run preview     # превью production-сборки
 npm run typecheck   # tsc -b --noEmit
 npm run lint        # eslint (нулевая толерантность к warning'ам)
-npm test            # vitest run (unit-тесты)
+npm test            # vitest run (unit + UI-тесты)
 npm run test:watch  # vitest в watch-режиме
 npm run test:cov    # vitest с coverage-отчётом
 ```
@@ -225,52 +274,51 @@ npm run test:cov    # vitest с coverage-отчётом
 
 ## Тесты
 
-Vitest (нативно с Vite). Покрыты **чистые функции** — агрегации, парсеры, store-инфра, где цена бага высока, а DOM не нужен. Тест-файлы `*.test.ts` co-located рядом с кодом.
+Vitest (нативно с Vite). Покрыты **чистые функции** (где цена бага высока, а DOM не нужен) **и UI-smoke** для топ-страниц (рендер не падает). Тест-файлы `*.test.ts` / `*.test.tsx` co-located рядом с кодом.
 
-Фабрики тестовых данных — `src/shared/test/factories.ts` (`makeAuthor`, `makeCommit`, `makeCard`, `makeDaily`, `makeWeek`, `makeActivity`). В прод-бандл не попадают.
+Vitest умеет per-file environment: `*.test.tsx` → `jsdom`, `*.test.ts` → `node` (быстрее для чистых функций).
 
-**Сейчас 165 тестов в 24 файлах** (`npm test`).
+Фабрики тестовых данных — `src/shared/test/factories.ts` (`makeAuthor`, `makeCommit`, `makeCard`, `makeDaily`, `makeWeek`, `makeActivity`). `renderWithProviders` (`src/shared/test/render.tsx`) — обёртка для UI-тестов: `QueryClientProvider` + `MemoryRouter` + `AntApp` + `ConfigProvider`, с `setupQueryCache?(qc)` для предзаполнения кэша вместо запросов.
 
-Что покрыто:
+**Сейчас 216 тестов в 38 файлах** (`npm test`).
+
+Ключевые модули с покрытием:
 
 | Модуль | Что проверяется |
 |---|---|
-| `shared/api/race` | `createRaceGuard`: счётчик, защита от устаревших ответов, классический race-сценарий |
-| `shared/api/async-state` | `idle/loading/success/failure`, сохранение stale-data, `isFresh` (TTL-граница под `vi.useFakeTimers`) |
-| `entities/commit/lib/task-id` | `extractCardId` (формат `<space>-<task>`, merge-сообщения, fallback), `stripTaskPrefix` |
-| `entities/dashboard/lib/select-sections` | дизъюнктность top/outsiders по категории, worst-first, лимиты |
-| `entities/dashboard/lib/aggregate` | суммирование totals, uniqueAuthors |
-| `entities/user/lib/initials` | `userInitials` / `userDisplayName` / `authorAsUser` (фоллбэки, email-разделители) |
-| `entities/stats/lib/apply-team-filter` | predicate-based пересчёт недельных totals под фильтр команды |
-| `features/team-scope/model/team-scope` | `matchesScope`: ALL_TEAMS / NO_TEAM / конкретное имя, краевые `null`/`undefined`/`''` |
-| `widgets/profile-tasks-timeline/lib/group-commits` | матчинг коммит↔карточка, orphan-группа, пустые карточки, сортировка |
-| `widgets/activity-summary/lib` | totals (авторы/репо/активные дни), `dailySeries` для спарклайнов |
-| `widgets/activity-bus-factor/lib` | bus factor (накопление до 50%), уровни риска, сортировка |
-| `widgets/activity-contributors/lib/aggregate-contributors` | суммирование, сортировка, enrichment с team/isLead, регистронезависимость, merge-only |
-| `widgets/activity-contributors/lib/detect-anomalies` | эвристики STALE / DECLINING / LOW_TESTS |
-| `widgets/activity-hourly/lib/build-hourly-grid` | 7×24-сетка из `/stats/hourly`, normalize-buckets |
-| `widgets/compare-radar/lib/normalize` | нормализация осей радара к лидеру |
-| `widgets/profile-summary/lib/aggregate-cards` | разбивка карточек по closed × cardType |
-| `widgets/profile-reviews/lib/compare` | дельта ревью-метрик к среднему команды |
-| `widgets/activity-reviews/lib/reviews` | сортировка `engagement = approves + comments`, `formatHours` |
-| `widgets/perf-controls/config/periods` | `presetRange` / `detectPeriodKey` (под `vi.useFakeTimers`) |
-| `shared/lib/number/format` | форматтеры, `pctChange`, `formatPctDelta`, `formatHours` |
-| `shared/lib/date/ranges` | `previousPeriod` (PoP), границы месяца |
-| `shared/lib/export/csv` | экранирование, разделитель, заголовки |
-| `shared/lib/string/truncate` | эллипсис, инициалы |
+| `shared/api/race` | `createRaceGuard`: счётчик, защита от устаревших ответов |
+| `shared/api/async-state` | `idle/loading/success/failure`, сохранение stale-data, `isFresh` (под `vi.useFakeTimers`) |
+| `shared/api/abort` | `isAbortError`: распознаёт axios Cancel / CanceledError / DOM AbortError / `ERR_CANCELED` |
+| `entities/commit/lib/task-id` | `extractCardId`, `stripTaskPrefix` |
+| `entities/dashboard/lib/*` | `selectDashboardSections`, `aggregateAuthors` |
+| `entities/user/lib/initials` | `userInitials` / `userDisplayName` / `authorAsUser` |
+| `entities/stats/lib/apply-team-filter` | пересчёт недельных totals под фильтр команды |
+| `features/team-scope` | `matchesScope` (ALL/NO_TEAM/конкретная) + `filterByScope` с `alwaysKeep` |
+| `widgets/activity/contributors/lib/*` | `aggregateByContributor` (с team/isLead enrichment), `detect-anomalies` |
+| `widgets/activity/summary/lib`, `bus-factor`, `hourly` | агрегации |
+| `widgets/perf/*` | `engagement`, `givenShare`, `testRatio`, `formatDays`, `deliveryProgress` |
+| `widgets/perf/controls/config/periods` | `presetRange` / `detectPeriodKey` |
+| `widgets/profile/tasks-timeline/lib/group-commits` | матчинг коммит↔карточка, orphan-группа |
+| `app/providers/FilterUrlSync` | URL ↔ store sync, ALL_TEAMS не пишется, фикс persisted-scope |
+| `shared/ui/{EmptyState,ErrorBoundary}` | smoke + reset через `resetKey` |
+| `features/team-scope/ui/TeamScopePicker` | дефолт, выбор, fallback на пропавшую команду |
+| `pages/*` (5 страниц) | page-level smoke с предзаполненным cache: рендерится без exceptions |
+| `shared/lib/{number,date,export,string}` | форматтеры, ranges, csv, truncate |
 
 > **tsconfig:** `tsconfig.app.json` исключает тесты (в прод-build не идут),
 > `tsconfig.test.json` проверяет их отдельно с послаблением `noUncheckedIndexedAccess`
-> (деструктуризация массивов в ассертах идиоматична). `tsc -b` гоняет оба проекта.
+> + types `jest-dom`. `tsc -b` гоняет оба проекта.
 
 ---
 
 ## API-типы (`@devpulse-dev/api-types`)
 
 Типы запросов/ответов **не генерируются у нас** — фронт ставит готовый npm-пакет
-[`@devpulse-dev/api-types`](https://github.com/devpulse-dev/devpulse-oas/pkgs/npm/api-types) из GitHub Packages. Внутри — bundled `.d.ts` на весь `/api/v2` (единый `components` / `paths` / `operations`), собранный из OpenAPI-контрактов в `devpulse-oas`. Single source of truth — бэк implement'ит те же спеки, фронт импортит те же типы. Версия пакета в lockstep с Maven-контрактами (`1.x` ↔ контракты `1.x`).
+[`@devpulse-dev/api-types`](https://github.com/devpulse-dev/devpulse-oas/pkgs/npm/api-types) из GitHub Packages. Внутри — bundled `.d.ts` на весь `/api/v2` (единый `components` / `paths` / `operations`), собранный из OpenAPI-контрактов в `devpulse-oas`. Single source of truth — бэк implement'ит те же спеки, фронт импортит те же типы. Версия пакета в lockstep с Maven-контрактами.
 
-**Текущая версия:** `^1.7.0` — `team`/`isLead` в `UserProfile` / `AuthorSummary` / `ReviewAuthor`, тег `Teams` (`GET /teams`, `PUT /teams/lead`), `GET /performance/review`, `GET/PUT /users[...]`.
+**Текущая версия:** `^2.0.0` — `NotableResults` (firefighting + deliveredFeatures) вместо плоского `highlights[]`. Также подтянуты `CycleTimeBreakdown` (defects/development) из 1.9.0, `KaitenInsights` (defects/development/cycleTime/balance) из 1.8.0, `team`/`isLead` во всех developer-эндпоинтах из 1.7.0.
+
+> ⚠️ Локальные имена `AuthorSummary`/`AuthorActivity` НЕ совпадают с одноимёнными схемами OAS — см. шапку `src/entities/user/model/types.ts`.
 
 ### Доступ к GitHub Packages
 
@@ -281,7 +329,7 @@ Vitest (нативно с Vite). Покрыты **чистые функции** 
 //npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
 ```
 
-GitHub Packages npm-registry требует токен **даже для публичного пакета** (в отличие от Maven). Перед `npm install`:
+GitHub Packages npm-registry требует токен **даже для публичного пакета**. Перед `npm install`:
 
 ```bash
 export GITHUB_TOKEN=ghp_xxx   # PAT с read:packages
@@ -292,7 +340,7 @@ npm install
 
 ### Как использовать
 
-Все entity-типы (`AuthorActivity`, `KaitenCard`, `Commit`, `DashboardData`, `Team`, `PerformanceReview`, …) — **алиасы на схемы из пакета**. Барелл `src/shared/api/schema.ts`:
+Все entity-типы — **алиасы на схемы из пакета**. Барелл `src/shared/api/schema.ts`:
 
 ```ts
 import type { components } from '@devpulse-dev/api-types';
@@ -300,26 +348,20 @@ export type Schemas = components['schemas'];
 ```
 
 ```ts
-// entities/user/model/types.ts
-import type { Schemas } from '@/shared/api/schema';
-
 export type AuthorActivity = Schemas['AuthorSummary'];
-export type ActivityScore = Schemas['ActivityScore'];
-
-// entities/team/model/types.ts
 export type Team = Schemas['Team'];
 ```
 
-Domain-наименование сохраняем (`AuthorActivity` локально привычнее), но shape — точно как в OAS. Бамп версии пакета → `npm run typecheck` находит места которые надо адаптировать.
+Каждая entity также экспортирует `queryOptions`-фабрики из `api/queries.ts` — единственное место, где `useQuery(...)` берёт ключ + fetcher.
 
 ### Бамп версии контрактов
 
 1. В `devpulse-oas` слит PR, опубликована новая версия `@devpulse-dev/api-types`.
-2. `npm install @devpulse-dev/api-types@latest` (или подними `^1.x` в package.json).
+2. `npm install @devpulse-dev/api-types@latest`.
 3. `npm run typecheck` — TS подсветит места, где shape поехал.
-4. Поправить → закоммитить `package.json` + `package-lock.json` + app-код.
+4. Поправить → закоммитить.
 
-`extractCardId` (`entities/commit/lib/task-id.ts`) остаётся ручным даже после перехода на типы — это defense-in-depth fallback на нестандартный формат сообщения коммита, не дубликат `taskNumber`.
+`extractCardId` (`entities/commit/lib/task-id.ts`) остаётся ручным даже после перехода на типы — defense-in-depth fallback на нестандартный формат сообщения коммита.
 
 ---
 
@@ -350,13 +392,13 @@ Concurrency-группа отменяет старый прогон при пу�
 
 ## Roadmap
 
-Полный план и прогресс — в [`FEATURES.md`](./FEATURES.md). Закрыто:
+Полный план и прогресс — в [`FEATURES.md`](./FEATURES.md). Рефакторинги из senior-review — в [`REFACTORING.md`](./REFACTORING.md), все 14 пунктов закрыты.
 
+**Продуктовый план — закрыто:**
 - **Клиентские (9):** PoP-дельты, экспорт CSV/PNG, URL-фильтры, спарклайны, сравнение, аномалии, bus factor, lazy chunks, кэш навигаций.
-- **Бэк-зависимые (закрытые):** B1 Hourly heatmap, B2 ревью-метрики, **Performance Review** (досье + `/teams` first-class + лиды).
+- **Бэк-зависимые:** B1 Hourly heatmap, B2 ревью-метрики, **Performance Review** (досье + Kaiten-insights + notable), **команды/лиды first-class**, team/isLead во всех developer-эндпоинтах.
 
-Осталось — фичи, требующие бэка:
-
+**Осталось — фичи, требующие бэка:**
 - **B3** Email / Slack дайджест
 - **B4** Цели / таргеты команды
 - **B5** Push-алерты аномалий
