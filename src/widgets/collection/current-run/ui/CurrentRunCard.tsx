@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button, Card, Popconfirm, Spin, Typography } from 'antd';
 import { useIsMutating } from '@tanstack/react-query';
 import { Activity, Ban, RefreshCw } from 'lucide-react';
@@ -125,6 +125,33 @@ export function CurrentRunCard() {
   // 202 на отмену уже получен по текущему прогону, ждём перехода в CANCELLED.
   const cancelRequested =
     cancel.isSuccess && cancel.variables === run?.id && run?.status === 'RUNNING';
+
+  // Терминальный исход теперь не возвращается из POST (он асинхронный, отдаёт
+  // лишь RUNNING) — наблюдаем переход RUNNING → терминал поллингом и уведомляем
+  // здесь, в карточке-наблюдателе прогона.
+  const prevStatusRef = useRef(run?.status);
+  useEffect(() => {
+    const prev = prevStatusRef.current;
+    prevStatusRef.current = run?.status;
+    if (prev !== 'RUNNING' || !run || run.status === 'RUNNING') return;
+
+    if (run.status === 'SUCCESS') {
+      notification.success({
+        message: 'Сбор завершён',
+        description: `Прогон ${run.id} завершён успешно.`,
+      });
+    } else if (run.status === 'CANCELLED') {
+      notification.info({
+        message: 'Сбор отменён',
+        description: 'Прогон остановлен по запросу. Следующий запуск доберёт недостающее.',
+      });
+    } else if (run.status === 'FAILED') {
+      notification.error({
+        message: 'Сбор завершился ошибкой',
+        description: run.errorMessage ?? 'Подробности в логах сервера.',
+      });
+    }
+  }, [run, notification]);
 
   const handleCancel = (): void => {
     if (!run) return;

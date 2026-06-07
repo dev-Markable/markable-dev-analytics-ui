@@ -28,8 +28,8 @@ const RUN_POLL_INTERVAL_MS = 3000;
  *
  * Поллим, пока:
  * - прогон в `RUNNING` (наблюдаем переход к терминалу, в т.ч. RUNNING → CANCELLED), либо
- * - висит сам синхронный POST `trigger`: его прогон ещё не «виден» как RUNNING
- *   (строка появляется в начале цикла), и без этого условия poll не запустился бы.
+ * - в полёте сам POST `trigger`: закрывает короткий зазор между отправкой запроса
+ *   и записью 202-ответа (RUNNING) в кэш, чтобы poll стартовал без задержки.
  *
  * На монтировании экрана делает обычный GET — поэтому идущий сбор, запущенный
  * из другой вкладки / другим оператором, тут же подхватывается (id для cancel).
@@ -52,6 +52,8 @@ export function useTriggerCollection() {
   return useMutation<CollectionRun, ApiError, string | undefined>({
     mutationKey: TRIGGER_MUTATION_KEY,
     mutationFn: (since) => triggerCollection(since ? { since } : {}),
+    // 202 отдаёт прогон уже в RUNNING — кладём в кэш latest, чтобы CurrentRunCard
+    // сразу показал статус + кнопку отмены, а poll довёл его до терминала.
     onSuccess: (run) => qc.setQueryData(LATEST_RUN_KEY, run),
   });
 }

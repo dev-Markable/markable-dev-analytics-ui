@@ -5,20 +5,19 @@ import type {
   TriggerCollectionPayload,
 } from '../model/types';
 
-/**
- * Бэк синхронен — POST не возвращается, пока цикл не завершён.
- * На фронте поднимаем таймаут до 5 минут (по умолчанию у клиента 30 сек).
- */
-const COLLECTION_TIMEOUT_MS = 5 * 60 * 1000;
 const KAITEN_SYNC_TIMEOUT_MS = 60 * 1000;
 
+/**
+ * Запуск сбора. Бэк асинхронен (202): сразу отдаёт прогон в `RUNNING`, цикл идёт
+ * в фоне. Финальный статус наблюдаем поллингом GET /runs/{id} | /latest
+ * (RUNNING → SUCCESS/FAILED/CANCELLED). Поэтому дефолтного таймаута клиента
+ * достаточно — длинный 5-минутный override больше не нужен.
+ */
 export async function triggerCollection(
   payload: TriggerCollectionPayload = {},
 ): Promise<CollectionRun> {
   const body = payload.since ? { since: payload.since } : {};
-  const { data } = await apiClient.post<CollectionRun>('/collection/runs', body, {
-    timeout: COLLECTION_TIMEOUT_MS,
-  });
+  const { data } = await apiClient.post<CollectionRun>('/collection/runs', body);
   return data;
 }
 

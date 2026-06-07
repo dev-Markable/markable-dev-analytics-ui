@@ -2,44 +2,36 @@ import { useState } from 'react';
 import { Alert, Button, Card, DatePicker, Space, Typography } from 'antd';
 import type { Dayjs } from 'dayjs';
 import { Play } from 'lucide-react';
-import { useTriggerCollection } from '@/entities/collection-run';
+import { useLatestRun, useTriggerCollection } from '@/entities/collection-run';
 import { useApiError } from '@/shared/api';
 import { useNotification, useApiErrorNotification } from '@/shared/hooks';
 
 export function CollectionTriggerCard() {
   const trigger = useTriggerCollection();
+  const { data: run } = useLatestRun();
   const notification = useNotification();
 
-  // Сетевой/серверный сбой самого POST (≠ run.status === 'FAILED') —
-  // показываем тостом, как раньше делал page-level useApiErrorNotification.
+  // Сбой самого запуска (сеть / 409 «уже идёт») — тостом. Терминальный исход
+  // прогона (SUCCESS/FAILED/CANCELLED) сюда больше не приходит: POST асинхронен
+  // и отдаёт лишь RUNNING — итог наблюдает CurrentRunCard поллингом.
   const triggerError = useApiError(trigger.error);
-  useApiErrorNotification(triggerError, 'Сбор завершился ошибкой');
+  useApiErrorNotification(triggerError, 'Не удалось запустить сбор');
 
   const [since, setSince] = useState<Dayjs | null>(null);
-  const isRunning = trigger.isPending;
+  // Блокируем запуск, пока есть активный прогон (свой или чужой) — иначе бэк
+  // ответит 409 (single-flight). isPending покрывает миг до прихода 202.
+  const isBusy = trigger.isPending || run?.status === 'RUNNING';
 
   const handleTrigger = async (): Promise<void> => {
-    const run = await trigger
+    const started = await trigger
       .mutateAsync(since ? since.format('YYYY-MM-DDTHH:mm:ss') : undefined)
-      .catch(() => null); // сетевой сбой уже уйдёт тостом через triggerError
-    if (!run) return;
+      .catch(() => null); // ошибка запуска уже уйдёт тостом через triggerError
+    if (!started) return;
 
-    if (run.status === 'SUCCESS') {
-      notification.success({
-        message: 'Сбор завершён',
-        description: `Прогон ${run.id} завершён успешно.`,
-      });
-    } else if (run.status === 'CANCELLED') {
-      notification.info({
-        message: 'Сбор отменён',
-        description: 'Прогон остановлен по запросу. Следующий запуск доберёт недостающее.',
-      });
-    } else if (run.status === 'FAILED') {
-      notification.error({
-        message: 'Сбор завершился ошибкой',
-        description: run.errorMessage ?? 'Подробности в логах сервера.',
-      });
-    }
+    notification.info({
+      message: 'Сбор запущен',
+      description: `Прогон ${started.id} идёт в фоне — статус и отмена в карточке выше.`,
+    });
   };
 
   return (
@@ -79,7 +71,7 @@ export function CollectionTriggerCard() {
                 onChange={setSince}
                 placeholder="С даты"
                 style={{ minWidth: 240 }}
-                disabled={isRunning}
+                disabled={isBusy}
               />
             </Space>
             <Space direction="vertical" size={4}>
@@ -90,9 +82,10 @@ export function CollectionTriggerCard() {
                 type="primary"
                 icon={<Play size={14} />}
                 onClick={handleTrigger}
-                loading={isRunning}
+                loading={trigger.isPending}
+                disabled={isBusy}
               >
-                {isRunning ? 'Идёт сбор…' : 'Запустить'}
+                {isBusy ? 'Идёт сбор…' : 'Запустить'}
               </Button>
             </Space>
           </Space>
