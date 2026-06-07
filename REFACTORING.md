@@ -85,7 +85,7 @@
 | # | Что | Стейдж | Статус |
 |---|---|---|---|
 | 15 | **Баг:** stale persisted date-range — `presetKey` не пересобирает `range` при рехидратации | 73 | ✅ |
-| 16 | Удалить мёртвые константы (`STORE_CACHE_TTL_MS` и 5 др.) + стейл-комментарии (`createStatsStore`) | 74 | ⬜ |
+| 16 | Удалить мёртвые константы (`STORE_CACHE_TTL_MS` и 5 др.) + стейл-комментарии (`createStatsStore`) | 74 | ✅ |
 | 17 | `WeeklyTable`: переименовать `teamEnabled`, убрать обёртку-хук `useExpandedRowsReset` | 75 | ⬜ |
 
 ## Среднесрочные (1-2 дня каждый)

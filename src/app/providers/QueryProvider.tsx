@@ -6,7 +6,7 @@ interface QueryProviderProps {
   children: ReactNode;
 }
 
-const STALE_TIME_MS = 60_000; // 1 минута — параллель прежнему STORE_CACHE_TTL_MS
+const STALE_TIME_MS = 60_000; // 1 минута — баланс свежести и числа запросов
 
 /**
  * QueryClient — единственная глобальная точка кэша всех ресурсов.

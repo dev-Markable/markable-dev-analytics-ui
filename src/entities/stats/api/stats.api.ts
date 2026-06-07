@@ -18,9 +18,9 @@ export interface HourlyQuery extends PeriodQuery {
 }
 
 /**
- * Все эндпоинты принимают опциональный AbortSignal — стор отменяет
- * предыдущий fetch при смене периода или unmount страницы. См.
- * `shared/api/abort.ts` и `createStatsStore`.
+ * Все эндпоинты принимают опциональный AbortSignal — TanStack Query
+ * прокидывает его через `queryFn({ signal })` и отменяет устаревший fetch
+ * при смене ключа (период/автор) или unmount страницы. См. `shared/api/abort.ts`.
  */
 
 export async function getSummary(query: PeriodQuery, signal?: AbortSignal): Promise<PeriodSummary> {
