@@ -128,3 +128,45 @@
 > но без async-триады и часто с кастомными шапками (легенды, контролы). Переводить их на
 > `SectionCard` стоит по одной при следующем касании, а не пачкой — иначе риск визуальных
 > регрессий без QA. `DataTable` (1 потребитель) оставлен как есть — он про таблицу, а не оболочку.
+
+---
+
+# Roadmap v3 — senior re-review #2 (2026-06)
+
+Третий проход после закрытия Roadmap v2 + апгрейда collection-слоя (реальный
+polling `/latest`, кооперативная отмена, companion-эндпоинт). Здоровье:
+typecheck/lint чисты, 212 тестов / 39 файлов. Блокеров нет — это полировка
+нового кода + добор хвоста по #19.
+
+## Pre-merge (закрыть до влития нового collection-кода)
+
+| # | Что | Стейдж | Статус |
+|---|---|---|---|
+| 22 | **Тест:** `AsyncContent` — прямое покрытие precedence-матрицы (loading/error/empty/hasData) | 80 | ✅ |
+| 23 | `CurrentRunCard`: кнопка «Обновить статус» мигает на каждом poll-тике (`refreshing={isFetching}`) | 81 | ⬜ |
+
+## Бэклог (не блокеры)
+
+| # | Что | Стейдж | Статус |
+|---|---|---|---|
+| 24 | Гонка записи в `LATEST_RUN_KEY`: stale-poll перетирает `trigger.onSuccess` (invalidate/cancelQueries) | — | ⬜ |
+| 25 | Добить #19: `LeaderboardCard` → `AsyncState`, убрать ручную сборку `status` в `DashboardPage` | — | ⬜ |
+| 26 | Тесты `use-collection` (refetchInterval-поллинг: RUNNING / triggering) | — | ⬜ |
+| 27 | `AsyncContent` API: заменить скрытый переключатель `error !== undefined` на явный проп | — | ⬜ |
+
+### Trade-offs
+
+**#22** — `AsyncContent` введён в стейдже 77 с нетривиальным ветвлением (`hasData` ≠ `isEmpty`
+для post-filter; `error !== undefined` как ErrorState↔empty), но покрыт лишь косвенно через
+page-smoke. Самое место для регрессий — нужен прямой unit-тест матрицы. ~1 час.
+
+**#23** — `isFetching` истинно при любом запросе, включая фоновый `refetchInterval` (3 c).
+Пока прогон `RUNNING`, кнопка ручного обновления спиннерит сама по себе. Различить ручной
+refetch и фоновый poll. Дёшево.
+
+**#24** — синхронный POST пишет финальный run в `onSuccess`, а параллельный in-flight poll
+может зарезолвиться позже со stale `RUNNING` и перетереть. Самоисцеляется за ≤3 c, но даёт
+флибер статуса. Низкий приоритет.
+
+**#25** — `AsyncContent` унифицировал рендеринг, но контракт-spread на границе пропсов остался
+(`LeaderboardCard` status+items vs остальные `AsyncState`; ручной `status` в `DashboardPage`).
