@@ -2,7 +2,7 @@ import { Card, Tooltip, Typography } from 'antd';
 import { Code2, FlaskConical } from 'lucide-react';
 import type { PerformanceMetrics } from '@/entities/performance-review';
 import { formatNumber } from '@/shared/lib';
-import { PerfMetricTile } from '@/widgets/perf-metric-tile';
+import { PerfMetricTile } from '@/widgets/perf/metric-tile';
 import { testRatio } from '../lib/test-ratio';
 
 interface CodeSummaryCardProps {

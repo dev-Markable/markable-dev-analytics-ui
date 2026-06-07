@@ -2,7 +2,7 @@ import { Card, Tooltip, Typography } from 'antd';
 import { MessagesSquare } from 'lucide-react';
 import type { PerformanceMetrics } from '@/entities/performance-review';
 import { formatNumber } from '@/shared/lib';
-import { PerfMetricTile } from '@/widgets/perf-metric-tile';
+import { PerfMetricTile } from '@/widgets/perf/metric-tile';
 import { engagement, givenShare } from '../lib/engagement';
 
 interface ReviewSummaryCardProps {

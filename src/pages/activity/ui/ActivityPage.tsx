@@ -10,14 +10,14 @@ import { usersQuery } from '@/entities/user';
 import { ALL_TEAMS, matchesScope, useTeamScope } from '@/features/team-scope';
 import { queryToAsyncState, useApiError } from '@/shared/api';
 import { formatRange, rangeDays } from '@/shared/lib';
-import { ActivitySummary } from '@/widgets/activity-summary';
-import { ActivityHeatmap } from '@/widgets/activity-heatmap';
-import { HourlyHeatmap } from '@/widgets/activity-hourly';
-import { ReposChart } from '@/widgets/activity-repos';
-import { ContributorsList } from '@/widgets/activity-contributors';
-import { BusFactorCard } from '@/widgets/activity-bus-factor';
-import { ReviewsCard } from '@/widgets/activity-reviews';
-import type { AuthorEnrichment } from '@/widgets/activity-contributors/lib/aggregate-contributors';
+import { ActivitySummary } from '@/widgets/activity/summary';
+import { ActivityHeatmap } from '@/widgets/activity/heatmap';
+import { HourlyHeatmap } from '@/widgets/activity/hourly';
+import { ReposChart } from '@/widgets/activity/repos';
+import { ContributorsList } from '@/widgets/activity/contributors';
+import { BusFactorCard } from '@/widgets/activity/bus-factor';
+import { ReviewsCard } from '@/widgets/activity/reviews';
+import type { AuthorEnrichment } from '@/widgets/activity/contributors/lib/aggregate-contributors';
 
 export function ActivityPage() {
   useDocumentTitle('Активность');

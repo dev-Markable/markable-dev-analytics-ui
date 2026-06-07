@@ -16,9 +16,9 @@ import {
 import type { AuthorActivity } from '@/entities/user';
 import { formatRange } from '@/shared/lib';
 import { DASHBOARD_PAGE_SIZE } from '@/shared/config';
-import { SummaryGrid } from '@/widgets/dashboard-summary';
-import { LeaderboardCard } from '@/widgets/dashboard-leaderboard';
-import { AuthorsTable } from '@/widgets/dashboard-authors-table';
+import { SummaryGrid } from '@/widgets/dashboard/summary';
+import { LeaderboardCard } from '@/widgets/dashboard/leaderboard';
+import { AuthorsTable } from '@/widgets/dashboard/authors-table';
 
 export function DashboardPage() {
   useDocumentTitle('Дашборд');

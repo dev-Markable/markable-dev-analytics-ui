@@ -5,7 +5,7 @@ import type { ReviewStats } from '@/entities/stats';
 import type { AsyncState } from '@/shared/api';
 import { EmptyState, LoadingState } from '@/shared/ui';
 import { formatNumber } from '@/shared/lib';
-import { formatHours } from '@/widgets/activity-reviews/lib/reviews';
+import { formatHours } from '@/widgets/activity/reviews/lib/reviews';
 import { buildProfileReviewStats, type ReviewMetricComparison } from '../lib/compare';
 import { StandingBadge } from './StandingBadge';
 

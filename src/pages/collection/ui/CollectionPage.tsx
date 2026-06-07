@@ -4,9 +4,9 @@ import { useShallow } from 'zustand/react/shallow';
 import { PageHeader, PageSection } from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useCollectionStore } from '@/entities/collection-run';
-import { CurrentRunCard } from '@/widgets/collection-current-run';
-import { CollectionTriggerCard } from '@/widgets/collection-trigger';
-import { KaitenSyncCard } from '@/widgets/collection-kaiten-sync';
+import { CurrentRunCard } from '@/widgets/collection/current-run';
+import { CollectionTriggerCard } from '@/widgets/collection/trigger';
+import { KaitenSyncCard } from '@/widgets/collection/kaiten-sync';
 
 export function CollectionPage() {
   useDocumentTitle('Сбор данных');

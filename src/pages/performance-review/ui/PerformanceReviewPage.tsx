@@ -8,15 +8,15 @@ import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useApiError } from '@/shared/api';
 import { type DateRange } from '@/shared/lib';
 import { performanceReviewQuery } from '@/entities/performance-review';
-import { PerfControls, DEFAULT_PERF_PERIOD, presetRange } from '@/widgets/perf-controls';
-import { PerfSubject } from '@/widgets/perf-subject';
-import { CodeSummaryCard } from '@/widgets/perf-code-summary';
-import { ReviewSummaryCard } from '@/widgets/perf-review-summary';
-import { DefectsByUrgency } from '@/widgets/perf-kaiten-defects';
-import { DevelopmentRollupCard } from '@/widgets/perf-kaiten-development';
-import { CycleTimeCard } from '@/widgets/perf-kaiten-cycle';
-import { WorkBalanceCard } from '@/widgets/perf-kaiten-balance';
-import { DeliveredFeaturesCard, FirefightingCard } from '@/widgets/perf-notable';
+import { PerfControls, DEFAULT_PERF_PERIOD, presetRange } from '@/widgets/perf/controls';
+import { PerfSubject } from '@/widgets/perf/subject';
+import { CodeSummaryCard } from '@/widgets/perf/code-summary';
+import { ReviewSummaryCard } from '@/widgets/perf/review-summary';
+import { DefectsByUrgency } from '@/widgets/perf/kaiten-defects';
+import { DevelopmentRollupCard } from '@/widgets/perf/kaiten-development';
+import { CycleTimeCard } from '@/widgets/perf/kaiten-cycle';
+import { WorkBalanceCard } from '@/widgets/perf/kaiten-balance';
+import { DeliveredFeaturesCard, FirefightingCard } from '@/widgets/perf/notable';
 
 const DEFAULT_RANGE = presetRange(DEFAULT_PERF_PERIOD === 'custom' ? 'quarter' : DEFAULT_PERF_PERIOD);
 

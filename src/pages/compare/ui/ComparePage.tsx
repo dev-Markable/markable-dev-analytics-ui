@@ -9,9 +9,9 @@ import { dashboardQuery } from '@/entities/dashboard';
 import { useApiError } from '@/shared/api';
 import type { AuthorActivity } from '@/entities/user';
 import { formatRange } from '@/shared/lib';
-import { CompareSelector } from '@/widgets/compare-selector';
-import { CompareRadar } from '@/widgets/compare-radar';
-import { CompareTable } from '@/widgets/compare-table';
+import { CompareSelector } from '@/widgets/compare/selector';
+import { CompareRadar } from '@/widgets/compare/radar';
+import { CompareTable } from '@/widgets/compare/table';
 
 const MAX_AUTHORS = 3;
 const PARAM = 'ids';

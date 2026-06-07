@@ -6,7 +6,7 @@ import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { setTeamLead, teamsQuery, teamsQueryKey } from '@/entities/team';
 import { setUserTeam, usersQuery } from '@/entities/user';
 import { useApiError } from '@/shared/api';
-import { TeamCard, UnassignedSection } from '@/widgets/team-card';
+import { TeamCard, UnassignedSection } from '@/widgets/team/card';
 
 export function TeamsPage() {
   useDocumentTitle('Команды');

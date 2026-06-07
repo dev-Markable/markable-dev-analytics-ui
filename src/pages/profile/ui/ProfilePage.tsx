@@ -14,11 +14,11 @@ import type { AsyncState } from '@/shared/api';
 import type { ReviewStats } from '@/entities/stats';
 import { formatRange } from '@/shared/lib';
 import { ROUTES } from '@/app/router/paths';
-import { ProfileHeader } from '@/widgets/profile-header';
-import { ProfileSummary } from '@/widgets/profile-summary';
-import { ProfileActivity } from '@/widgets/profile-activity';
-import { ProfileReviews } from '@/widgets/profile-reviews';
-import { TasksTimeline } from '@/widgets/profile-tasks-timeline';
+import { ProfileHeader } from '@/widgets/profile/header';
+import { ProfileSummary } from '@/widgets/profile/summary';
+import { ProfileActivity } from '@/widgets/profile/activity';
+import { ProfileReviews } from '@/widgets/profile/reviews';
+import { TasksTimeline } from '@/widgets/profile/tasks-timeline';
 
 export function ProfilePage() {
   const { email: emailParam } = useParams<{ email: string }>();

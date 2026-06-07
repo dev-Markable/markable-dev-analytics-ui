@@ -11,8 +11,8 @@ import { queryToAsyncState, useApiError } from '@/shared/api';
 import type { AsyncState } from '@/shared/api';
 import type { WeeklyStat } from '@/entities/stats';
 import { downloadSvgAsPng, formatRange } from '@/shared/lib';
-import { WeeklyChart } from '@/widgets/weekly-chart';
-import { WeeklyTable } from '@/widgets/weekly-table';
+import { WeeklyChart } from '@/widgets/weekly/chart';
+import { WeeklyTable } from '@/widgets/weekly/table';
 
 export function WeeklyPage() {
   useDocumentTitle('Недели');
