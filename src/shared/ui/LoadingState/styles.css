@@ -1,0 +1,13 @@
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 24px;
+  min-height: 200px;
+}
+
+.loading-state--full {
+  min-height: 60vh;
+}

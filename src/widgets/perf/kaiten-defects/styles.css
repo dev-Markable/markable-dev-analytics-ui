@@ -1,0 +1,86 @@
+.kaiten-defects__kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.kaiten-defects__kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--ant-color-border);
+  border-radius: 10px;
+  background: var(--ant-color-bg-container);
+}
+
+.kaiten-defects__kpi--hot {
+  border-color: color-mix(in srgb, #dc2626 35%, var(--ant-color-border));
+  background: color-mix(in srgb, #dc2626 6%, var(--ant-color-bg-container));
+}
+
+.kaiten-defects__kpi-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ant-color-text-secondary);
+}
+
+.kaiten-defects__kpi--hot .kaiten-defects__kpi-label {
+  color: #dc2626;
+}
+
+.kaiten-defects__kpi-value {
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.05;
+}
+
+.kaiten-defects__kpi-hint {
+  font-size: 11px;
+  color: var(--ant-color-text-quaternary);
+}
+
+.kaiten-defects__bar {
+  display: flex;
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--ant-color-fill-tertiary);
+  margin-bottom: 10px;
+}
+
+.kaiten-defects__seg {
+  height: 100%;
+}
+
+.kaiten-defects__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--ant-color-text-secondary);
+}
+
+.kaiten-defects__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kaiten-defects__legend-item i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.kaiten-defects__legend-item strong {
+  font-variant-numeric: tabular-nums;
+  color: var(--ant-color-text);
+}

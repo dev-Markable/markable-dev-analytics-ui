@@ -1,13 +1,3 @@
-/* ──────────────────────────────────────────────────────────── */
-/*  Compare (сравнение разработчиков)                          */
-/* ──────────────────────────────────────────────────────────── */
-
-.compare-selector {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
 .compare-table__scroll {
   overflow-x: auto;
 }
@@ -77,4 +67,3 @@
 .compare-table tbody tr:last-child td {
   border-bottom: none;
 }
-

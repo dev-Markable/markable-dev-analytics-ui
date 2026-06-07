@@ -1,3 +1,4 @@
+import './ui/user-avatar.css';
 export type {
   UnifiedUser,
   AuthorSummary,

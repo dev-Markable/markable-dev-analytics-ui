@@ -1,0 +1,44 @@
+.page-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: var(--section-gap);
+}
+
+.page-section--flush > .page-section__body {
+  padding: 0;
+}
+
+.page-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.page-section__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.page-section__title.ant-typography {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.page-section__description {
+  font-size: 13px;
+}
+
+.page-section__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-section__body {
+  display: contents;
+}

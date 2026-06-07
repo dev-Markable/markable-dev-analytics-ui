@@ -1,7 +1,3 @@
-/* ──────────────────────────────────────────────────────────── */
-/*  Week breakdown (expanded row)                              */
-/* ──────────────────────────────────────────────────────────── */
-
 .week-breakdown {
   display: flex;
   flex-direction: column;
@@ -45,17 +41,3 @@
   color: var(--ant-color-text-secondary);
   font-variant-numeric: tabular-nums;
 }
-
-@media (max-width: 768px) {
-  .week-breakdown__row {
-    grid-template-columns: 36px minmax(0, 1fr);
-    grid-template-rows: auto auto;
-    gap: 6px 12px;
-  }
-  .week-breakdown__metric,
-  .week-breakdown__metric--lines {
-    grid-column: 2 / 3;
-    align-items: flex-start;
-  }
-}
-

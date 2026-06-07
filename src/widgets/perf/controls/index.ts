@@ -1,3 +1,4 @@
+import './styles.css';
 export { PerfControls } from './ui/PerfControls';
 export {
   PERF_PERIOD_PRESETS,

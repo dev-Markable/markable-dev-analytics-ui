@@ -1,60 +1,3 @@
-/* ──────────────────────────────────────────────────────────── */
-/*  Profile header                                             */
-/* ──────────────────────────────────────────────────────────── */
-
-.profile-header.ant-card {
-  border: 1px solid var(--ant-color-border);
-  border-radius: 12px;
-  background: var(--ant-color-bg-container);
-  box-shadow:
-    0 1px 2px rgba(15, 17, 21, 0.04),
-    0 4px 12px rgba(15, 17, 21, 0.05);
-}
-
-[data-theme='dark'] .profile-header.ant-card {
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.4),
-    0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.profile-header .ant-card-body {
-  padding: 24px 28px;
-}
-
-.profile-header__main {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.profile-header__identity {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  flex: 1;
-}
-
-.profile-header__name.ant-typography {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: -0.015em;
-  color: var(--ant-color-text);
-}
-
-.profile-header__email {
-  font-size: 13px;
-}
-
-.profile-header__badges {
-  margin-top: 6px;
-}
-
-/* ──────────────────────────────────────────────────────────── */
-/*  Kaiten cards board                                         */
-/* ──────────────────────────────────────────────────────────── */
-
 .kaiten-board {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -180,10 +123,6 @@
   color: var(--ant-color-primary);
 }
 
-/* ──────────────────────────────────────────────────────────── */
-/*  Tasks timeline                                             */
-/* ──────────────────────────────────────────────────────────── */
-
 .task-row__link {
   display: inline-flex;
   align-items: center;
@@ -261,8 +200,6 @@
   color: var(--ant-color-primary);
 }
 
-/* Развёрнутая строка — список коммитов задачи */
-
 .task-commits {
   display: flex;
   flex-direction: column;
@@ -307,93 +244,3 @@
   white-space: nowrap;
   text-align: right;
 }
-
-@media (max-width: 768px) {
-  .task-commits__row {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto auto auto;
-    gap: 4px;
-    padding: 8px;
-  }
-}
-
-
-/* ──────────────────────────────────────────────────────────── */
-/*  Profile reviews                                            */
-/* ──────────────────────────────────────────────────────────── */
-
-.profile-reviews {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.profile-reviews__metric {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 16px;
-  border: 1px solid var(--ant-color-border-secondary);
-  border-radius: 10px;
-  background: var(--ant-color-bg-layout);
-}
-
-.profile-reviews__metric-head {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.profile-reviews__metric-value {
-  font-size: 24px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--ant-color-text);
-  font-variant-numeric: tabular-nums;
-}
-
-.profile-reviews__metric-label {
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.profile-reviews__metric-hint {
-  font-size: 12px;
-}
-
-.standing-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  align-self: flex-start;
-  margin-top: 2px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.standing-badge__avg {
-  opacity: 0.75;
-  font-variant-numeric: tabular-nums;
-}
-
-.standing-badge--up {
-  color: var(--ant-color-success);
-  background: var(--ant-color-success-bg);
-}
-.standing-badge--down {
-  color: var(--ant-color-error);
-  background: var(--ant-color-error-bg);
-}
-.standing-badge--flat {
-  color: var(--ant-color-text-secondary);
-  background: var(--ant-color-fill-tertiary);
-}
-
-@media (max-width: 768px) {
-  .profile-reviews {
-    grid-template-columns: 1fr;
-  }
-}
-

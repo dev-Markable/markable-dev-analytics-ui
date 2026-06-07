@@ -1,0 +1,131 @@
+.leaderboard {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+  margin-inline: -12px;
+  border-radius: 10px;
+  color: inherit;
+  text-decoration: none;
+  transition: background 120ms ease;
+}
+
+.leaderboard-row:hover {
+  background: var(--ant-color-bg-layout);
+}
+
+.leaderboard-row__author {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.leaderboard-row__identity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.leaderboard-row__name.ant-typography {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ant-color-text);
+}
+
+.leaderboard-row__email.ant-typography {
+  font-size: 12px;
+}
+
+.leaderboard-row__sub-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.leaderboard-row__sub-line .leaderboard-row__email {
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.leaderboard-row__metrics {
+  display: inline-grid;
+  grid-template-columns: 140px 180px;
+  align-items: center;
+  gap: 24px;
+}
+
+.leaderboard-row__metric {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.15;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.leaderboard-row__metric-value.ant-typography {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.leaderboard-row__metric-label.ant-typography {
+  font-size: 11px;
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.leaderboard-row__metric--lines .leaderboard-row__metric-value.ant-typography {
+  color: var(--ant-color-text-secondary);
+  font-feature-settings: 'tnum';
+}
+
+.leaderboard-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.leaderboard-skeleton__row {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 80px;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 0;
+}
+
+.leaderboard-skeleton__lines {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.leaderboard-row__name-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.leaderboard-row__name-line .leaderboard-row__name {
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.leaderboard-row__name-line .activity-badge {
+  flex-shrink: 0;
+}

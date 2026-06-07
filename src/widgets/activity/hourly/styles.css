@@ -1,0 +1,47 @@
+.hourly__scroll {
+  overflow-x: auto;
+  padding: 4px 0;
+}
+
+.hourly__hours {
+  display: grid;
+  height: 16px;
+  margin-bottom: 4px;
+}
+
+.hourly__hour-label {
+  font-size: 10px;
+  color: var(--ant-color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+
+.hourly__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.hourly__day-label {
+  width: 20px;
+  font-size: 11px;
+  color: var(--ant-color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.hourly__cells {
+  display: grid;
+}
+
+.hourly__cell {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  transition: transform 80ms ease;
+}
+
+.hourly__cell:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 1px var(--ant-color-border);
+}

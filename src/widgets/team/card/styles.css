@@ -1,6 +1,3 @@
-/* ============================================================
-   Team management (Settings)
-   ============================================================ */
 .team-management__toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -63,76 +60,6 @@
   flex-shrink: 0;
 }
 
-@media (max-width: 640px) {
-  .team-assign-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .team-assign-row__control {
-    justify-content: flex-end;
-  }
-}
-
-/* ============================================================
-   User avatar — lead badge
-   ============================================================ */
-.user-avatar {
-  position: relative;
-  display: inline-flex;
-}
-
-.user-avatar__lead-badge {
-  position: absolute;
-  right: -2px;
-  bottom: -2px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #f6c453 0%, #e89c1f 100%);
-  color: #2a1d00;
-  box-shadow: 0 0 0 2px var(--ant-color-bg-container);
-}
-
-/* ============================================================
-   Team chip
-   ============================================================ */
-.team-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: var(--ant-color-fill-quaternary);
-  border: 1px solid var(--ant-color-border-secondary);
-  color: var(--ant-color-text-secondary);
-  font-size: 12px;
-  line-height: 18px;
-  max-width: 160px;
-  vertical-align: middle;
-}
-
-.team-chip__name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 500;
-}
-
-.team-chip--compact {
-  padding: 0 6px;
-  font-size: 11px;
-  line-height: 16px;
-}
-
-.team-chip--empty {
-  font-style: italic;
-  color: var(--ant-color-text-quaternary);
-}
-
-/* ============================================================
-   Teams page
-   ============================================================ */
 .team-card__members {
   display: flex;
   flex-direction: column;
@@ -201,14 +128,3 @@
   gap: 6px;
   flex-shrink: 0;
 }
-
-@media (max-width: 640px) {
-  .team-member {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .team-member__assign {
-    justify-content: flex-end;
-  }
-}
-
