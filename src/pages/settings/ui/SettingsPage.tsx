@@ -1,7 +1,7 @@
 import { PageHeader, PageSection } from '@/shared/ui';
 import { useDocumentTitle } from '@/shared/hooks';
-import { AppearanceCard } from '@/widgets/settings-appearance';
-import { SystemCard } from '@/widgets/settings-system';
+import { AppearanceCard } from '@/widgets/settings/appearance';
+import { SystemCard } from '@/widgets/settings/system';
 
 export function SettingsPage() {
   useDocumentTitle('Настройки');

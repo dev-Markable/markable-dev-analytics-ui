@@ -6,9 +6,16 @@ export type {
 } from './model/types';
 export {
   triggerCollection,
-  getCollectionRun,
+  getLatestRun,
+  cancelCollectionRun,
   syncKaitenUsers,
 } from './api/collection.api';
-export { useCollectionStore } from './model/collection.store';
+export {
+  useLatestRun,
+  useTriggerCollection,
+  useCancelRun,
+  useSyncKaiten,
+  TRIGGER_MUTATION_KEY,
+} from './model/use-collection';
 export { RunStatusTag } from './ui/RunStatusTag';
 export { durationSeconds, formatDuration } from './lib/duration';

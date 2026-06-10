@@ -2,6 +2,7 @@ export {
   ALL_TEAMS,
   NO_TEAM,
   matchesScope,
+  filterByScope,
   useTeamScope,
   useTeamScopeFilter,
   useTeamScopeStore,

@@ -1,0 +1,32 @@
+.team-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--ant-color-fill-quaternary);
+  border: 1px solid var(--ant-color-border-secondary);
+  color: var(--ant-color-text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  max-width: 160px;
+  vertical-align: middle;
+}
+
+.team-chip__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.team-chip--compact {
+  padding: 0 6px;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.team-chip--empty {
+  font-style: italic;
+  color: var(--ant-color-text-quaternary);
+}

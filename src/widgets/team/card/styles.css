@@ -1,0 +1,130 @@
+.team-management__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.team-management__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.team-assign-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ant-color-split);
+}
+
+.team-assign-row:last-child {
+  border-bottom: none;
+}
+
+.team-assign-row__user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.team-assign-row__meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.team-assign-row__name {
+  font-weight: 500;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-assign-row__email {
+  font-size: 12px;
+  color: var(--ant-color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-assign-row__control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.team-card__members {
+  display: flex;
+  flex-direction: column;
+}
+
+.team-member {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ant-color-split);
+}
+
+.team-member:last-child {
+  border-bottom: none;
+}
+
+.team-member__user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+  color: inherit;
+}
+
+.team-member__user:hover .team-member__name {
+  color: var(--ant-color-primary);
+}
+
+.team-member__identity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.team-member__name.ant-typography {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.team-member__lead-mark {
+  display: inline-flex;
+  align-items: center;
+  color: var(--ant-color-warning);
+}
+
+.team-member__email.ant-typography {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-member__assign {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}

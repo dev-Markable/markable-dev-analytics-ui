@@ -1,0 +1,26 @@
+.skeleton-table {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 12px;
+  background: var(--ant-color-bg-container);
+  box-shadow: var(--ant-box-shadow);
+}
+
+.skeleton-table__head,
+.skeleton-table__row {
+  display: grid;
+  gap: 16px;
+  align-items: center;
+}
+
+.skeleton-table__head {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+}
+
+.skeleton-table__row {
+  padding-block: 6px;
+}

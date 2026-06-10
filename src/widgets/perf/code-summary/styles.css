@@ -1,0 +1,58 @@
+.code-summary__split {
+  margin-bottom: 14px;
+}
+
+.code-summary__split-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.code-summary__bar {
+  display: flex;
+  height: 28px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--ant-color-fill-tertiary);
+}
+
+.code-summary__seg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  transition: width 0.25s ease;
+}
+
+.code-summary__seg--added {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.code-summary__seg--deleted {
+  background: linear-gradient(135deg, #f87171, #dc2626);
+}
+
+.code-summary__tests {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--ant-color-fill-quaternary);
+  color: var(--ant-color-text);
+}
+
+.code-summary__tests-label.ant-typography,
+.code-summary__tests-value.ant-typography {
+  font-size: 13px;
+}
+
+.code-summary__tests-hint.ant-typography {
+  font-size: 12px;
+}

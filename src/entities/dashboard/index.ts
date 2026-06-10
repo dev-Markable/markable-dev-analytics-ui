@@ -1,6 +1,6 @@
 export type { DashboardData, DashboardQuery, DashboardPeriod } from './model/types';
 export { getDashboard } from './api/dashboard.api';
-export { useDashboardStore } from './model/dashboard.store';
+export { dashboardQuery, dashboardPrevQuery } from './api/queries';
 export {
   aggregateAuthors,
   EMPTY_TOTALS,

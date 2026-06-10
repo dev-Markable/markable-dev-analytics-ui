@@ -1,0 +1,33 @@
+.settings-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px 24px;
+  margin: 0;
+}
+
+.settings-meta > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.settings-meta dt {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ant-color-text-tertiary);
+  font-weight: 500;
+}
+
+.settings-meta dd {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ant-color-text);
+}
+
+.settings-meta__mono {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px !important;
+  word-break: break-all;
+}

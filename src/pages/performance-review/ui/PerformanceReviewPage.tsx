@@ -1,22 +1,22 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Button, Col, Row } from 'antd';
+import { useQuery } from '@tanstack/react-query';
 import { Printer } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
-import { useShallow } from 'zustand/react/shallow';
 import { PageHeader, PageSection, EmptyState, ErrorState, LoadingState } from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
+import { useApiError } from '@/shared/api';
 import { type DateRange } from '@/shared/lib';
-import { useUsersStore } from '@/entities/user';
-import { usePerformanceStore } from '@/entities/performance-review';
-import { PerfControls, DEFAULT_PERF_PERIOD, presetRange } from '@/widgets/perf-controls';
-import { PerfSubject } from '@/widgets/perf-subject';
-import { CodeSummaryCard } from '@/widgets/perf-code-summary';
-import { ReviewSummaryCard } from '@/widgets/perf-review-summary';
-import { DefectsByUrgency } from '@/widgets/perf-kaiten-defects';
-import { DevelopmentRollupCard } from '@/widgets/perf-kaiten-development';
-import { CycleTimeCard } from '@/widgets/perf-kaiten-cycle';
-import { WorkBalanceCard } from '@/widgets/perf-kaiten-balance';
-import { DeliveredFeaturesCard, FirefightingCard } from '@/widgets/perf-notable';
+import { performanceReviewQuery } from '@/entities/performance-review';
+import { PerfControls, DEFAULT_PERF_PERIOD, presetRange } from '@/widgets/perf/controls';
+import { PerfSubject } from '@/widgets/perf/subject';
+import { CodeSummaryCard } from '@/widgets/perf/code-summary';
+import { ReviewSummaryCard } from '@/widgets/perf/review-summary';
+import { DefectsByUrgency } from '@/widgets/perf/kaiten-defects';
+import { DevelopmentRollupCard } from '@/widgets/perf/kaiten-development';
+import { CycleTimeCard } from '@/widgets/perf/kaiten-cycle';
+import { WorkBalanceCard } from '@/widgets/perf/kaiten-balance';
+import { DeliveredFeaturesCard, FirefightingCard } from '@/widgets/perf/notable';
 
 const DEFAULT_RANGE = presetRange(DEFAULT_PERF_PERIOD === 'custom' ? 'quarter' : DEFAULT_PERF_PERIOD);
 
@@ -24,14 +24,6 @@ export function PerformanceReviewPage() {
   useDocumentTitle('Performance Review');
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const usersFetch = useUsersStore((s) => s.fetch);
-
-  const state = usePerformanceStore(useShallow((s) => s.state));
-  const fetchReview = usePerformanceStore((s) => s.fetch);
-
-  useEffect(() => {
-    void usersFetch();
-  }, [usersFetch]);
 
   // Источник правды — URL: ?email&from&to&compare. Шарится и переживает перезагрузку.
   const email = searchParams.get('email');
@@ -41,6 +33,12 @@ export function PerformanceReviewPage() {
     return from && to ? { from, to } : DEFAULT_RANGE;
   }, [searchParams]);
   const compare = searchParams.get('compare') === '1';
+
+  const reviewQ = useQuery(
+    performanceReviewQuery(
+      email ? { email, from: range.from, to: range.to, compareToPrevious: compare } : null,
+    ),
+  );
 
   const patchParams = useCallback(
     (patch: Record<string, string | null>) => {
@@ -64,16 +62,12 @@ export function PerformanceReviewPage() {
     [patchParams],
   );
 
-  useEffect(() => {
-    if (!email) return;
-    void fetchReview({ email, from: range.from, to: range.to, compareToPrevious: compare });
-  }, [email, range.from, range.to, compare, fetchReview]);
+  const reviewError = useApiError(reviewQ.error);
+  useApiErrorNotification(reviewError, 'Не удалось загрузить досье');
 
-  useApiErrorNotification(state.error, 'Не удалось загрузить досье');
-
-  const review = state.data;
-  const isLoading = state.status === 'loading' && !review;
-  const isError = state.status === 'error' && !review;
+  const review = reviewQ.data ?? null;
+  const isLoading = reviewQ.isPending && !review && Boolean(email);
+  const isError = reviewQ.isError && !review;
   // Показываем данные предыдущего email, пока грузится новый — но не если email сменился.
   const reviewMatchesEmail = review?.subject.email === email;
 
@@ -112,12 +106,7 @@ export function PerformanceReviewPage() {
       {email && isLoading && <LoadingState label="Собираем досье" />}
 
       {email && isError && (
-        <ErrorState
-          error={state.error}
-          onRetry={() =>
-            fetchReview({ email, from: range.from, to: range.to, compareToPrevious: compare })
-          }
-        />
+        <ErrorState error={reviewError} onRetry={() => void reviewQ.refetch()} />
       )}
 
       {email && review && reviewMatchesEmail && (

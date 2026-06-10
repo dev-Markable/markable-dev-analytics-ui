@@ -1,5 +1,7 @@
 export { PageHeader } from './PageHeader';
 export { PageSection } from './PageSection';
+export { SectionCard } from './SectionCard';
+export { AsyncContent } from './AsyncContent';
 export { MetricCard } from './MetricCard';
 export { DeltaBadge } from './DeltaBadge';
 export { EmptyState } from './EmptyState';
@@ -10,3 +12,4 @@ export { SkeletonTable } from './SkeletonTable';
 export { DataTable, type DataTableProps } from './DataTable';
 export { ExportButton, type ExportButtonProps } from './ExportButton';
 export { Sparkline } from './Sparkline';
+export { ErrorBoundary } from './ErrorBoundary';

@@ -1,0 +1,74 @@
+.bus-factor {
+  display: flex;
+  flex-direction: column;
+}
+
+.bus-factor__title-info {
+  display: inline-flex;
+  align-items: center;
+  color: var(--ant-color-text-quaternary);
+  cursor: help;
+  transition: color 0.15s ease;
+}
+
+.bus-factor__title-info:hover {
+  color: var(--ant-color-text-secondary);
+}
+
+.bus-factor__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(160px, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ant-color-split);
+}
+
+.bus-factor__row:last-child {
+  border-bottom: none;
+}
+
+.bus-factor__repo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.bus-factor__repo-tag.ant-tag {
+  align-self: flex-start;
+  margin: 0;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+}
+
+.bus-factor__meta {
+  font-size: 12px;
+}
+
+.bus-factor__share {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bus-factor__share-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bus-factor__share-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.risk-badge.ant-tag {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 999px;
+  white-space: nowrap;
+}

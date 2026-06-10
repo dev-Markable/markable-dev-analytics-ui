@@ -35,7 +35,23 @@ export const useDateRangeStore = create<DateRangeState>()(
         set({ presetKey: null, range });
       },
     }),
-    { name: 'devpulse.date-range' },
+    {
+      name: 'devpulse.date-range',
+      // Пресеты относительные («последние N дней», «с начала месяца»).
+      // Персистнутый `range` заморожен на момент сохранения — при наличии
+      // `presetKey` пересобираем его на сегодня при рехидратации, иначе
+      // вернувшийся завтра пользователь увидит вчерашнее окно.
+      // Custom-диапазон (`presetKey === null`) оставляем как есть — его
+      // пользователь выбрал явными датами.
+      merge: (persisted, current) => {
+        const merged = { ...current, ...(persisted as Partial<DateRangeState>) };
+        if (merged.presetKey) {
+          const preset = DATE_RANGE_PRESETS.find((p) => p.key === merged.presetKey);
+          if (preset) merged.range = preset.build();
+        }
+        return merged;
+      },
+    },
   ),
 );
 

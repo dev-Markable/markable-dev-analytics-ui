@@ -1,10 +1,19 @@
 {
   "extends": "./tsconfig.app.json",
   "compilerOptions": {
-    "types": ["node", "vitest/importMeta"],
+    "types": ["node", "vitest/importMeta", "vite/client", "@testing-library/jest-dom"],
     // В тестах деструктуризация массивов (`const [x] = arr`) идиоматична —
     // строгий noUncheckedIndexedAccess только зашумляет ассерты.
     "noUncheckedIndexedAccess": false
   },
-  "include": ["src/**/*.test.ts", "src/shared/test/**/*.ts", "vitest.config.ts"]
+  "include": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/shared/test/**/*.ts",
+    "src/shared/test/**/*.tsx",
+    "src/shared/test/global.d.ts",
+    "vitest.config.ts"
+  ],
+  // Перекрываем exclude из tsconfig.app.json (он отрезал test/ файлы).
+  "exclude": []
 }

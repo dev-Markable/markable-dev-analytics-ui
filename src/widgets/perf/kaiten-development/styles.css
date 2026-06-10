@@ -1,0 +1,122 @@
+.root-task__collapse.ant-collapse > .ant-collapse-item {
+  border-bottom: 1px solid var(--ant-color-split);
+}
+
+.root-task__collapse.ant-collapse > .ant-collapse-item:last-child {
+  border-bottom: none;
+}
+
+.root-task__collapse .ant-collapse-header {
+  padding: 12px 0 !important;
+}
+
+.root-task__collapse .ant-collapse-content-box {
+  padding: 4px 0 12px 36px !important;
+}
+
+.root-task__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.root-task__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--ant-color-fill-quaternary);
+  color: var(--ant-color-text-secondary);
+  flex-shrink: 0;
+}
+
+.root-task__title-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.root-task__title-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: inherit;
+}
+
+.root-task__title-link:hover .root-task__title {
+  color: var(--ant-color-primary);
+}
+
+.root-task__title.ant-typography {
+  margin: 0;
+  min-width: 0;
+  font-size: 14px;
+}
+
+.root-task__title-icon {
+  flex-shrink: 0;
+  color: var(--ant-color-text-quaternary);
+}
+
+.root-task__use-cases {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.use-case-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--ant-color-fill-quaternary);
+}
+
+.use-case-row__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: inherit;
+}
+
+.use-case-row__link:hover .use-case-row__title {
+  color: var(--ant-color-primary);
+}
+
+.use-case-row__title.ant-typography {
+  font-size: 13px;
+  min-width: 0;
+}
+
+.use-case-row__link-icon {
+  flex-shrink: 0;
+  color: var(--ant-color-text-quaternary);
+}
+
+.use-case-row__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.use-case-row__tag {
+  margin: 0;
+  font-size: 11px;
+}
+
+.use-case-row__tag--type {
+  color: var(--ant-color-text-secondary);
+}
