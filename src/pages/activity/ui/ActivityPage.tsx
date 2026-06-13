@@ -128,7 +128,7 @@ export function ActivityPage() {
           </Col>
           <Col xs={24} xl={12}>
             <HourlyHeatmap
-              data={hourlyQ.data ?? null}
+              state={queryToAsyncState(hourlyQ)}
               title={`Активность по часам${teamEnabled ? ` · ${scope}` : ' · все команды'}`}
             />
           </Col>

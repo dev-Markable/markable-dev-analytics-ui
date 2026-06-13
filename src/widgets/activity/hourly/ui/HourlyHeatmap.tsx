@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 import { Card, Tooltip, Typography } from 'antd';
 import { Clock } from 'lucide-react';
 import type { HourlyStats } from '@/entities/stats';
-import { EmptyState } from '@/shared/ui';
+import type { AsyncState } from '@/shared/api';
+import { AsyncContent, EmptyState } from '@/shared/ui';
 import { formatNumber } from '@/shared/lib';
 import {
   buildHourlyGrid,
@@ -12,7 +13,7 @@ import {
 import { HOURLY_CELL, HOURLY_COLOR_SCALE, HOURLY_GAP } from '../config/colors';
 
 interface HourlyHeatmapProps {
-  data: HourlyStats | null;
+  state: AsyncState<HourlyStats>;
   /** Подпись в шапке: командный / по автору. */
   title?: string;
 }
@@ -20,8 +21,46 @@ interface HourlyHeatmapProps {
 // Подписи часов — каждые 3 часа, чтобы не сливалось.
 const HOUR_TICKS = [0, 3, 6, 9, 12, 15, 18, 21];
 
-export function HourlyHeatmap({ data, title = 'Активность по часам' }: HourlyHeatmapProps) {
-  const grid = useMemo(() => buildHourlyGrid(data), [data]);
+/**
+ * Скелетон сетки 7×24 точь-в-точь по размерам реального heatmap — карточка
+ * держит высоту, страница не прыгает при загрузке / смене команды.
+ */
+function HourlySkeleton() {
+  return (
+    <div className="hourly" aria-hidden>
+      <div className="hourly__scroll">
+        <div
+          className="hourly__hours"
+          style={{
+            marginLeft: 28,
+            gridTemplateColumns: `repeat(24, ${HOURLY_CELL}px)`,
+            gap: HOURLY_GAP,
+          }}
+        />
+        {Array.from({ length: 7 }).map((_, weekday) => (
+          <div className="hourly__row" key={weekday}>
+            <span className="hourly__day-label">{WEEKDAY_LABELS[weekday]}</span>
+            <div
+              className="hourly__cells"
+              style={{
+                gridTemplateColumns: `repeat(24, ${HOURLY_CELL}px)`,
+                gridAutoRows: `${HOURLY_CELL}px`,
+                gap: HOURLY_GAP,
+              }}
+            >
+              {Array.from({ length: 24 }).map((_, h) => (
+                <div key={h} className="hourly__cell hourly__cell--skeleton" />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function HourlyHeatmap({ state, title = 'Активность по часам' }: HourlyHeatmapProps) {
+  const grid = useMemo(() => buildHourlyGrid(state.data), [state.data]);
 
   const peakLabel = grid.peak
     ? `${WEEKDAY_LABELS[grid.peak.weekday]} ${String(grid.peak.hour).padStart(2, '0')}:00 · ${formatNumber(grid.peak.commits)} коммитов`
@@ -44,9 +83,17 @@ export function HourlyHeatmap({ data, title = 'Активность по час�
       </header>
 
       <div className="leaderboard-card__body">
-        {grid.totalCommits === 0 ? (
-          <EmptyState title="Нет активности" description="За выбранный период коммитов нет." />
-        ) : (
+        <AsyncContent
+          status={state.status}
+          isEmpty={grid.totalCommits === 0}
+          hasData={grid.totalCommits > 0}
+          error={state.error}
+          errorTitle="Не удалось загрузить почасовую активность"
+          skeleton={<HourlySkeleton />}
+          empty={
+            <EmptyState title="Нет активности" description="За выбранный период коммитов нет." />
+          }
+        >
           <div className="hourly">
             <div className="hourly__scroll">
               {/* шкала часов сверху */}
@@ -126,7 +173,7 @@ export function HourlyHeatmap({ data, title = 'Активность по час�
               </footer>
             </div>
           </div>
-        )}
+        </AsyncContent>
       </div>
     </Card>
   );
