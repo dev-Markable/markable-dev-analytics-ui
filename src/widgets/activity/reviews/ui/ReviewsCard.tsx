@@ -26,6 +26,7 @@ function buildColumns(range: DateRange): ColumnsType<ReviewAuthor> {
     {
       key: 'author',
       title: 'Ревьюер',
+      sorter: (a, b) => (a.displayName ?? a.email).localeCompare(b.displayName ?? b.email),
       render: (_v, a) => {
         const user = {
           email: a.email,
@@ -50,6 +51,7 @@ function buildColumns(range: DateRange): ColumnsType<ReviewAuthor> {
       key: 'team',
       title: 'Команда',
       width: 140,
+      sorter: (a, b) => (a.team ?? '').localeCompare(b.team ?? ''),
       render: (_v, a) => <TeamChip team={a.team} />,
     },
     {
@@ -61,6 +63,8 @@ function buildColumns(range: DateRange): ColumnsType<ReviewAuthor> {
       ),
       align: 'right',
       width: 110,
+      sorter: (a, b) => a.reviewsGiven - b.reviewsGiven,
+      defaultSortOrder: 'descend',
       render: (_v, a) => num(a.reviewsGiven),
     },
     {
@@ -72,6 +76,7 @@ function buildColumns(range: DateRange): ColumnsType<ReviewAuthor> {
       ),
       align: 'right',
       width: 120,
+      sorter: (a, b) => a.commentsGiven - b.commentsGiven,
       render: (_v, a) => num(a.commentsGiven),
     },
     {
@@ -83,6 +88,7 @@ function buildColumns(range: DateRange): ColumnsType<ReviewAuthor> {
       ),
       align: 'right',
       width: 110,
+      sorter: (a, b) => a.reviewsReceived - b.reviewsReceived,
       render: (_v, a) => (
         <span className="authors-table__num authors-table__num--secondary">
           {formatNumber(a.reviewsReceived)}
@@ -98,6 +104,7 @@ function buildColumns(range: DateRange): ColumnsType<ReviewAuthor> {
       ),
       align: 'right',
       width: 120,
+      sorter: (a, b) => a.avgTimeToMergeHours - b.avgTimeToMergeHours,
       render: (_v, a) => (
         <span className="authors-table__num authors-table__num--secondary">
           {formatHours(a.avgTimeToMergeHours)}
@@ -148,6 +155,9 @@ export function ReviewsCard({ state, range, onRetry }: ReviewsCardProps) {
           columns={columns}
           rowKey={(a) => a.email}
           size="middle"
+          // Свой Tooltip в заголовках метрик уже объясняет столбец — встроенный
+          // sorter-тултип AntD дал бы второй, наложенный поверх.
+          showSorterTooltip={false}
           pagination={rows.length > 15 ? { pageSize: 15, showSizeChanger: false } : false}
         />
       </AsyncContent>

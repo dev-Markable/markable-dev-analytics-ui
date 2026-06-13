@@ -30,8 +30,11 @@ export function ActivityPage() {
   // /dashboard тянем параллельно — только из-за displayName/avatarUrl.
   // Daily-эндпоинт enrichment не возвращает (см. API.md).
   const dashboardQ = useQuery(dashboardQuery({ from: range.from, to: range.to }));
-  // Hourly — командный агрегат (без авторской разбивки), скоп к нему не применяется.
-  const hourlyQ = useQuery(hourlyQuery({ from: range.from, to: range.to }));
+  // Hourly — серверный агрегат (без авторской разбивки): скоп по команде делает
+  // backend через ?team (клиентом отфильтровать нельзя — в ответе нет email/team).
+  const hourlyQ = useQuery(
+    hourlyQuery({ from: range.from, to: range.to, team: teamEnabled ? scope : undefined }),
+  );
   // Ревью-метрики — авторская разбивка фильтруется внутри виджета.
   const reviewsQ = useQuery(reviewsQuery({ from: range.from, to: range.to }));
   // /users — fallback по team/isLead для разработчиков, которые не попали в
@@ -124,7 +127,10 @@ export function ActivityPage() {
             <ActivityHeatmap daily={daily} range={range} />
           </Col>
           <Col xs={24} xl={12}>
-            <HourlyHeatmap data={hourlyQ.data ?? null} title="Активность по часам · команда" />
+            <HourlyHeatmap
+              data={hourlyQ.data ?? null}
+              title={`Активность по часам${teamEnabled ? ` · ${scope}` : ' · все команды'}`}
+            />
           </Col>
         </Row>
       </PageSection>
