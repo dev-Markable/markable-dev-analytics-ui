@@ -25,11 +25,14 @@ export function PerformanceReviewPage() {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Источник правды — URL: ?email&from&to&compare. Шарится и переживает перезагрузку.
+  // Источник правды — URL: ?email&pfrom&pto&compare. Шарится и переживает
+  // перезагрузку. Период намеренно в СВОИХ параметрах (`pfrom`/`pto`), а не в
+  // глобальных `from`/`to`: последними владеет FilterUrlSync (топбар-фильтр),
+  // и общий ключ приводил к гонке двух писателей — URL дёргался, даты прыгали.
   const email = searchParams.get('email');
   const range = useMemo<DateRange>(() => {
-    const from = searchParams.get('from');
-    const to = searchParams.get('to');
+    const from = searchParams.get('pfrom');
+    const to = searchParams.get('pto');
     return from && to ? { from, to } : DEFAULT_RANGE;
   }, [searchParams]);
   const compare = searchParams.get('compare') === '1';
@@ -54,7 +57,7 @@ export function PerformanceReviewPage() {
 
   const handleEmail = useCallback((e: string) => patchParams({ email: e }), [patchParams]);
   const handleRange = useCallback(
-    (r: DateRange) => patchParams({ from: r.from, to: r.to }),
+    (r: DateRange) => patchParams({ pfrom: r.from, pto: r.to }),
     [patchParams],
   );
   const handleCompare = useCallback(
