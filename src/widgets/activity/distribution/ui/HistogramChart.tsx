@@ -15,6 +15,7 @@ interface HistogramChartProps {
   bins: readonly HistogramBin[];
   stats: DistributionStats;
   format: (n: number) => string;
+  onBinClick?: (bin: HistogramBin) => void;
 }
 
 const COLORS = {
@@ -61,7 +62,7 @@ function ChartTooltip({
  * профиля) с вертикальными маркерами медианы, p75 и p90. Столбцы стоят на
  * числовой оси по центру интервала — Recharts сам делает их смежными.
  */
-export function HistogramChart({ bins, stats, format }: HistogramChartProps) {
+export function HistogramChart({ bins, stats, format, onBinClick }: HistogramChartProps) {
   return (
     <ResponsiveContainer width="100%" height={260}>
       <BarChart data={bins as HistogramBin[]} margin={{ top: 20, right: 16, bottom: 4, left: 0 }}>
@@ -114,7 +115,14 @@ export function HistogramChart({ bins, stats, format }: HistogramChartProps) {
           label={{ value: 'p90', position: 'top', fill: COLORS.p90, fontSize: 10 }}
         />
 
-        <Bar dataKey="count" fill="url(#distribution-bar-gradient)" radius={[4, 4, 0, 0]} maxBarSize={56} />
+        <Bar
+          dataKey="count"
+          fill="url(#distribution-bar-gradient)"
+          radius={[4, 4, 0, 0]}
+          maxBarSize={56}
+          cursor={onBinClick ? 'pointer' : undefined}
+          onClick={onBinClick ? (b: HistogramBin) => onBinClick(b) : undefined}
+        />
       </BarChart>
     </ResponsiveContainer>
   );

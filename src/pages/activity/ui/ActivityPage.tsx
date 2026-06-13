@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Col, Row } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { PageHeader, PageSection, ErrorState, LoadingState } from '@/shared/ui';
@@ -19,6 +19,7 @@ import { BusFactorCard } from '@/widgets/activity/bus-factor';
 import { ReviewsCard } from '@/widgets/activity/reviews';
 import { ReviewConcentrationCard } from '@/widgets/activity/review-concentration';
 import { DistributionCard } from '@/widgets/activity/distribution';
+import { DrillDownDrawer, type DrillContent } from '@/widgets/activity/drilldown';
 import type { AuthorEnrichment } from '@/widgets/activity/contributors/lib/aggregate-contributors';
 
 export function ActivityPage() {
@@ -27,6 +28,9 @@ export function ActivityPage() {
   const range = useDateRange();
   const scope = useTeamScope();
   const teamEnabled = scope !== ALL_TEAMS;
+
+  // Drill-down: клик по графику кладёт сюда готовую разбивку, Drawer её рисует.
+  const [drill, setDrill] = useState<DrillContent | null>(null);
 
   const dailyQ = useQuery(dailyQuery({ from: range.from, to: range.to }));
   // /dashboard тянем параллельно — только из-за displayName/avatarUrl.
@@ -124,13 +128,18 @@ export function ActivityPage() {
       </PageSection>
 
       <PageSection>
-        <DistributionCard state={queryToAsyncState(dashboardQ)} onRetry={retry} />
+        <DistributionCard state={queryToAsyncState(dashboardQ)} onDrill={setDrill} onRetry={retry} />
       </PageSection>
 
       <PageSection>
         <Row gutter={[16, 16]} align="stretch">
           <Col xs={24} xl={12}>
-            <ActivityHeatmap daily={daily} range={range} />
+            <ActivityHeatmap
+              daily={daily}
+              range={range}
+              enrichment={enrichmentByEmail}
+              onDrill={setDrill}
+            />
           </Col>
           <Col xs={24} xl={12}>
             <HourlyHeatmap
@@ -144,7 +153,7 @@ export function ActivityPage() {
       <PageSection>
         <Row gutter={[16, 16]}>
           <Col xs={24} xl={9}>
-            <ReposChart daily={daily} />
+            <ReposChart daily={daily} enrichment={enrichmentByEmail} onDrill={setDrill} />
           </Col>
           <Col xs={24} xl={15}>
             <ContributorsList daily={daily} range={range} enrichmentByEmail={enrichmentByEmail} />
@@ -163,6 +172,8 @@ export function ActivityPage() {
       <PageSection>
         <ReviewsCard state={queryToAsyncState(reviewsQ)} range={range} onRetry={retry} />
       </PageSection>
+
+      <DrillDownDrawer content={drill} range={range} onClose={() => setDrill(null)} />
     </>
   );
 }

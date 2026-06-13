@@ -3,7 +3,12 @@ import { Card, Typography } from 'antd';
 import { CalendarRange } from 'lucide-react';
 import type { DailyStat } from '@/entities/stats';
 import { EmptyState } from '@/shared/ui';
-import type { DateRange } from '@/shared/lib';
+import { dayjs, type DateRange } from '@/shared/lib';
+import {
+  aggregateDailyDrill,
+  type DrillContent,
+  type DrillEnrichment,
+} from '@/widgets/activity/drilldown';
 import { CELL_GAP, CELL_SIZE, CELL_STEP, COLOR_SCALE } from '../config/colors';
 import { buildHeatmapGrid } from '../lib/build-grid';
 import { HeatmapCell } from './HeatmapCell';
@@ -11,14 +16,28 @@ import { HeatmapCell } from './HeatmapCell';
 interface ActivityHeatmapProps {
   daily: readonly DailyStat[];
   range: DateRange;
+  enrichment: ReadonlyMap<string, DrillEnrichment>;
+  onDrill: (content: DrillContent) => void;
 }
 
 const WEEKDAY_LABELS: readonly string[] = ['Пн', 'Ср', 'Пт'];
 
-export function ActivityHeatmap({ daily, range }: ActivityHeatmapProps) {
+export function ActivityHeatmap({ daily, range, enrichment, onDrill }: ActivityHeatmapProps) {
   const grid = useMemo(() => buildHeatmapGrid(daily, range), [daily, range]);
 
   const hasData = grid.maxCommits > 0;
+
+  const handleDayClick = (date: string) => {
+    const rows = aggregateDailyDrill(
+      daily.filter((d) => d.date === date),
+      enrichment,
+    );
+    onDrill({
+      title: `Активность · ${dayjs(date).format('D MMMM YYYY')}`,
+      subtitle: `${rows.length} ${rows.length === 1 ? 'автор' : 'авторов'} в этот день`,
+      rows,
+    });
+  };
 
   return (
     <Card variant="borderless" className="leaderboard-card">
@@ -32,7 +51,7 @@ export function ActivityHeatmap({ daily, range }: ActivityHeatmapProps) {
           </Typography.Title>
         </div>
         <Typography.Text type="secondary" className="leaderboard-card__description">
-          Каждая ячейка — день. Цвет — число коммитов от всех авторов.
+          Каждая ячейка — день. Цвет — число коммитов. Клик — авторы дня.
         </Typography.Text>
       </header>
 
@@ -82,7 +101,12 @@ export function ActivityHeatmap({ daily, range }: ActivityHeatmapProps) {
                   }}
                 >
                   {grid.cells.map((c) => (
-                    <HeatmapCell key={c.date} day={c} maxCommits={grid.maxCommits} />
+                    <HeatmapCell
+                      key={c.date}
+                      day={c}
+                      maxCommits={grid.maxCommits}
+                      onSelect={handleDayClick}
+                    />
                   ))}
                 </div>
               </div>

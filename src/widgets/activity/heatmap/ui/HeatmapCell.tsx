@@ -8,6 +8,7 @@ import type { HeatmapDay } from '../lib/build-grid';
 interface HeatmapCellProps {
   day: HeatmapDay;
   maxCommits: number;
+  onSelect?: (date: string) => void;
 }
 
 function CellTooltip({ day }: { day: HeatmapDay }) {
@@ -46,14 +47,23 @@ function CellTooltip({ day }: { day: HeatmapDay }) {
   );
 }
 
-export const HeatmapCell = memo(function HeatmapCell({ day, maxCommits }: HeatmapCellProps) {
+export const HeatmapCell = memo(function HeatmapCell({
+  day,
+  maxCommits,
+  onSelect,
+}: HeatmapCellProps) {
   const bg = day.outOfRange
     ? OUT_OF_RANGE_COLOR
     : (COLOR_SCALE[colorIndex(day.commits, maxCommits)] ?? COLOR_SCALE[0]);
 
+  // Кликабельны только дни в диапазоне с активностью — иначе drill будет пустой.
+  const clickable = !day.outOfRange && day.commits > 0 && Boolean(onSelect);
+
   const cell = (
     <div
-      className={`heatmap__cell${day.outOfRange ? ' heatmap__cell--muted' : ''}`}
+      className={`heatmap__cell${day.outOfRange ? ' heatmap__cell--muted' : ''}${
+        clickable ? ' heatmap__cell--clickable' : ''
+      }`}
       style={{
         gridColumn: day.column + 1,
         gridRow: day.weekday + 1,
@@ -62,6 +72,7 @@ export const HeatmapCell = memo(function HeatmapCell({ day, maxCommits }: Heatma
         backgroundColor: bg,
       }}
       aria-label={`${day.date}: ${day.commits} коммитов`}
+      onClick={clickable ? () => onSelect?.(day.date) : undefined}
     />
   );
 

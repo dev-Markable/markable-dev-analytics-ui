@@ -14,10 +14,17 @@ import { FolderGit2 } from 'lucide-react';
 import type { DailyStat } from '@/entities/stats';
 import { EmptyState } from '@/shared/ui';
 import { formatNumber, truncate } from '@/shared/lib';
+import {
+  aggregateDailyDrill,
+  type DrillContent,
+  type DrillEnrichment,
+} from '@/widgets/activity/drilldown';
 import { aggregateByRepo, type RepoActivity } from '../lib/aggregate-repos';
 
 interface ReposChartProps {
   daily: readonly DailyStat[];
+  enrichment: ReadonlyMap<string, DrillEnrichment>;
+  onDrill: (content: DrillContent) => void;
   topN?: number;
 }
 
@@ -69,11 +76,23 @@ function ChartTooltip({ active, payload }: CustomTooltipProps) {
   );
 }
 
-export function ReposChart({ daily, topN = 10 }: ReposChartProps) {
+export function ReposChart({ daily, enrichment, onDrill, topN = 10 }: ReposChartProps) {
   const data = useMemo(
     () => aggregateByRepo(daily).slice(0, topN),
     [daily, topN],
   );
+
+  const handleRepoClick = (repo: string) => {
+    const rows = aggregateDailyDrill(
+      daily.filter((d) => d.repo === repo),
+      enrichment,
+    );
+    onDrill({
+      title: `Репозиторий: ${repo}`,
+      subtitle: `${rows.length} ${rows.length === 1 ? 'автор' : 'авторов'} в репозитории`,
+      rows,
+    });
+  };
 
   return (
     <Card variant="borderless" className="leaderboard-card">
@@ -87,7 +106,7 @@ export function ReposChart({ daily, topN = 10 }: ReposChartProps) {
           </Typography.Title>
         </div>
         <Typography.Text type="secondary" className="leaderboard-card__description">
-          По числу не-мердж коммитов
+          По числу не-мердж коммитов · клик — авторы репозитория
         </Typography.Text>
       </header>
 
@@ -120,7 +139,13 @@ export function ReposChart({ daily, topN = 10 }: ReposChartProps) {
                 tickFormatter={(v: string) => truncate(v, 22)}
               />
               <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgba(91, 108, 255, 0.06)' }} />
-              <Bar dataKey="nonMergeCommits" radius={[0, 6, 6, 0]} maxBarSize={20}>
+              <Bar
+                dataKey="nonMergeCommits"
+                radius={[0, 6, 6, 0]}
+                maxBarSize={20}
+                cursor="pointer"
+                onClick={(d: { repo?: string }) => d.repo && handleRepoClick(d.repo)}
+              >
                 {data.map((d) => (
                   <Cell key={d.repo} fill={COLORS.bar} />
                 ))}
