@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { Layout } from 'antd';
 import { Outlet, useLocation } from 'react-router-dom';
 import { ErrorBoundary, LoadingState } from '@/shared/ui';
+import { CommandPalette } from '@/features/command-palette';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 
@@ -10,6 +11,7 @@ export function AppLayout() {
 
   return (
     <Layout className="app-layout" hasSider>
+      <CommandPalette />
       <Sidebar />
       <Layout>
         <Topbar />
