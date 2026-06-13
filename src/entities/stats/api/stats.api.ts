@@ -12,9 +12,14 @@ export interface PeriodQuery {
   to: string;
 }
 
-/** Hourly поддерживает опциональную фильтрацию по автору. */
+/**
+ * Hourly поддерживает опциональные независимые фильтры: по автору (профиль)
+ * и по команде (страница «Активность»). Оба сериализуются в query как есть;
+ * `undefined` axios опускает.
+ */
 export interface HourlyQuery extends PeriodQuery {
   email?: string;
+  team?: string;
 }
 
 /**
