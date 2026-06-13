@@ -1,0 +1,71 @@
+.distribution-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-top: 4px;
+}
+
+.distribution-skeleton {
+  height: 188px;
+  border-radius: 10px;
+  background: linear-gradient(
+    90deg,
+    var(--ant-color-fill-tertiary) 25%,
+    var(--ant-color-fill-secondary) 37%,
+    var(--ant-color-fill-tertiary) 63%
+  );
+  background-size: 400% 100%;
+  animation: distribution-shimmer 1.4s ease infinite;
+}
+
+@keyframes distribution-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+/* ---- percentile strip ---- */
+.distribution-strip {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.distribution-strip__tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 6px;
+  border-radius: 10px;
+  background: var(--ant-color-bg-layout);
+  border: 1px solid transparent;
+  cursor: default;
+}
+
+.distribution-strip__tile--accent {
+  background: color-mix(in srgb, var(--ant-color-primary) 10%, var(--ant-color-bg-layout));
+  border-color: color-mix(in srgb, var(--ant-color-primary) 35%, transparent);
+}
+
+.distribution-strip__label {
+  font-size: 11px;
+  color: var(--ant-color-text-tertiary);
+  text-transform: lowercase;
+}
+
+.distribution-strip__value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ant-color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 768px) {
+  .distribution-strip {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

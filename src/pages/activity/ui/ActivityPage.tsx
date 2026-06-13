@@ -17,6 +17,8 @@ import { ReposChart } from '@/widgets/activity/repos';
 import { ContributorsList } from '@/widgets/activity/contributors';
 import { BusFactorCard } from '@/widgets/activity/bus-factor';
 import { ReviewsCard } from '@/widgets/activity/reviews';
+import { ReviewConcentrationCard } from '@/widgets/activity/review-concentration';
+import { DistributionCard } from '@/widgets/activity/distribution';
 import type { AuthorEnrichment } from '@/widgets/activity/contributors/lib/aggregate-contributors';
 
 export function ActivityPage() {
@@ -122,6 +124,10 @@ export function ActivityPage() {
       </PageSection>
 
       <PageSection>
+        <DistributionCard state={queryToAsyncState(dashboardQ)} onRetry={retry} />
+      </PageSection>
+
+      <PageSection>
         <Row gutter={[16, 16]} align="stretch">
           <Col xs={24} xl={12}>
             <ActivityHeatmap daily={daily} range={range} />
@@ -148,6 +154,10 @@ export function ActivityPage() {
 
       <PageSection>
         <BusFactorCard daily={daily} />
+      </PageSection>
+
+      <PageSection>
+        <ReviewConcentrationCard state={queryToAsyncState(reviewsQ)} onRetry={retry} />
       </PageSection>
 
       <PageSection>
