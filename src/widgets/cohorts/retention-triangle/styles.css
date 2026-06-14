@@ -1,0 +1,98 @@
+.retention {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.retention__grid {
+  display: grid;
+  gap: 3px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.retention__corner {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ant-color-text-tertiary);
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 4px;
+}
+
+.retention__colhead {
+  font-size: 11px;
+  color: var(--ant-color-text-quaternary);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.retention__rowhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-right: 8px;
+  min-width: 0;
+}
+
+.retention__cohort {
+  font-size: 12px;
+  color: var(--ant-color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.retention__size {
+  font-size: 11px;
+  color: var(--ant-color-text-quaternary);
+  background: var(--ant-color-fill-tertiary);
+  border-radius: 6px;
+  padding: 1px 6px;
+}
+
+.retention__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ant-color-text);
+  cursor: default;
+}
+
+.retention__cell--strong {
+  color: #fff;
+}
+
+.retention__cell--void {
+  background: transparent;
+}
+
+.retention__legend {
+  font-size: 12px;
+  color: var(--ant-color-text-quaternary);
+}
+
+.cohort-skeleton {
+  height: 240px;
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    var(--ant-color-fill-tertiary) 25%,
+    var(--ant-color-fill-secondary) 37%,
+    var(--ant-color-fill-tertiary) 63%
+  );
+  background-size: 400% 100%;
+  animation: cohort-shimmer 1.4s ease infinite;
+}
+
+@keyframes cohort-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}

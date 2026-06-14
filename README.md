@@ -1,7 +1,7 @@
 # DevPulse — фронт
 
 [![CI](https://github.com/devpulse-dev/devpulse-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/devpulse-dev/devpulse-ui/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-216_passed-2ea44f?logo=vitest&logoColor=white)](#тесты)
+[![Tests](https://img.shields.io/badge/tests-274_passed-2ea44f?logo=vitest&logoColor=white)](#тесты)
 [![OAS](https://img.shields.io/badge/contract-%5E2.0.0-2ea44f?logo=openapiinitiative&logoColor=white)](#api-типы-devpulse-devapi-types)
 
 [![React](https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=white)](https://react.dev/)
@@ -17,8 +17,14 @@
 Аналитика активности разработчиков: дашборд с activity-score, недельная динамика,
 профили, heatmap-календарь, сравнение, bus factor, ревью-метрики, **Performance
 Review** (досье к 1:1), **управление командами и лидами**, экспорт.
+Плюс: **командная палитра** (Cmd/Ctrl-K), лента **«Требует внимания»** (сигналы
+рисков), **распределения метрик** (медианы/перцентили), **концентрация ревью**
+(review bus factor) и **drill-down** по графикам активности.
 Бэк — [`DevPulse-core`](../DevPulse-core), API v2 (REST + RFC 7807 problem+json),
 контракт `@devpulse-dev/api-types ^2.0.0`.
+
+> Идея новой страницы **Flow / Delivery** (поток задач: throughput, cycle-time,
+> WIP, дефекты) и требования к бэку — в [`FLOW-DELIVERY.md`](./FLOW-DELIVERY.md).
 
 > Дорожная карта фич и прогресс — в [`FEATURES.md`](./FEATURES.md).
 > История рефакторингов из senior-review — в [`REFACTORING.md`](./REFACTORING.md).
@@ -82,11 +88,14 @@ src/
 ├── pages/      # роуты (Dashboard, Weekly, Activity, Compare, Performance Review,
 │               #         Teams, Profile, Collection, Settings, NotFound)
 ├── widgets/    # самостоятельные UI-блоки, сгруппированные по доменам:
-│               #   activity/, collection/, compare/, dashboard/, perf/, profile/,
-│               #   settings/, team/, weekly/  + app-layout (shell)
+│               #   activity/ (summary, heatmap, hourly, repos, contributors,
+│               #     bus-factor, reviews, distribution, review-concentration,
+│               #     drilldown), dashboard/ (summary, leaderboard, authors-table,
+│               #     signals), collection/, compare/, perf/, profile/,
+│               #     settings/, team/, weekly/  + app-layout (shell)
 │               #   у каждого виджета свой styles.css co-located
 ├── features/   # пользовательские сценарии (theme-switch, date-range-filter,
-│               #         team-scope, sidebar)
+│               #         team-scope, sidebar, command-palette)
 ├── entities/   # бизнес-сущности (user, team, commit, kaiten-card, stats,
 │               #         dashboard, performance-review, collection-run)
 └── shared/     # api/, config/, lib/, hooks/, ui/, test/factories.ts + render-helper
@@ -138,7 +147,7 @@ Widget принимает чистые данные
 
 | Route | Файл | API |
 |---|---|---|
-| `/` Дашборд | `pages/dashboard/` | `GET /dashboard?size=500` (×2 — текущий + предыдущий период для PoP-дельт) |
+| `/` Дашборд | `pages/dashboard/` | `GET /dashboard?size=500` (×2 — текущий + предыдущий период для PoP-дельт) + `GET /stats/reviews` (лента сигналов) |
 | `/weekly` Недели | `pages/weekly/` | `GET /stats/weekly` |
 | `/activity` Активность | `pages/activity/` | `GET /stats/daily` + `GET /stats/hourly` + `GET /stats/reviews` + `GET /dashboard` + `GET /users` |
 | `/compare` Сравнение | `pages/compare/` | — (использует `dashboardQuery`, выбор в `?ids=`) |
@@ -255,6 +264,22 @@ export const extractCardId = (commit) =>
 
 Главный список задач остаётся на `<DataTable>` с `pagination=25` — это уже эффективно. Фильтрация по поиску — через `useDeferredValue(debounced)`: React 19 делает её неблокирующей, инпут остаётся отзывчивым.
 
+### Командная палитра (Cmd/Ctrl-K)
+
+`features/command-palette` — глобальный поиск-навигация (Linear-style). Хоткей вешается на `window` в capture-фазе, монтируется один раз в `AppLayout`, кнопка-триггер — в топбаре. Ищет по 4 группам: страницы, пресеты периода, команды, разработчики (с аватарами). Действие применяется сразу через существующие сторы (`navigate` / `setPreset` / `setScope`). Справочники `users`/`teams` грузятся лениво (`enabled: open`). Чистый токен-матчинг — в `lib/match.ts`. Страницы описаны локально через `ROUTES` (features не импортят widgets — правило слоёв).
+
+### Лента «Требует внимания» (signals inbox)
+
+`widgets/dashboard/signals` — риски, собранные на клиенте из уже загруженных данных дашборда (текущий + предыдущий период) и ревью. Чистая `buildSignals` даёт 4 типа сигналов: резкое падение activity-score (PoP), низкая активность второй период подряд (хроники, у которых нет спада), MR без ревью, концентрация ревью на одном человеке. Сортировка по серьёзности, деталь — диплинк в профиль. Глубже двух периодов нужна история снапшотов на бэке.
+
+### Распределения и концентрация ревью
+
+`widgets/activity/distribution` — гистограмма метрики (Recharts) с маркерами медианы/p75/p90 + полоса перцентилей; медиана/перцентили вместо одного среднего. `widgets/activity/review-concentration` — review bus factor (сколько ревьюеров покрывают >50% approve) + Gini + кривая Лоренца. Обе — pure-lib со статистикой (квантили R-7, Тьюки-усы, Джини), покрыты юнит-тестами. Per-person ревью-цифры остаются в таблице «Ревью» — дубля нет.
+
+### Drill-down по графикам активности
+
+`widgets/activity/drilldown` — переиспользуемый Drawer + чистый `aggregateDailyDrill`. Графики не знают про Drawer: по клику собирают `DrillContent` и поднимают через `onDrill`, страница держит состояние и рендерит один Drawer. Подключены: Топ репозиториев (→ авторы репо), Календарь-heatmap (→ авторы дня), Гистограмма (→ разработчики бакета). Почасовой heatmap drill-down не имеет — бэк отдаёт агрегат `(weekday, hour)` без авторов.
+
 ---
 
 ## Скрипты
@@ -280,7 +305,7 @@ Vitest умеет per-file environment: `*.test.tsx` → `jsdom`, `*.test.ts` �
 
 Фабрики тестовых данных — `src/shared/test/factories.ts` (`makeAuthor`, `makeCommit`, `makeCard`, `makeDaily`, `makeWeek`, `makeActivity`). `renderWithProviders` (`src/shared/test/render.tsx`) — обёртка для UI-тестов: `QueryClientProvider` + `MemoryRouter` + `AntApp` + `ConfigProvider`, с `setupQueryCache?(qc)` для предзаполнения кэша вместо запросов.
 
-**Сейчас 216 тестов в 38 файлах** (`npm test`).
+**Сейчас 274 теста в 45 файлах** (`npm test`).
 
 Ключевые модули с покрытием:
 
@@ -296,6 +321,11 @@ Vitest умеет per-file environment: `*.test.tsx` → `jsdom`, `*.test.ts` �
 | `features/team-scope` | `matchesScope` (ALL/NO_TEAM/конкретная) + `filterByScope` с `alwaysKeep` |
 | `widgets/activity/contributors/lib/*` | `aggregateByContributor` (с team/isLead enrichment), `detect-anomalies` |
 | `widgets/activity/summary/lib`, `bus-factor`, `hourly` | агрегации |
+| `widgets/activity/distribution/lib` | `quantile` (R-7), `computeDistribution` (квартили, Тьюки-усы, выбросы), `histogram` |
+| `widgets/activity/review-concentration/lib` | `giniCoefficient`, `topShare`, `reviewBusFactor`, `lorenzCurve` |
+| `widgets/activity/drilldown/lib` | `aggregateDailyDrill` (срез daily по авторам) |
+| `widgets/dashboard/signals/lib` | `buildSignals` (падение PoP, хроники, MR без ревью, концентрация) |
+| `features/command-palette/lib` | `matchCommands` (токен-поиск, AND, регистронезависимо) |
 | `widgets/perf/*` | `engagement`, `givenShare`, `testRatio`, `formatDays`, `deliveryProgress` |
 | `widgets/perf/controls/config/periods` | `presetRange` / `detectPeriodKey` |
 | `widgets/profile/tasks-timeline/lib/group-commits` | матчинг коммит↔карточка, orphan-группа |
@@ -395,12 +425,15 @@ Concurrency-группа отменяет старый прогон при пу�
 Полный план и прогресс — в [`FEATURES.md`](./FEATURES.md). Рефакторинги из senior-review — в [`REFACTORING.md`](./REFACTORING.md), все 14 пунктов закрыты.
 
 **Продуктовый план — закрыто:**
-- **Клиентские (9):** PoP-дельты, экспорт CSV/PNG, URL-фильтры, спарклайны, сравнение, аномалии, bus factor, lazy chunks, кэш навигаций.
+- **Клиентские (14):** PoP-дельты, экспорт CSV/PNG, URL-фильтры, спарклайны, сравнение, аномалии, bus factor, lazy chunks, кэш навигаций, **командная палитра (Cmd/Ctrl-K)**, **лента сигналов «Требует внимания»**, **распределения метрик**, **концентрация ревью (review bus factor)**, **drill-down по графикам**.
 - **Бэк-зависимые:** B1 Hourly heatmap, B2 ревью-метрики, **Performance Review** (досье + Kaiten-insights + notable), **команды/лиды first-class**, team/isLead во всех developer-эндпоинтах.
 
 **Осталось — фичи, требующие бэка:**
+- **A** Страница **Flow / Delivery** (throughput, cycle-time, WIP, aging, дефекты) — спека и контракт в [`FLOW-DELIVERY.md`](./FLOW-DELIVERY.md)
 - **B3** Email / Slack дайджест
 - **B4** Цели / таргеты команды
-- **B5** Push-алерты аномалий
+- **B5** Push-алерты аномалий (лента сигналов уже есть на клиенте — нужна история снапшотов + доставка)
+- **C** Лонгитюд / тренды во времени (история снапшотов: тренд >2 периодов, forecast)
+- **Cohort / Retention** — ретеншн-вью по всем разработчикам (история активности команды) — спека в [`COHORT-RETENTION.md`](./COHORT-RETENTION.md)
 
 Мелочь без бэка: дефолтный период через Settings (сейчас 30 дней в persist-сторе, переопределяется URL).

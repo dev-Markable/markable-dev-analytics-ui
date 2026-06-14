@@ -1,0 +1,115 @@
+.matrix {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.matrix__search {
+  max-width: 320px;
+}
+
+.matrix__scroll {
+  max-height: 560px;
+  overflow: auto;
+  border: 1px solid var(--ant-color-split);
+  border-radius: 10px;
+}
+
+.matrix__header {
+  display: grid;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--ant-color-bg-container);
+  border-bottom: 1px solid var(--ant-color-split);
+  height: 28px;
+}
+
+.matrix__corner {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  background: var(--ant-color-bg-container);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ant-color-text-tertiary);
+  white-space: nowrap;
+}
+
+.matrix__monthtick {
+  font-size: 10px;
+  color: var(--ant-color-text-quaternary);
+  display: flex;
+  align-items: center;
+  overflow: visible;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.matrix__row {
+  display: grid;
+  align-items: center;
+  height: 44px;
+}
+
+.matrix__namecell {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 100%;
+  padding: 0 12px;
+  background: var(--ant-color-bg-container);
+  color: inherit;
+  border-right: 1px solid var(--ant-color-split);
+}
+
+.matrix__identity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.matrix__name {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.matrix__meta {
+  font-size: 11px;
+  color: var(--ant-color-text-quaternary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.matrix__cell {
+  width: 14px;
+  height: 14px;
+  margin: 0 2px;
+  border-radius: 3px;
+  background: var(--ant-color-fill-tertiary);
+}
+
+.matrix__cell--l1 {
+  background: color-mix(in srgb, var(--ant-color-primary) 24%, transparent);
+}
+.matrix__cell--l2 {
+  background: color-mix(in srgb, var(--ant-color-primary) 46%, transparent);
+}
+.matrix__cell--l3 {
+  background: color-mix(in srgb, var(--ant-color-primary) 70%, transparent);
+}
+.matrix__cell--l4 {
+  background: var(--ant-color-primary);
+}
