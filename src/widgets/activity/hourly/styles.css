@@ -45,3 +45,26 @@
   transform: scale(1.2);
   box-shadow: 0 0 0 1px var(--ant-color-border);
 }
+
+.hourly__cell--skeleton {
+  background: var(--ant-color-fill-tertiary);
+  animation: hourly-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+/* лёгкий разбег фаз по столбцам — «волна» вместо синхронного моргания */
+.hourly__cells .hourly__cell--skeleton:nth-child(3n) {
+  animation-delay: 0.2s;
+}
+.hourly__cells .hourly__cell--skeleton:nth-child(3n + 1) {
+  animation-delay: 0.4s;
+}
+
+@keyframes hourly-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}

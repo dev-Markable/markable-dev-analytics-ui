@@ -1,0 +1,88 @@
+.concentration-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: stretch;
+}
+
+.concentration-tiles {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.concentration-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--ant-color-bg-layout);
+  cursor: default;
+}
+
+.concentration-tile__label {
+  font-size: 12px;
+  color: var(--ant-color-text-tertiary);
+}
+
+.concentration-tile__value {
+  font-size: 24px;
+  font-weight: 650;
+  line-height: 1.1;
+  color: var(--ant-color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.concentration-tile__sub {
+  font-size: 11px;
+  color: var(--ant-color-text-quaternary);
+}
+
+/* ---- Lorenz chart ---- */
+.concentration-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.concentration-chart__caption {
+  font-size: 12px;
+  color: var(--ant-color-text-tertiary);
+}
+
+.concentration-chart__caption strong {
+  color: var(--ant-color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.concentration-skeleton {
+  height: 220px;
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    var(--ant-color-fill-tertiary) 25%,
+    var(--ant-color-fill-secondary) 37%,
+    var(--ant-color-fill-tertiary) 63%
+  );
+  background-size: 400% 100%;
+  animation: concentration-shimmer 1.4s ease infinite;
+}
+
+@keyframes concentration-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .concentration-body {
+    grid-template-columns: 1fr;
+  }
+}

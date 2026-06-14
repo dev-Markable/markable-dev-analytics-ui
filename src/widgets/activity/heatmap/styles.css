@@ -77,6 +77,10 @@
   opacity: 0.25;
 }
 
+.heatmap__cell--clickable {
+  cursor: pointer;
+}
+
 .heatmap-legend {
   display: inline-flex;
   align-items: center;

@@ -14,11 +14,13 @@ import {
   dashboardPrevQuery,
 } from '@/entities/dashboard';
 import type { AuthorActivity } from '@/entities/user';
+import { reviewsQuery, type ReviewAuthor } from '@/entities/stats';
 import { formatRange } from '@/shared/lib';
 import { DASHBOARD_PAGE_SIZE } from '@/shared/config';
 import { SummaryGrid } from '@/widgets/dashboard/summary';
 import { LeaderboardCard } from '@/widgets/dashboard/leaderboard';
 import { AuthorsTable } from '@/widgets/dashboard/authors-table';
+import { SignalsInbox } from '@/widgets/dashboard/signals';
 
 export function DashboardPage() {
   useDocumentTitle('Дашборд');
@@ -29,6 +31,8 @@ export function DashboardPage() {
 
   const dashboardQ = useQuery(dashboardQuery({ from: range.from, to: range.to }));
   const prevQ = useQuery(dashboardPrevQuery({ from: range.from, to: range.to }));
+  // Ревью — только для ленты «Требует внимания» (MR без ревью, концентрация).
+  const reviewsQ = useQuery(reviewsQuery({ from: range.from, to: range.to }));
 
   const error = useApiError(dashboardQ.error);
   useApiErrorNotification(error, 'Не удалось загрузить дашборд');
@@ -43,6 +47,8 @@ export function DashboardPage() {
   const filteredItems = useTeamScopeFilter<AuthorActivity>(allItems, (a) => a.team);
   // Предыдущий период — для PoP-дельт. Фильтруем тем же скопом команды.
   const prevItems = useTeamScopeFilter<AuthorActivity>(prevQ.data?.items, (a) => a.team);
+  // Ревью-авторы под тем же скопом — для сигналов.
+  const reviewAuthors = useTeamScopeFilter<ReviewAuthor>(reviewsQ.data?.authors, (a) => a.team);
 
   const totals = useMemo(() => aggregateAuthors(filteredItems), [filteredItems]);
   const prevTotals = useMemo(
@@ -96,6 +102,16 @@ export function DashboardPage() {
 
       <PageSection>
         <SummaryGrid totals={totals} prevTotals={prevTotals} loading={isLoadingInitial} />
+      </PageSection>
+
+      <PageSection>
+        <SignalsInbox
+          current={filteredItems}
+          previous={prevItems}
+          reviews={reviewAuthors}
+          range={range}
+          loading={isLoadingInitial}
+        />
       </PageSection>
 
       <PageSection>
