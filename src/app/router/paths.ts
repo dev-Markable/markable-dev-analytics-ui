@@ -4,6 +4,7 @@ export const ROUTES = {
   activity: '/activity',
   compare: '/compare',
   performanceReview: '/performance-review',
+  cohorts: '/cohorts',
   teams: '/teams',
   profile: (email = ':email') => `/users/${email}`,
   profileMask: '/users/:email',
