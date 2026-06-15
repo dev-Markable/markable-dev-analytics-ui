@@ -1,10 +1,20 @@
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { Alert, Button, Card, Input, Typography } from 'antd';
-import { KeyRound } from 'lucide-react';
+import { Alert, Button, Input, Typography } from 'antd';
+import {
+  Activity,
+  ClipboardCheck,
+  GitCompare,
+  Layers,
+  LayoutGrid,
+  UsersRound,
+  type LucideIcon,
+} from 'lucide-react';
 import { useCurrentUser, useLogin } from '@/entities/auth';
 import { useApiError } from '@/shared/api';
 import { useDocumentTitle } from '@/shared/hooks';
+import { useThemeMode } from '@/features/theme-switch';
+import { APP_NAME } from '@/shared/config';
 import { ROUTES } from '@/app/router/paths';
 import './styles.css';
 
@@ -12,8 +22,24 @@ interface LocationState {
   from?: string;
 }
 
+interface Feature {
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+}
+
+const FEATURES: readonly Feature[] = [
+  { icon: LayoutGrid, title: 'Дашборд', desc: 'Активность и скоринг разработчиков за период' },
+  { icon: ClipboardCheck, title: 'Performance Review', desc: 'Досье: метрики, задачи Kaiten, дельты' },
+  { icon: Activity, title: 'Активность', desc: 'Паттерны по дням и часам, репозитории' },
+  { icon: Layers, title: 'Когорты', desc: 'Retention и переходы тиров по истории' },
+  { icon: UsersRound, title: 'Команды', desc: 'Состав, лиды и сводки по командам' },
+  { icon: GitCompare, title: 'Сравнение', desc: 'Разработчики бок о бок по метрикам' },
+];
+
 export function LoginPage() {
   useDocumentTitle('Вход');
+  const mode = useThemeMode();
   const { data: user } = useCurrentUser();
   const location = useLocation();
   const navigate = useNavigate();
@@ -44,55 +70,77 @@ export function LoginPage() {
         ? 'Невалидный токен. Проверьте, что это актуальный GitLab access token.'
         : (error.detail ?? error.title);
 
+  const logoSrc = mode === 'dark' ? '/logo-dark.svg' : '/logo-light.svg';
+
   return (
-    <div className="login-screen">
-      <Card variant="borderless" className="login-card">
-        <div className="login-card__head">
-          <span className="login-card__icon">
-            <KeyRound size={20} />
-          </span>
-          <Typography.Title level={3} style={{ margin: 0 }}>
-            DevPulse
-          </Typography.Title>
-          <Typography.Text type="secondary">Вход по GitLab access token</Typography.Text>
-        </div>
+    <div className="login-page">
+      <div className="login-shell">
+        <section className="login-aside">
+          <div className="login-brand">
+            <img src={logoSrc} alt="" className="login-brand__logo" />
+            <Typography.Title level={3} className="login-brand__name">
+              {APP_NAME}
+            </Typography.Title>
+            <Typography.Text type="secondary" className="login-brand__tagline">
+              Аналитика и performance-review разработчиков
+            </Typography.Text>
+          </div>
 
-        {errorText && (
-          <Alert type="error" showIcon message={errorText} style={{ marginBottom: 16 }} />
-        )}
+          {errorText && (
+            <Alert type="error" showIcon message={errorText} className="login-aside__error" />
+          )}
 
-        <Input.Password
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
-          onPressEnter={submit}
-          placeholder="glpat-…"
-          size="large"
-          autoFocus
-          disabled={loginMut.isPending}
-        />
-        <Button
-          type="primary"
-          size="large"
-          block
-          style={{ marginTop: 12 }}
-          loading={loginMut.isPending}
-          disabled={!token.trim()}
-          onClick={submit}
-        >
-          Войти
-        </Button>
-
-        <Typography.Paragraph type="secondary" className="login-card__hint">
-          Создайте токен с правом <code>read_user</code> на{' '}
-          <Typography.Link
-            href="https://scm.x5.ru/-/user_settings/personal_access_tokens"
-            target="_blank"
+          <span className="login-field-label">GitLab access token</span>
+          <Input.Password
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            onPressEnter={submit}
+            placeholder="glpat-…"
+            size="large"
+            autoFocus
+            disabled={loginMut.isPending}
+          />
+          <Button
+            type="primary"
+            size="large"
+            block
+            className="login-submit"
+            loading={loginMut.isPending}
+            disabled={!token.trim()}
+            onClick={submit}
           >
-            scm.x5.ru
-          </Typography.Link>{' '}
-          и вставьте сюда. Токен не сохраняется — он нужен только для входа.
-        </Typography.Paragraph>
-      </Card>
+            Войти
+          </Button>
+
+          <Typography.Paragraph type="secondary" className="login-hint">
+            Создайте токен с правом <code>read_user</code> на{' '}
+            <Typography.Link
+              href="https://scm.x5.ru/-/user_settings/personal_access_tokens"
+              target="_blank"
+            >
+              scm.x5.ru
+            </Typography.Link>{' '}
+            и вставьте сюда. Токен не сохраняется — он нужен только для входа.
+          </Typography.Paragraph>
+        </section>
+
+        <aside className="login-hero" aria-hidden="true">
+          <div className="login-hero__grid">
+            {FEATURES.map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <div key={feature.title} className="login-feature">
+                  <span className="login-feature__icon">
+                    <Icon size={20} />
+                  </span>
+                  <div className="login-feature__title">{feature.title}</div>
+                  <div className="login-feature__desc">{feature.desc}</div>
+                </div>
+              );
+            })}
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }

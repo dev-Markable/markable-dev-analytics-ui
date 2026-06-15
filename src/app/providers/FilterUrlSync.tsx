@@ -3,6 +3,7 @@ import { useLocation, useSearchParams } from 'react-router-dom';
 import { useDateRangeStore } from '@/features/date-range-filter';
 import { ALL_TEAMS, useTeamScopeStore } from '@/features/team-scope';
 import { isValidRange } from '@/shared/lib';
+import { ROUTES } from '@/app/router/paths';
 
 /**
  * Двусторонняя синхронизация глобальных фильтров с URL query.
@@ -43,6 +44,8 @@ export function FilterUrlSync() {
   scopeRef.current = scope;
   const searchParamsRef = useRef(searchParams);
   searchParamsRef.current = searchParams;
+  const pathnameRef = useRef(pathname);
+  pathnameRef.current = pathname;
 
   // URL — источник правды на старте. Store→URL не должен срабатывать на самом
   // первом mount: иначе если URL и store расходятся (deeplink), оба эффекта
@@ -54,6 +57,8 @@ export function FilterUrlSync() {
   //    стабильны (одна ссылка на жизнь стора), поэтому их в deps не пишем
   //    (ESLint доверяет нам — деструктур из useStore не считается зависимостью).
   useEffect(() => {
+    // Глобальные фильтры не применяются к /login (нет топбар-фильтра) — не читаем их там.
+    if (pathnameRef.current === ROUTES.login) return;
     const from = searchParams.get('from');
     const to = searchParams.get('to');
     const currentRange = rangeRef.current;
@@ -84,6 +89,8 @@ export function FilterUrlSync() {
       skipNextStoreToUrl.current = false;
       return;
     }
+    // На /login не подмешиваем from/to/team в URL — страница вне топбар-фильтра.
+    if (pathname === ROUTES.login) return;
     const next = new URLSearchParams(searchParamsRef.current);
     let changed = false;
 
