@@ -5,6 +5,7 @@ import { DashboardPage } from '@/pages/dashboard';
 import { LoginPage } from '@/pages/login';
 import { ROUTES } from './paths';
 import { RequireAuth } from './RequireAuth';
+import { RequireElevated } from './RequireElevated';
 
 // Стартовая страница — eager (всё равно грузится сразу, без лишнего lazy-водопада).
 // Остальные — отдельными чанками по требованию. Страницы экспортируют named,
@@ -54,10 +55,31 @@ export function AppRouter() {
         <Route path={ROUTES.dashboard} element={<DashboardPage />} />
         <Route path={ROUTES.weekly} element={<WeeklyPage />} />
         <Route path={ROUTES.activity} element={<ActivityPage />} />
-        <Route path={ROUTES.compare} element={<ComparePage />} />
+        <Route
+          path={ROUTES.compare}
+          element={
+            <RequireElevated>
+              <ComparePage />
+            </RequireElevated>
+          }
+        />
         <Route path={ROUTES.performanceReview} element={<PerformanceReviewPage />} />
-        <Route path={ROUTES.cohorts} element={<CohortsPage />} />
-        <Route path={ROUTES.teams} element={<TeamsPage />} />
+        <Route
+          path={ROUTES.cohorts}
+          element={
+            <RequireElevated>
+              <CohortsPage />
+            </RequireElevated>
+          }
+        />
+        <Route
+          path={ROUTES.teams}
+          element={
+            <RequireElevated>
+              <TeamsPage />
+            </RequireElevated>
+          }
+        />
         <Route path={ROUTES.profileMask} element={<ProfilePage />} />
         <Route path={ROUTES.collection} element={<CollectionPage />} />
         <Route path={ROUTES.settings} element={<SettingsPage />} />

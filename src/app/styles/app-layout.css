@@ -62,6 +62,32 @@
   z-index: 10;
 }
 
+.user-menu {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 200px;
+  padding: 4px 8px 4px 4px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ant-color-text);
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.user-menu:hover {
+  background: var(--ant-color-fill-tertiary);
+}
+
+.user-menu__name {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .app-content {
   padding: 24px var(--page-padding) 48px;
   max-width: var(--content-max-width);

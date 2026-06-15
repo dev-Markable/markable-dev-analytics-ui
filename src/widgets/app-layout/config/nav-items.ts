@@ -9,6 +9,8 @@ export interface NavItem {
   path: string;
   matchPaths?: readonly string[];
   group: 'primary' | 'secondary';
+  /** Виден только ADMIN/TEAMLEAD (RBAC, ADR-13). Для MEMBER скрыт. */
+  requiresElevated?: boolean;
 }
 
 /**
@@ -44,6 +46,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: GitCompare,
     path: ROUTES.compare,
     group: 'primary',
+    requiresElevated: true,
   },
   {
     key: 'performance-review',
@@ -58,6 +61,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: Layers,
     path: ROUTES.cohorts,
     group: 'primary',
+    requiresElevated: true,
   },
   {
     key: 'teams',
@@ -65,6 +69,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: UsersRound,
     path: ROUTES.teams,
     group: 'primary',
+    requiresElevated: true,
   },
   {
     key: 'collection',

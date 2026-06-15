@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import { Button, Layout, Tooltip, Typography } from 'antd';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useSidebarStore } from '@/features/sidebar';
-import { PRIMARY_NAV, SECONDARY_NAV } from '../config/nav-items';
+import { isElevated, useCurrentUser } from '@/entities/auth';
+import { PRIMARY_NAV, SECONDARY_NAV, type NavItem as NavItemType } from '../config/nav-items';
 import { Brand } from './Brand';
 import { NavItem } from './NavItem';
 
@@ -18,6 +20,15 @@ const sectionLabelStyle: React.CSSProperties = {
 export function Sidebar() {
   const collapsed = useSidebarStore((s) => s.collapsed);
   const toggle = useSidebarStore((s) => s.toggle);
+
+  // RBAC (ADR-13): пункты с requiresElevated видны только ADMIN/TEAMLEAD.
+  const { data: user } = useCurrentUser();
+  const elevated = user ? isElevated(user.role) : false;
+  const visible = useMemo(
+    () => (items: readonly NavItemType[]) =>
+      items.filter((i) => !i.requiresElevated || elevated),
+    [elevated],
+  );
 
   return (
     <Sider
@@ -45,7 +56,7 @@ export function Sidebar() {
             Аналитика
           </Typography.Text>
         )}
-        {PRIMARY_NAV.map((item) => (
+        {visible(PRIMARY_NAV).map((item) => (
           <NavItem key={item.key} item={item} collapsed={collapsed} />
         ))}
 
@@ -59,7 +70,7 @@ export function Sidebar() {
         ) : (
           <div className="app-sider__nav-divider" />
         )}
-        {SECONDARY_NAV.map((item) => (
+        {visible(SECONDARY_NAV).map((item) => (
           <NavItem key={item.key} item={item} collapsed={collapsed} />
         ))}
       </nav>

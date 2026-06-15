@@ -21,6 +21,8 @@ interface PerfControlsProps {
   onEmailChange: (email: string) => void;
   onRangeChange: (range: DateRange) => void;
   onCompareChange: (compare: boolean) => void;
+  /** MEMBER видит только своё досье (RBAC, ADR-13) — выбор разработчика заблокирован. */
+  emailLocked?: boolean;
 }
 
 export function PerfControls({
@@ -30,6 +32,7 @@ export function PerfControls({
   onEmailChange,
   onRangeChange,
   onCompareChange,
+  emailLocked = false,
 }: PerfControlsProps) {
   const usersQ = useQuery(usersQuery());
   // Команда — из глобального скопа в топбаре; локального дубля нет.
@@ -67,6 +70,7 @@ export function PerfControls({
         </Typography.Text>
         <Select
           showSearch
+          disabled={emailLocked}
           value={email ?? undefined}
           placeholder="Выберите разработчика"
           loading={usersQ.isPending}
