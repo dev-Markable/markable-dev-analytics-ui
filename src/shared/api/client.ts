@@ -28,6 +28,8 @@ const createClient = (): AxiosInstance => {
   const instance = axios.create({
     baseURL: env.apiBaseUrl,
     timeout: 30_000,
+    // Шлём httpOnly-cookie сессии (ADR-13) на все запросы — auth по cookie, не по токену в JS.
+    withCredentials: true,
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json, application/problem+json',
