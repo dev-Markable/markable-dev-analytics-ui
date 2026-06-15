@@ -68,7 +68,9 @@ export function LoginPage() {
       ? 'Нет доступа к отслеживаемым проектам в GitLab. Обратитесь к администратору.'
       : error.status === 401
         ? 'Невалидный токен. Проверьте, что это актуальный GitLab access token.'
-        : (error.detail ?? error.title);
+        : error.status === 503
+          ? 'GitLab сейчас недоступен — попробуйте войти позже.'
+          : (error.detail ?? error.title);
 
   const logoSrc = mode === 'dark' ? '/logo-dark.svg' : '/logo-light.svg';
 
