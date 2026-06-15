@@ -2,7 +2,9 @@ import { lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { AppLayout } from '@/widgets/app-layout';
 import { DashboardPage } from '@/pages/dashboard';
+import { LoginPage } from '@/pages/login';
 import { ROUTES } from './paths';
+import { RequireAuth } from './RequireAuth';
 
 // Стартовая страница — eager (всё равно грузится сразу, без лишнего lazy-водопада).
 // Остальные — отдельными чанками по требованию. Страницы экспортируют named,
@@ -41,7 +43,14 @@ const NotFoundPage = lazy(() =>
 export function AppRouter() {
   return (
     <Routes>
-      <Route element={<AppLayout />}>
+      <Route path={ROUTES.login} element={<LoginPage />} />
+      <Route
+        element={
+          <RequireAuth>
+            <AppLayout />
+          </RequireAuth>
+        }
+      >
         <Route path={ROUTES.dashboard} element={<DashboardPage />} />
         <Route path={ROUTES.weekly} element={<WeeklyPage />} />
         <Route path={ROUTES.activity} element={<ActivityPage />} />
