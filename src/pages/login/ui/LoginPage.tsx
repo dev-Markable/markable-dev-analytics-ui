@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { Alert, Button, Input, Typography } from 'antd';
+import { Alert, Button, Input, Skeleton, Typography } from 'antd';
 import {
   Activity,
   ClipboardCheck,
@@ -45,6 +45,7 @@ export function LoginPage() {
   const navigate = useNavigate();
   const loginMut = useLogin();
   const [token, setToken] = useState('');
+  const lastErrorRef = useRef<string | null>(null);
   const error = useApiError(loginMut.error);
 
   const target = (location.state as LocationState | null)?.from ?? ROUTES.dashboard;
@@ -72,6 +73,13 @@ export function LoginPage() {
           ? 'GitLab сейчас недоступен — попробуйте войти позже.'
           : (error.detail ?? error.title);
 
+  // react-query очищает error на время pending. Замораживаем последнюю ошибку, чтобы
+  // при повторном входе слот не свапался на скелетон и не дёргал высоту.
+  if (errorText) lastErrorRef.current = errorText;
+  const shownError = loginMut.isPending ? lastErrorRef.current : errorText;
+  // Скелетон — только для самого первого входа (ошибки ещё не было).
+  const showSkeleton = loginMut.isPending && !lastErrorRef.current;
+
   const logoSrc = mode === 'dark' ? '/logo-dark.svg' : '/logo-light.svg';
 
   return (
@@ -88,9 +96,15 @@ export function LoginPage() {
             </Typography.Text>
           </div>
 
-          {errorText && (
-            <Alert type="error" showIcon message={errorText} className="login-aside__error" />
-          )}
+          {/* Слот фиксированной высоты — место под ошибку зарезервировано заранее,
+              разметка не прыгает. Во время запроса — скелетон (без мигания при ретрае). */}
+          <div className="login-status" aria-live="polite">
+            {showSkeleton ? (
+              <Skeleton.Input active block className="login-status__skeleton" />
+            ) : shownError ? (
+              <Alert type="error" showIcon message={shownError} />
+            ) : null}
+          </div>
 
           <span className="login-field-label">GitLab access token</span>
           <Input.Password

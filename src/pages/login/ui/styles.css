@@ -62,8 +62,21 @@
   font-weight: 500;
 }
 
-.login-aside__error {
-  margin-bottom: 16px;
+/* Зарезервированный слот под ошибку/скелетон — высота не меняется при показе/скрытии. */
+.login-status {
+  min-height: 56px;
+  margin-bottom: 12px;
+}
+
+.login-status__skeleton {
+  width: 100% !important;
+}
+
+.login-status__skeleton .ant-skeleton-input {
+  width: 100% !important;
+  height: 40px !important;
+  min-width: 0 !important;
+  border-radius: 8px;
 }
 
 .login-hint {
