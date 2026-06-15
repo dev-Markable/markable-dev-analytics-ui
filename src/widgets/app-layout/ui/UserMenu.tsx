@@ -1,8 +1,8 @@
 import { Avatar, Dropdown, type MenuProps, Typography } from 'antd';
-import { LogOut, UserRound } from 'lucide-react';
+import { LogOut, SquareUser, UserRound } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCurrentUser, useLogout, type Role } from '@/entities/auth';
-import { ROUTES } from '@/app/router/paths';
+import { ROUTES, buildProfilePath } from '@/app/router/paths';
 
 const ROLE_LABEL: Record<Role, string> = {
   ADMIN: 'Администратор',
@@ -38,6 +38,12 @@ export function UserMenu() {
       ),
     },
     { type: 'divider' },
+    {
+      key: 'profile',
+      icon: <SquareUser size={14} />,
+      label: 'Перейти в профиль',
+      onClick: () => navigate(buildProfilePath(user.email)),
+    },
     { key: 'logout', icon: <LogOut size={14} />, label: 'Выйти', onClick: handleLogout },
   ];
 
