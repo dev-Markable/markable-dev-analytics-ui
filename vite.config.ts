@@ -19,6 +19,21 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      // OAuth2-вход (ADR-13): старт авторизации и GitLab-callback — на корне бэка,
+      // не под /api. xfwd: true — пробрасываем X-Forwarded-*, чтобы backend резолвил
+      // {baseUrl} redirect-uri в dev-origin (localhost:9000), а не в localhost:8080.
+      '/oauth2': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+        xfwd: true,
+      },
+      '/login/oauth2': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+        xfwd: true,
+      },
     },
   },
   build: {

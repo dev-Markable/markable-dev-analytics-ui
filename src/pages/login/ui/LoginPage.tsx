@@ -1,16 +1,22 @@
 import { useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { Alert, Button, Input, Skeleton, Typography } from 'antd';
+import { Alert, Button, Divider, Input, Skeleton, Typography } from 'antd';
 import {
   Activity,
   ClipboardCheck,
   GitCompare,
+  Gitlab,
   Layers,
   LayoutGrid,
   UsersRound,
   type LucideIcon,
 } from 'lucide-react';
-import { useCurrentUser, useLogin } from '@/entities/auth';
+import {
+  OAUTH_LOGIN_URL,
+  useAuthConfig,
+  useCurrentUser,
+  useLogin,
+} from '@/entities/auth';
 import { useApiError } from '@/shared/api';
 import { useDocumentTitle } from '@/shared/hooks';
 import { useThemeMode } from '@/features/theme-switch';
@@ -44,11 +50,14 @@ export function LoginPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const loginMut = useLogin();
+  const { data: authConfig } = useAuthConfig();
   const [token, setToken] = useState('');
   const lastErrorRef = useRef<string | null>(null);
   const error = useApiError(loginMut.error);
 
   const target = (location.state as LocationState | null)?.from ?? ROUTES.dashboard;
+  // Backend редиректит сюда при провале OAuth (failureUrl=/login?error=oauth).
+  const oauthFailed = new URLSearchParams(location.search).get('error') === 'oauth';
 
   // Уже вошли (или вернулись на /login по прямой ссылке) — уводим в приложение.
   if (user) {
@@ -103,6 +112,12 @@ export function LoginPage() {
               <Skeleton.Input active block className="login-status__skeleton" />
             ) : shownError ? (
               <Alert type="error" showIcon message={shownError} />
+            ) : oauthFailed ? (
+              <Alert
+                type="error"
+                showIcon
+                message="Не удалось войти через GitLab. Попробуйте снова или войдите по токену."
+              />
             ) : null}
           </div>
 
@@ -127,6 +142,22 @@ export function LoginPage() {
           >
             Войти
           </Button>
+
+          {authConfig?.oauthEnabled && (
+            <>
+              <Divider plain className="login-or">
+                или
+              </Divider>
+              <Button
+                size="large"
+                block
+                icon={<Gitlab size={18} />}
+                onClick={() => window.location.assign(OAUTH_LOGIN_URL)}
+              >
+                Войти через GitLab
+              </Button>
+            </>
+          )}
 
           <Typography.Paragraph type="secondary" className="login-hint">
             Создайте токен с правом <code>read_user</code> на{' '}

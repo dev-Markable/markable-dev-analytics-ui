@@ -79,6 +79,12 @@
   border-radius: 8px;
 }
 
+.login-or.ant-divider {
+  margin: 16px 0 12px;
+  font-size: 12px;
+  color: var(--ant-color-text-tertiary);
+}
+
 .login-hint {
   margin-top: 18px !important;
   margin-bottom: 0 !important;
