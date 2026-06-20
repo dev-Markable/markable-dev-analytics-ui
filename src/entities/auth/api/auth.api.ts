@@ -1,10 +1,5 @@
 import { ApiError, apiClient } from '@/shared/api';
-import type { CurrentUser } from '../model/types';
-
-/** Публичная конфигурация auth (показывать ли кнопку OAuth). */
-export interface AuthConfig {
-  oauthEnabled: boolean;
-}
+import type { AuthConfig, CurrentUser } from '../model/types';
 
 /**
  * Старт OAuth2-входа — backend-редирект на КОРНЕ (вне /api/v2), поэтому полный путь, а не

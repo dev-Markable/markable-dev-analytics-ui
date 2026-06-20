@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ApiError } from '@/shared/api';
-import { type AuthConfig, getAuthConfig, getCurrentUser, login, logout } from '../api/auth.api';
-import type { CurrentUser } from './types';
+import { getAuthConfig, getCurrentUser, login, logout } from '../api/auth.api';
+import type { AuthConfig, CurrentUser } from './types';
 
 /** Ключ кэша текущего пользователя — общий для гарда и топбара. */
 export const CURRENT_USER_KEY = ['auth', 'me'] as const;

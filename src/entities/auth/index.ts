@@ -1,4 +1,4 @@
-export type { CurrentUser, Role } from './model/types';
+export type { CurrentUser, Role, AuthConfig } from './model/types';
 export { isElevated } from './model/types';
 export {
   login,
@@ -6,7 +6,6 @@ export {
   logout,
   getAuthConfig,
   OAUTH_LOGIN_URL,
-  type AuthConfig,
 } from './api/auth.api';
 export {
   useCurrentUser,

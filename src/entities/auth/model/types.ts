@@ -1,18 +1,18 @@
-/**
- * Роль текущего пользователя (RBAC, ADR-13). Источник — `GET /auth/me`.
- * Определена на фронте локально: auth-эндпоинты на бэке рукописные (adapter-auth),
- * не генерируются из OAS — формализация контракта auth в OAS будет отдельно.
- */
-export type Role = 'MEMBER' | 'TEAMLEAD' | 'ADMIN';
+import type { Schemas } from '@/shared/api/schema';
 
-/** Текущий аутентифицированный пользователь (`GET /auth/me`, `POST /auth/login`). */
-export interface CurrentUser {
-  email: string;
-  role: Role;
-  name: string | null;
-  avatarUrl: string | null;
-  team: string | null;
-}
+/**
+ * Типы аутентификации — из контракта (`@devpulse-dev/api-types`, auth-api 3.3.0), а не
+ * локальные: бэк теперь реализует сгенерированный AuthApi, контракт — источник истины.
+ */
+
+/** Роль для RBAC (ADR-13). Backend: auth-api#/components/schemas/Role. */
+export type Role = Schemas['Role'];
+
+/** Текущий пользователь (`/auth/login`, `/auth/me`). Backend: AuthMeResponse. */
+export type CurrentUser = Schemas['AuthMeResponse'];
+
+/** Публичная конфигурация auth (`/auth/config`). Backend: AuthConfigResponse. */
+export type AuthConfig = Schemas['AuthConfigResponse'];
 
 /** ADMIN и TEAMLEAD — полный доступ; MEMBER — ограниченный (см. матрицу в ADR-13). */
 export function isElevated(role: Role): boolean {
