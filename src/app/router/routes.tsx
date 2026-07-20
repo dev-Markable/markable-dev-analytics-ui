@@ -2,7 +2,10 @@ import { lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { AppLayout } from '@/widgets/app-layout';
 import { DashboardPage } from '@/pages/dashboard';
+import { LoginPage } from '@/pages/login';
 import { ROUTES } from './paths';
+import { RequireAuth } from './RequireAuth';
+import { RequireElevated } from './RequireElevated';
 
 // Стартовая страница — eager (всё равно грузится сразу, без лишнего lazy-водопада).
 // Остальные — отдельными чанками по требованию. Страницы экспортируют named,
@@ -12,6 +15,12 @@ const WeeklyPage = lazy(() =>
 );
 const ActivityPage = lazy(() =>
   import('@/pages/activity').then((m) => ({ default: m.ActivityPage })),
+);
+const DefectsPage = lazy(() =>
+  import('@/pages/defects').then((m) => ({ default: m.DefectsPage })),
+);
+const MergedMrsPage = lazy(() =>
+  import('@/pages/merged-mrs').then((m) => ({ default: m.MergedMrsPage })),
 );
 const ComparePage = lazy(() =>
   import('@/pages/compare').then((m) => ({ default: m.ComparePage })),
@@ -41,14 +50,44 @@ const NotFoundPage = lazy(() =>
 export function AppRouter() {
   return (
     <Routes>
-      <Route element={<AppLayout />}>
+      <Route path={ROUTES.login} element={<LoginPage />} />
+      <Route
+        element={
+          <RequireAuth>
+            <AppLayout />
+          </RequireAuth>
+        }
+      >
         <Route path={ROUTES.dashboard} element={<DashboardPage />} />
         <Route path={ROUTES.weekly} element={<WeeklyPage />} />
         <Route path={ROUTES.activity} element={<ActivityPage />} />
-        <Route path={ROUTES.compare} element={<ComparePage />} />
+        <Route path={ROUTES.defects} element={<DefectsPage />} />
+        <Route path={ROUTES.mergedMrs} element={<MergedMrsPage />} />
+        <Route
+          path={ROUTES.compare}
+          element={
+            <RequireElevated>
+              <ComparePage />
+            </RequireElevated>
+          }
+        />
         <Route path={ROUTES.performanceReview} element={<PerformanceReviewPage />} />
-        <Route path={ROUTES.cohorts} element={<CohortsPage />} />
-        <Route path={ROUTES.teams} element={<TeamsPage />} />
+        <Route
+          path={ROUTES.cohorts}
+          element={
+            <RequireElevated>
+              <CohortsPage />
+            </RequireElevated>
+          }
+        />
+        <Route
+          path={ROUTES.teams}
+          element={
+            <RequireElevated>
+              <TeamsPage />
+            </RequireElevated>
+          }
+        />
         <Route path={ROUTES.profileMask} element={<ProfilePage />} />
         <Route path={ROUTES.collection} element={<CollectionPage />} />
         <Route path={ROUTES.settings} element={<SettingsPage />} />

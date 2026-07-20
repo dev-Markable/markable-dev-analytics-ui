@@ -3,6 +3,7 @@ import { DateRangeFilter } from '@/features/date-range-filter';
 import { TeamScopePicker } from '@/features/team-scope';
 import { ThemeSwitch } from '@/features/theme-switch';
 import { CommandTrigger } from '@/features/command-palette';
+import { UserMenu } from './UserMenu';
 
 export function Topbar() {
   return (
@@ -14,6 +15,7 @@ export function Topbar() {
       <Space size={12} align="center">
         <CommandTrigger />
         <ThemeSwitch />
+        <UserMenu />
       </Space>
     </header>
   );

@@ -7,6 +7,7 @@ import { PageHeader, PageSection, EmptyState, ErrorState, LoadingState } from '@
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useApiError } from '@/shared/api';
 import { type DateRange } from '@/shared/lib';
+import { isElevated, useCurrentUser } from '@/entities/auth';
 import { performanceReviewQuery } from '@/entities/performance-review';
 import { PerfControls, DEFAULT_PERF_PERIOD, presetRange } from '@/widgets/perf/controls';
 import { PerfSubject } from '@/widgets/perf/subject';
@@ -25,11 +26,17 @@ export function PerformanceReviewPage() {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
+  // RBAC (ADR-13): MEMBER видит только своё досье — email форсится на собственный,
+  // выбор разработчика заблокирован. ADMIN/TEAMLEAD — любой (из URL). Сервер дублирует
+  // запрет (perf-review self-check → 403).
+  const { data: me } = useCurrentUser();
+  const lockedToSelf = me ? !isElevated(me.role) : false;
+
   // Источник правды — URL: ?email&pfrom&pto&compare. Шарится и переживает
   // перезагрузку. Период намеренно в СВОИХ параметрах (`pfrom`/`pto`), а не в
   // глобальных `from`/`to`: последними владеет FilterUrlSync (топбар-фильтр),
   // и общий ключ приводил к гонке двух писателей — URL дёргался, даты прыгали.
-  const email = searchParams.get('email');
+  const email = lockedToSelf ? (me?.email ?? null) : searchParams.get('email');
   const range = useMemo<DateRange>(() => {
     const from = searchParams.get('pfrom');
     const to = searchParams.get('pto');
@@ -96,6 +103,7 @@ export function PerformanceReviewPage() {
           onEmailChange={handleEmail}
           onRangeChange={handleRange}
           onCompareChange={handleCompare}
+          emailLocked={lockedToSelf}
         />
       </PageSection>
 

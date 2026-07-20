@@ -5,3 +5,4 @@ export { type AsyncStatus, type AsyncState } from './async-state';
 export { isAbortError } from './abort';
 export { queryToAsyncState } from './query-adapter';
 export { useApiError } from './use-api-error';
+export { onUnauthorized } from './unauthorized';

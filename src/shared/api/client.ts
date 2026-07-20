@@ -2,6 +2,7 @@ import axios, { type AxiosError, type AxiosInstance } from 'axios';
 import axiosRetry, { isNetworkError } from 'axios-retry';
 import { env } from '@/shared/config';
 import { toApiError } from './problem-details';
+import { emitUnauthorized } from './unauthorized';
 
 const MAX_RETRIES = 3;
 /** Базовая задержка для экспоненциального backoff: 300 → 900 → 2100 мс. */
@@ -28,6 +29,8 @@ const createClient = (): AxiosInstance => {
   const instance = axios.create({
     baseURL: env.apiBaseUrl,
     timeout: 30_000,
+    // Шлём httpOnly-cookie сессии (ADR-13) на все запросы — auth по cookie, не по токену в JS.
+    withCredentials: true,
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json, application/problem+json',
@@ -48,7 +51,16 @@ const createClient = (): AxiosInstance => {
   // преобразованному инстансу.
   instance.interceptors.response.use(
     (response) => response,
-    (error) => Promise.reject(toApiError(error)),
+    (error: AxiosError) => {
+      // 401 на «обычном» запросе = сессия истекла → сигналим AuthProvider'у (он уведёт
+      // на /login). Сами /auth/* исключаем: их 401 — это «нет сессии»/«невалидный токен»,
+      // их обрабатывают getCurrentUser (→null) и useLogin (→ошибка формы), без редиректа.
+      const url = error.config?.url ?? '';
+      if (error.response?.status === 401 && !url.includes('/auth/')) {
+        emitUnauthorized();
+      }
+      return Promise.reject(toApiError(error));
+    },
   );
 
   return instance;

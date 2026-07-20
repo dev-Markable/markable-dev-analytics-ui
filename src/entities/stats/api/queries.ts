@@ -2,10 +2,12 @@ import { queryOptions } from '@tanstack/react-query';
 import {
   getDaily,
   getHourly,
+  getMergedMrs,
   getReviews,
   getSummary,
   getWeekly,
   type HourlyQuery,
+  type MergedMrQuery,
   type PeriodQuery,
 } from './stats.api';
 
@@ -44,4 +46,12 @@ export const reviewsQuery = (q: PeriodQuery) =>
     queryKey: ['stats', 'reviews', q] as const,
     queryFn: ({ signal }) => getReviews(q, signal),
     enabled: enabledByPeriod(q),
+  });
+
+export const mergedMrsQuery = (q: MergedMrQuery) =>
+  queryOptions({
+    queryKey: ['stats', 'merged-mrs', q] as const,
+    queryFn: ({ signal }) => getMergedMrs(q, signal),
+    // Требует и период, и конкретную команду (раздел team-scoped).
+    enabled: enabledByPeriod(q) && Boolean(q.team),
   });

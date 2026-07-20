@@ -1,0 +1,159 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--ant-color-bg-layout);
+}
+
+.login-shell {
+  display: grid;
+  grid-template-columns: minmax(360px, 420px) minmax(0, 560px);
+  gap: 20px;
+  width: 100%;
+  max-width: 1000px;
+  align-items: stretch;
+}
+
+/* ───────────────────────── форма ───────────────────────── */
+
+.login-aside {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 44px 40px;
+  border-radius: 20px;
+  background: var(--ant-color-bg-container);
+  box-shadow: var(--ant-box-shadow-tertiary);
+}
+
+.login-brand {
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+.login-brand__logo {
+  display: block;
+  height: 72px;
+  width: auto;
+  margin: 0 auto 18px;
+}
+
+.login-brand__name {
+  margin: 0 !important;
+}
+
+.login-brand__tagline {
+  font-size: 13px;
+}
+
+.login-field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ant-color-text-secondary);
+}
+
+.login-submit {
+  margin-top: 14px;
+  height: 44px;
+  font-weight: 500;
+}
+
+/* Зарезервированный слот под ошибку/скелетон — высота не меняется при показе/скрытии. */
+.login-status {
+  min-height: 56px;
+  margin-bottom: 12px;
+}
+
+.login-status__skeleton {
+  width: 100% !important;
+}
+
+.login-status__skeleton .ant-skeleton-input {
+  width: 100% !important;
+  height: 40px !important;
+  min-width: 0 !important;
+  border-radius: 8px;
+}
+
+.login-or.ant-divider {
+  margin: 16px 0 12px;
+  font-size: 12px;
+  color: var(--ant-color-text-tertiary);
+}
+
+.login-hint {
+  margin-top: 18px !important;
+  margin-bottom: 0 !important;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+/* ───────────────────────── фичер-панель ───────────────────────── */
+
+.login-hero {
+  display: flex;
+  align-items: center;
+  padding: 32px;
+  border-radius: 20px;
+  box-shadow: var(--ant-box-shadow-tertiary);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--ant-color-primary) 10%, var(--ant-color-bg-container)),
+    var(--ant-color-bg-container) 70%
+  );
+}
+
+.login-hero__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  width: 100%;
+}
+
+.login-feature {
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid var(--ant-color-border-secondary);
+  background: var(--ant-color-bg-container);
+}
+
+.login-feature__icon {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  border-radius: 11px;
+  background: var(--ant-color-primary-bg);
+  color: var(--ant-color-primary);
+}
+
+.login-feature__title {
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ant-color-text);
+}
+
+.login-feature__desc {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ant-color-text-secondary);
+}
+
+/* На узких экранах прячем фичер-панель, форма — по центру. */
+@media (max-width: 860px) {
+  .login-shell {
+    grid-template-columns: minmax(0, 420px);
+    max-width: 420px;
+  }
+
+  .login-hero {
+    display: none;
+  }
+}
