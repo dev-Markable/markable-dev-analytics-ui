@@ -1,8 +1,8 @@
 # DevPulse — фронт
 
 [![CI](https://github.com/devpulse-dev/devpulse-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/devpulse-dev/devpulse-ui/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-274_passed-2ea44f?logo=vitest&logoColor=white)](#тесты)
-[![OAS](https://img.shields.io/badge/contract-%5E2.0.0-2ea44f?logo=openapiinitiative&logoColor=white)](#api-типы-devpulse-devapi-types)
+[![Tests](https://img.shields.io/badge/tests-304_passed-2ea44f?logo=vitest&logoColor=white)](#тесты)
+[![OAS](https://img.shields.io/badge/contract-%5E3.8.0-2ea44f?logo=openapiinitiative&logoColor=white)](#api-типы-devpulse-devapi-types)
 
 [![React](https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=white)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -20,8 +20,11 @@ Review** (досье к 1:1), **управление командами и ли�
 Плюс: **командная палитра** (Cmd/Ctrl-K), лента **«Требует внимания»** (сигналы
 рисков), **распределения метрик** (медианы/перцентили), **концентрация ревью**
 (review bus factor) и **drill-down** по графикам активности.
+Плюс аналитические разделы: **дефекты по приоритету** (команда × периоды, доля AI-Agent,
+детальная таблица с участниками) и **вмерженные MR** (по авторам и репозиториям).
+Вход через **GitLab** (PAT/OAuth2) с ролевой моделью (ADMIN/TEAMLEAD/MEMBER).
 Бэк — [`DevPulse-core`](../DevPulse-core), API v2 (REST + RFC 7807 problem+json),
-контракт `@devpulse-dev/api-types ^2.0.0`.
+контракт `@devpulse-dev/api-types ^3.8.0`.
 
 > Идея новой страницы **Flow / Delivery** (поток задач: throughput, cycle-time,
 > WIP, дефекты) и требования к бэку — в [`FLOW-DELIVERY.md`](./FLOW-DELIVERY.md).
@@ -85,8 +88,9 @@ VITE_API_BASE_URL=/api/v2          # baseURL axios-клиента; в dev — о
 src/
 ├── app/        # провайдеры (QueryProvider, AntdProvider, ErrorBoundary, FilterUrlSync),
 │               #         router, глобальные стили (base, app-layout, shared)
-├── pages/      # роуты (Dashboard, Weekly, Activity, Compare, Performance Review,
-│               #         Teams, Profile, Collection, Settings, NotFound)
+├── pages/      # роуты (Dashboard, Weekly, Activity, Defects, MergedMrs, Compare,
+│               #         Performance Review, Teams, Profile, Collection, Settings,
+│               #         Login, NotFound)
 ├── widgets/    # самостоятельные UI-блоки, сгруппированные по доменам:
 │               #   activity/ (summary, heatmap, hourly, repos, contributors,
 │               #     bus-factor, reviews, distribution, review-concentration,
@@ -150,6 +154,8 @@ Widget принимает чистые данные
 | `/` Дашборд | `pages/dashboard/` | `GET /dashboard?size=500` (×2 — текущий + предыдущий период для PoP-дельт) + `GET /stats/reviews` (лента сигналов) |
 | `/weekly` Недели | `pages/weekly/` | `GET /stats/weekly` |
 | `/activity` Активность | `pages/activity/` | `GET /stats/daily` + `GET /stats/hourly` + `GET /stats/reviews` + `GET /dashboard` + `GET /users` |
+| `/defects` Дефекты | `pages/defects/` | `POST /stats/defects` (сабмит периодов), `POST /stats/defects/ai-agent` (elevated) |
+| `/merged-mrs` Вмерженные MR | `pages/merged-mrs/` | `GET /stats/merged-mrs?from&to&team` |
 | `/compare` Сравнение | `pages/compare/` | — (использует `dashboardQuery`, выбор в `?ids=`) |
 | `/performance-review` Performance Review | `pages/performance-review/` | `GET /performance/review?email&from&to&compareToPrevious` + `GET /users` |
 | `/teams` Команды | `pages/teams/` | `GET /teams`, `PUT /teams/lead`, `PUT /users/{email}/team` |
@@ -280,6 +286,33 @@ export const extractCardId = (commit) =>
 
 `widgets/activity/drilldown` — переиспользуемый Drawer + чистый `aggregateDailyDrill`. Графики не знают про Drawer: по клику собирают `DrillContent` и поднимают через `onDrill`, страница держит состояние и рендерит один Drawer. Подключены: Топ репозиториев (→ авторы репо), Календарь-heatmap (→ авторы дня), Гистограмма (→ разработчики бакета). Почасовой heatmap drill-down не имеет — бэк отдаёт агрегат `(weekday, hour)` без авторов.
 
+### Дефекты по приоритету (`/defects`)
+
+Team-scoped раздел: глобальный фильтр команды + редактор 1..10 периодов («Добавить период»),
+сабмит → `POST /stats/defects` (мутация, а не query — периоды задаёт пользователь). Бэк тянет
+дефекты live из Kaiten (минуты), поэтому у запроса **длинный таймаут** (6 мин), а результат
+держим в локальном `result`-стейте. Показываем: агрегатную таблицу периоды×приоритеты, пирог
+**доли AI-Agent**, детальную таблицу дефектов (участники-аватарки, ссылка на Kaiten, флаг
+AI-Agent с фильтром, дата; фильтр по участникам; экспорт CSV).
+
+**Простановка AI-Agent** (только ADMIN/TEAMLEAD): построчно / по выбранным (чекбоксы) / все без
+флага → `POST /stats/defects/ai-agent`. Обновление **оптимистичное** — чистая `applyAiAgentLocally`
+(`pages/defects/lib`) ставит `aiAgent=true` и поднимает `aiAgentCount` у нужных периодов, без
+дорогого перезапроса Kaiten. Для больших пачек — модалка прогресса (`BulkMarkProgress`,
+оценка по времени ~4 карточки/сек, т.к. бэк пишет синхронно).
+
+### Вмерженные MR (`/merged-mrs`)
+
+Team-scoped: глобальный date-range + команда → `GET /stats/merged-mrs`. Метрика «всего» + две
+таблицы (по авторам с аватарками, по репозиториям). Считаются только MR в dev-ветки (бэк-конфиг).
+
+### Аутентификация и роли
+
+Вход — страница `/login` (GitLab PAT или кнопка OAuth2). Текущий пользователь — `entities/auth`
+(`useCurrentUser`, `isElevated(role)`). `RequireAuth` гейтит всё приложение, `RequireElevated` —
+разделы для ADMIN/TEAMLEAD (Сравнение, Когорты, Команды). Mark-контролы AI-Agent и подобные
+действия скрыты для MEMBER на клиенте и дублируются 403 на бэке.
+
 ---
 
 ## Скрипты
@@ -305,7 +338,7 @@ Vitest умеет per-file environment: `*.test.tsx` → `jsdom`, `*.test.ts` �
 
 Фабрики тестовых данных — `src/shared/test/factories.ts` (`makeAuthor`, `makeCommit`, `makeCard`, `makeDaily`, `makeWeek`, `makeActivity`). `renderWithProviders` (`src/shared/test/render.tsx`) — обёртка для UI-тестов: `QueryClientProvider` + `MemoryRouter` + `AntApp` + `ConfigProvider`, с `setupQueryCache?(qc)` для предзаполнения кэша вместо запросов.
 
-**Сейчас 274 теста в 45 файлах** (`npm test`).
+**Сейчас 304 теста в 53 файлах** (`npm test`).
 
 Ключевые модули с покрытием:
 
@@ -330,9 +363,12 @@ Vitest умеет per-file environment: `*.test.tsx` → `jsdom`, `*.test.ts` �
 | `widgets/perf/controls/config/periods` | `presetRange` / `detectPeriodKey` |
 | `widgets/profile/tasks-timeline/lib/group-commits` | матчинг коммит↔карточка, orphan-группа |
 | `app/providers/FilterUrlSync` | URL ↔ store sync, ALL_TEAMS не пишется, фикс persisted-scope |
+| `pages/defects/lib/apply-ai-agent` | оптимистичный апдейт: `inPeriod`, bump `aiAgentCount`, идемпотентность |
+| `pages/defects/ui/DefectsDetailTable` | mark-контролы (RBAC-гейт), `onMark`, фильтр по участнику (antd) |
+| `pages/defects/ui/BulkMarkProgress` | модалка прогресса: кол-во + оценка времени |
 | `shared/ui/{EmptyState,ErrorBoundary}` | smoke + reset через `resetKey` |
 | `features/team-scope/ui/TeamScopePicker` | дефолт, выбор, fallback на пропавшую команду |
-| `pages/*` (5 страниц) | page-level smoke с предзаполненным cache: рендерится без exceptions |
+| `pages/*` (Dashboard, Cohorts, Perf, Defects submit-flow, MergedMrs…) | page-level smoke с предзаполненным cache |
 | `shared/lib/{number,date,export,string}` | форматтеры, ranges, csv, truncate |
 
 > **tsconfig:** `tsconfig.app.json` исключает тесты (в прод-build не идут),
@@ -346,7 +382,11 @@ Vitest умеет per-file environment: `*.test.tsx` → `jsdom`, `*.test.ts` �
 Типы запросов/ответов **не генерируются у нас** — фронт ставит готовый npm-пакет
 [`@devpulse-dev/api-types`](https://github.com/devpulse-dev/devpulse-oas/pkgs/npm/api-types) из GitHub Packages. Внутри — bundled `.d.ts` на весь `/api/v2` (единый `components` / `paths` / `operations`), собранный из OpenAPI-контрактов в `devpulse-oas`. Single source of truth — бэк implement'ит те же спеки, фронт импортит те же типы. Версия пакета в lockstep с Maven-контрактами.
 
-**Текущая версия:** `^2.0.0` — `NotableResults` (firefighting + deliveredFeatures) вместо плоского `highlights[]`. Также подтянуты `CycleTimeBreakdown` (defects/development) из 1.9.0, `KaitenInsights` (defects/development/cycleTime/balance) из 1.8.0, `team`/`isLead` во всех developer-эндпоинтах из 1.7.0.
+**Текущая версия:** `^3.8.0`. Ключевое с 2.0.0: дефекты по приоритету (`DefectsByPeriodRequest/Response`,
+`DefectItem`/`DefectMember`, `PriorityCounts`), простановка AI-Agent (`MarkDefectsAiAgentRequest/Response`),
+вмерженные MR (`MergedMrStats`, `MergedMrByAuthor`/`MergedMrByRepo`), аутентификация (`Role`, `AuthMeResponse`,
+`AuthConfigResponse`). Ранее: `NotableResults` (2.0.0), `CycleTimeBreakdown` (1.9.0), `KaitenInsights` (1.8.0),
+`team`/`isLead` во всех developer-эндпоинтах (1.7.0).
 
 > ⚠️ Локальные имена `AuthorSummary`/`AuthorActivity` НЕ совпадают с одноимёнными схемами OAS — см. шапку `src/entities/user/model/types.ts`.
 
@@ -426,7 +466,7 @@ Concurrency-группа отменяет старый прогон при пу�
 
 **Продуктовый план — закрыто:**
 - **Клиентские (14):** PoP-дельты, экспорт CSV/PNG, URL-фильтры, спарклайны, сравнение, аномалии, bus factor, lazy chunks, кэш навигаций, **командная палитра (Cmd/Ctrl-K)**, **лента сигналов «Требует внимания»**, **распределения метрик**, **концентрация ревью (review bus factor)**, **drill-down по графикам**.
-- **Бэк-зависимые:** B1 Hourly heatmap, B2 ревью-метрики, **Performance Review** (досье + Kaiten-insights + notable), **команды/лиды first-class**, team/isLead во всех developer-эндпоинтах.
+- **Бэк-зависимые:** B1 Hourly heatmap, B2 ревью-метрики, **Performance Review** (досье + Kaiten-insights + notable), **команды/лиды first-class**, team/isLead во всех developer-эндпоинтах, **аутентификация GitLab + RBAC**, **дефекты по приоритету × периоды** (+ простановка AI-Agent), **вмерженные MR по команде** (авторы/репозитории).
 
 **Осталось — фичи, требующие бэка:**
 - **A** Страница **Flow / Delivery** (throughput, cycle-time, WIP, aging, дефекты) — спека и контракт в [`FLOW-DELIVERY.md`](./FLOW-DELIVERY.md)

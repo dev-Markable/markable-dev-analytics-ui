@@ -3,6 +3,8 @@ export const ROUTES = {
   dashboard: '/',
   weekly: '/weekly',
   activity: '/activity',
+  defects: '/defects',
+  mergedMrs: '/merged-mrs',
   compare: '/compare',
   performanceReview: '/performance-review',
   cohorts: '/cohorts',

@@ -30,3 +30,26 @@ export type HourlyCell = Schemas['HourlyCell'];
  */
 export type ReviewStats = Schemas['ReviewStats'];
 export type ReviewAuthor = Schemas['ReviewAuthor'];
+
+/**
+ * Дефекты команды по приоритету за периоды (POST /stats/defects).
+ * Дефекты уникальны (дедуп по id карточки на бэке).
+ * Backend: stats-api.yaml#/components/schemas/DefectsByPeriodRequest|Response
+ */
+export type DefectsByPeriodRequest = Schemas['DefectsByPeriodRequest'];
+export type DefectsByPeriodResponse = Schemas['DefectsByPeriodResponse'];
+export type PeriodRange = Schemas['PeriodRange'];
+export type PeriodDefects = Schemas['PeriodDefects'];
+export type PriorityCounts = Schemas['PriorityCounts'];
+export type DefectItem = Schemas['DefectItem'];
+export type DefectMember = Schemas['DefectMember'];
+export type MarkDefectsAiAgentRequest = Schemas['MarkDefectsAiAgentRequest'];
+export type MarkDefectsAiAgentResponse = Schemas['MarkDefectsAiAgentResponse'];
+
+/**
+ * Статистика вмерженных MR по команде (GET /stats/merged-mrs): всего + по авторам.
+ * Backend: stats-api.yaml#/components/schemas/MergedMrStats|MergedMrByAuthor
+ */
+export type MergedMrStats = Schemas['MergedMrStats'];
+export type MergedMrByAuthor = Schemas['MergedMrByAuthor'];
+export type MergedMrByRepo = Schemas['MergedMrByRepo'];

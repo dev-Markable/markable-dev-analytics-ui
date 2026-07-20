@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { Activity, BarChart3, CalendarDays, ClipboardCheck, GitCompare, LayoutGrid, Layers, RefreshCcw, Settings, UsersRound } from 'lucide-react';
+import { Activity, BarChart3, Bug, CalendarDays, ClipboardCheck, GitCompare, GitMerge, LayoutGrid, Layers, RefreshCcw, Settings, UsersRound } from 'lucide-react';
 import { ROUTES } from '@/app/router/paths';
 
 export interface NavItem {
@@ -38,6 +38,20 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: 'Активность',
     icon: Activity,
     path: ROUTES.activity,
+    group: 'primary',
+  },
+  {
+    key: 'defects',
+    label: 'Дефекты',
+    icon: Bug,
+    path: ROUTES.defects,
+    group: 'primary',
+  },
+  {
+    key: 'merged-mrs',
+    label: 'Вмерженные MR',
+    icon: GitMerge,
+    path: ROUTES.mergedMrs,
     group: 'primary',
   },
   {
