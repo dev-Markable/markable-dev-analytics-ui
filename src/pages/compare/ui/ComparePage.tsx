@@ -1,17 +1,18 @@
-import { useCallback, useMemo } from 'react';
-import { Col, Row } from 'antd';
-import { useQuery } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo } from 'react';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
-import { PageHeader, PageSection, EmptyState, ErrorState, LoadingState } from '@/shared/ui';
+import { PageHeader, PageSection, SectionTitle, EmptyState, ErrorState, LoadingState } from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
+import { ALL_TEAMS, useTeamScope, useTeamScopeFilter } from '@/features/team-scope';
 import { dashboardQuery } from '@/entities/dashboard';
+import { profileQuery } from '@/entities/user';
 import { useApiError } from '@/shared/api';
-import type { AuthorActivity } from '@/entities/user';
+import type { AuthorActivity, UserProfile } from '@/entities/user';
 import { formatRange } from '@/shared/lib';
 import { CompareSelector } from '@/widgets/compare/selector';
-import { CompareRadar } from '@/widgets/compare/radar';
-import { CompareTable } from '@/widgets/compare/table';
+import { CompareMatrix } from '@/widgets/compare/matrix';
+import { CompareTasks, buildTaskColumns } from '@/widgets/compare/tasks';
 
 const MAX_AUTHORS = 3;
 const PARAM = 'ids';
@@ -20,6 +21,7 @@ export function ComparePage() {
   useDocumentTitle('Сравнение');
 
   const range = useDateRange();
+  const scope = useTeamScope();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const dashboardQ = useQuery(dashboardQuery({ from: range.from, to: range.to }));
@@ -27,6 +29,10 @@ export function ComparePage() {
   useApiErrorNotification(error, 'Не удалось загрузить данные для сравнения');
 
   const allItems = useMemo(() => dashboardQ.data?.items ?? [], [dashboardQ.data]);
+
+  // Выбор ограничен текущей командой из топбара. Раньше страница брала сырой
+  // список дашборда и фильтр команды на неё не действовал вовсе.
+  const options = useTeamScopeFilter(allItems, (a) => a.team);
 
   // Выбранные email — из URL (?ids=a@x5.ru,b@x5.ru). Источник правды для шаринга.
   const selected = useMemo(() => {
@@ -45,16 +51,46 @@ export function ComparePage() {
     [searchParams, setSearchParams],
   );
 
-  // Авторы для сравнения — пересечение выбранных email и загруженных items.
-  // Порядок — как в selected (стабильность цветов серий).
+  // Смена команды выкидывает из сравнения тех, кто в неё не входит: иначе в чипах
+  // остались бы люди, которых уже нет в списке выбора, — фильтр выглядел бы
+  // сломанным ровно так же, как раньше. Ждём загрузки, чтобы не стереть выбор из
+  // ссылки, пока список авторов ещё пуст.
+  useEffect(() => {
+    if (scope === ALL_TEAMS || allItems.length === 0 || selected.length === 0) return;
+    const allowed = new Set(options.map((a) => a.email));
+    const kept = selected.filter((email) => allowed.has(email));
+    if (kept.length !== selected.length) setSelected(kept);
+  }, [scope, options, allItems, selected, setSelected]);
+
+  // Авторы для сравнения — пересечение выбранных email и доступных в скопе.
+  // Порядок — как в selected (стабильность колонок).
   const authors = useMemo<AuthorActivity[]>(() => {
-    const byEmail = new Map(allItems.map((a) => [a.email, a]));
+    const byEmail = new Map(options.map((a) => [a.email, a]));
     return selected
       .map((email) => byEmail.get(email))
       .filter((a): a is AuthorActivity => a != null);
-  }, [selected, allItems]);
+  }, [selected, options]);
 
-  const subtitle = `Side-by-side по периоду · ${formatRange(range.from, range.to)}`;
+  // Профили нужны только ради задач — их нет в агрегате дашборда. Запрос на автора,
+  // ключ тот же, что у страницы профиля: переход туда попадёт в кэш.
+  const profileQs = useQueries({
+    queries: authors.map((a) => profileQuery(a.email, { from: range.from, to: range.to })),
+  });
+
+  const taskColumns = useMemo(() => {
+    const profiles = profileQs
+      .map((q) => q.data)
+      .filter((p): p is UserProfile => p != null);
+    // Пока загрузились не все, колонки не строим — иначе они появлялись бы по одной
+    // и сравнение прыгало бы.
+    return profiles.length === authors.length ? buildTaskColumns(profiles) : [];
+  }, [profileQs, authors.length]);
+
+  const tasksLoading = profileQs.some((q) => q.isPending);
+
+  const subtitle = `Side-by-side по периоду · ${formatRange(range.from, range.to)}${
+    scope === ALL_TEAMS ? '' : ` · команда «${scope}»`
+  }`;
 
   const isInitialLoading = dashboardQ.isPending && allItems.length === 0;
   const isError = dashboardQ.isError && allItems.length === 0;
@@ -65,7 +101,7 @@ export function ComparePage() {
 
       <PageSection>
         <CompareSelector
-          options={allItems}
+          options={options}
           selected={selected}
           onChange={setSelected}
           max={MAX_AUTHORS}
@@ -78,21 +114,26 @@ export function ComparePage() {
       {!isInitialLoading && !isError && authors.length < 2 && (
         <EmptyState
           title="Выберите минимум двоих"
-          description="Сравнение доступно для 2–3 разработчиков. Выберите их в поле выше."
+          description={
+            options.length < 2
+              ? 'В выбранной команде меньше двух разработчиков с активностью за период.'
+              : 'Сравнение доступно для 2–3 разработчиков. Выберите их в поле выше.'
+          }
         />
       )}
 
       {authors.length >= 2 && (
-        <PageSection>
-          <Row gutter={[16, 16]}>
-            <Col xs={24} xl={12}>
-              <CompareRadar authors={authors} />
-            </Col>
-            <Col xs={24} xl={12}>
-              <CompareTable authors={authors} range={range} />
-            </Col>
-          </Row>
-        </PageSection>
+        <>
+          <PageSection>
+            <SectionTitle hint="объём, качество и активность за период">Метрики</SectionTitle>
+            <CompareMatrix authors={authors} />
+          </PageSection>
+
+          <PageSection>
+            <SectionTitle hint="карточки Kaiten, по которым шли коммиты">Задачи</SectionTitle>
+            <CompareTasks columns={taskColumns} loading={tasksLoading} range={range} />
+          </PageSection>
+        </>
       )}
     </>
   );
