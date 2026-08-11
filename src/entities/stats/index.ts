@@ -17,6 +17,10 @@ export type {
   MergedMrStats,
   MergedMrByAuthor,
   MergedMrByRepo,
+  Timesheet,
+  TimesheetDay,
+  TimesheetEntry,
+  TimesheetMergeRequest,
 } from './model/types';
 export {
   getSummary,
@@ -27,9 +31,11 @@ export {
   getTeamDefects,
   getMergedMrs,
   markDefectsAiAgent,
+  getTimesheet,
   type PeriodQuery,
   type HourlyQuery,
   type MergedMrQuery,
+  type TimesheetQuery,
 } from './api/stats.api';
 export {
   summaryQuery,
@@ -38,6 +44,7 @@ export {
   hourlyQuery,
   reviewsQuery,
   mergedMrsQuery,
+  timesheetQuery,
 } from './api/queries';
 export { weekEnd, weekShortLabel, weekFullLabel } from './lib/week-label';
 export { applyTeamFilterToWeekly } from './lib/apply-team-filter';

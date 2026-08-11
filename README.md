@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/devpulse-dev/devpulse-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/devpulse-dev/devpulse-ui/actions/workflows/ci.yml)
 [![Tests](https://img.shields.io/badge/tests-304_passed-2ea44f?logo=vitest&logoColor=white)](#тесты)
-[![OAS](https://img.shields.io/badge/contract-%5E3.8.0-2ea44f?logo=openapiinitiative&logoColor=white)](#api-типы-devpulse-devapi-types)
+[![OAS](https://img.shields.io/badge/contract-%5E3.11.0-2ea44f?logo=openapiinitiative&logoColor=white)](#api-типы-devpulse-devapi-types)
 
 [![React](https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=white)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -21,10 +21,11 @@ Review** (досье к 1:1), **управление командами и ли�
 рисков), **распределения метрик** (медианы/перцентили), **концентрация ревью**
 (review bus factor) и **drill-down** по графикам активности.
 Плюс аналитические разделы: **дефекты по приоритету** (команда × периоды, доля AI-Agent,
-детальная таблица с участниками) и **вмерженные MR** (по авторам и репозиториям).
+детальная таблица с участниками), **вмерженные MR** (по авторам и репозиториям) и **таймшит**
+(трудозатраты по дням из Kaiten).
 Вход через **GitLab** (PAT/OAuth2) с ролевой моделью (ADMIN/TEAMLEAD/MEMBER).
 Бэк — [`DevPulse-core`](../DevPulse-core), API v2 (REST + RFC 7807 problem+json),
-контракт `@devpulse-dev/api-types ^3.8.0`.
+контракт `@devpulse-dev/api-types ^3.11.0`.
 
 > Идея новой страницы **Flow / Delivery** (поток задач: throughput, cycle-time,
 > WIP, дефекты) и требования к бэку — в [`FLOW-DELIVERY.md`](./FLOW-DELIVERY.md).
@@ -88,7 +89,7 @@ VITE_API_BASE_URL=/api/v2          # baseURL axios-клиента; в dev — о
 src/
 ├── app/        # провайдеры (QueryProvider, AntdProvider, ErrorBoundary, FilterUrlSync),
 │               #         router, глобальные стили (base, app-layout, shared)
-├── pages/      # роуты (Dashboard, Weekly, Activity, Defects, MergedMrs, Compare,
+├── pages/      # роуты (Dashboard, Weekly, Activity, Defects, MergedMrs, Timesheet, Compare,
 │               #         Performance Review, Teams, Profile, Collection, Settings,
 │               #         Login, NotFound)
 ├── widgets/    # самостоятельные UI-блоки, сгруппированные по доменам:
@@ -156,6 +157,7 @@ Widget принимает чистые данные
 | `/activity` Активность | `pages/activity/` | `GET /stats/daily` + `GET /stats/hourly` + `GET /stats/reviews` + `GET /dashboard` + `GET /users` |
 | `/defects` Дефекты | `pages/defects/` | `POST /stats/defects` (сабмит периодов), `POST /stats/defects/ai-agent` (elevated) |
 | `/merged-mrs` Вмерженные MR | `pages/merged-mrs/` | `GET /stats/merged-mrs?from&to&team` |
+| `/timesheet` Таймшит | `pages/timesheet/` | `GET /stats/timesheet?from&to&email` + `GET /users` (пикер) |
 | `/compare` Сравнение | `pages/compare/` | — (использует `dashboardQuery`, выбор в `?ids=`) |
 | `/performance-review` Performance Review | `pages/performance-review/` | `GET /performance/review?email&from&to&compareToPrevious` + `GET /users` |
 | `/teams` Команды | `pages/teams/` | `GET /teams`, `PUT /teams/lead`, `PUT /users/{email}/team` |
@@ -306,6 +308,15 @@ AI-Agent с фильтром, дата; фильтр по участникам; 
 Team-scoped: глобальный date-range + команда → `GET /stats/merged-mrs`. Метрика «всего» + две
 таблицы (по авторам с аватарками, по репозиториям). Считаются только MR в dev-ветки (бэк-конфиг).
 
+### Таймшит (`/timesheet`)
+
+Замена ручной таблицы трудозатрат: глобальный date-range + пикер разработчика (email в URL,
+список фильтруется глобальным скопом команды). Данные — `GET /stats/timesheet`, живут в Kaiten
+`time-logs`. Контракт отдаёт **минуты**, часы считает `pages/timesheet/lib/hours.ts`
+(`toHours`/`formatHours`, среднее — по дням со списаниями, не по календарным). Метрики
+(всего/дней/среднее) + таблица по дням с баром и подсветкой выходных + экспорт CSV.
+MEMBER видит только свой таймшит (бэк дублирует 403).
+
 ### Аутентификация и роли
 
 Вход — страница `/login` (GitLab PAT или кнопка OAuth2). Текущий пользователь — `entities/auth`
@@ -382,7 +393,7 @@ Vitest умеет per-file environment: `*.test.tsx` → `jsdom`, `*.test.ts` �
 Типы запросов/ответов **не генерируются у нас** — фронт ставит готовый npm-пакет
 [`@devpulse-dev/api-types`](https://github.com/devpulse-dev/devpulse-oas/pkgs/npm/api-types) из GitHub Packages. Внутри — bundled `.d.ts` на весь `/api/v2` (единый `components` / `paths` / `operations`), собранный из OpenAPI-контрактов в `devpulse-oas`. Single source of truth — бэк implement'ит те же спеки, фронт импортит те же типы. Версия пакета в lockstep с Maven-контрактами.
 
-**Текущая версия:** `^3.8.0`. Ключевое с 2.0.0: дефекты по приоритету (`DefectsByPeriodRequest/Response`,
+**Текущая версия:** `^3.11.0`. Ключевое с 2.0.0: дефекты по приоритету (`DefectsByPeriodRequest/Response`,
 `DefectItem`/`DefectMember`, `PriorityCounts`), простановка AI-Agent (`MarkDefectsAiAgentRequest/Response`),
 вмерженные MR (`MergedMrStats`, `MergedMrByAuthor`/`MergedMrByRepo`), аутентификация (`Role`, `AuthMeResponse`,
 `AuthConfigResponse`). Ранее: `NotableResults` (2.0.0), `CycleTimeBreakdown` (1.9.0), `KaitenInsights` (1.8.0),

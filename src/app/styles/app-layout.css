@@ -48,9 +48,11 @@
 }
 
 .app-topbar {
-  display: flex;
+  display: grid;
+  /* Боковые зоны равной ширины → центральная (поиск) всегда по центру страницы. */
+  grid-template-columns: 1fr minmax(0, 520px) 1fr;
   align-items: center;
-  justify-content: space-between;
+  gap: 16px;
   height: var(--topbar-height);
   padding: 0 var(--page-padding);
   /* Полупрозрачный фон + blur — контент из-под топбара мутится при скролле. */
@@ -60,6 +62,30 @@
   position: sticky;
   top: 0;
   z-index: 10;
+}
+
+.app-topbar__side {
+  min-width: 0;
+}
+
+.app-topbar__side--end {
+  justify-self: end;
+}
+
+.app-topbar__center {
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 900px) {
+  .app-topbar {
+    grid-template-columns: 1fr auto;
+  }
+  /* На узких экранах поиск уезжает вправо к иконкам — центр отдаём фильтрам. */
+  .app-topbar__center {
+    display: none;
+  }
 }
 
 .user-menu {

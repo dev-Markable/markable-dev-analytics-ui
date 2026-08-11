@@ -5,6 +5,7 @@ export const ROUTES = {
   activity: '/activity',
   defects: '/defects',
   mergedMrs: '/merged-mrs',
+  timesheet: '/timesheet',
   compare: '/compare',
   performanceReview: '/performance-review',
   cohorts: '/cohorts',

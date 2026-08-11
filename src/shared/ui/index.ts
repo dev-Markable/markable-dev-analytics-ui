@@ -7,6 +7,7 @@ export { DeltaBadge } from './DeltaBadge';
 export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';
 export { LoadingState } from './LoadingState';
+export { AppSplash } from './AppSplash';
 export { RetryButton } from './RetryButton';
 export { SkeletonTable } from './SkeletonTable';
 export { DataTable, type DataTableProps } from './DataTable';

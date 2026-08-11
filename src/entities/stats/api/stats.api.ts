@@ -7,6 +7,7 @@ import type {
   MarkDefectsAiAgentResponse,
   MergedMrStats,
   PeriodSummary,
+  Timesheet,
   ReviewStats,
   WeeklyStat,
 } from '../model/types';
@@ -102,5 +103,15 @@ export async function markDefectsAiAgent(cardIds: number[]): Promise<MarkDefects
     { cardIds },
     { timeout: MARK_AI_TIMEOUT_MS },
   );
+  return data;
+}
+
+/** Таймшит: период + разработчик. Данные live из Kaiten time-logs. */
+export interface TimesheetQuery extends PeriodQuery {
+  email: string;
+}
+
+export async function getTimesheet(query: TimesheetQuery, signal?: AbortSignal): Promise<Timesheet> {
+  const { data } = await apiClient.get<Timesheet>('/stats/timesheet', { params: query, signal });
   return data;
 }

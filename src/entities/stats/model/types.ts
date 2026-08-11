@@ -53,3 +53,13 @@ export type MarkDefectsAiAgentResponse = Schemas['MarkDefectsAiAgentResponse'];
 export type MergedMrStats = Schemas['MergedMrStats'];
 export type MergedMrByAuthor = Schemas['MergedMrByAuthor'];
 export type MergedMrByRepo = Schemas['MergedMrByRepo'];
+
+/**
+ * Таймшит разработчика: трудозатраты по дням (GET /stats/timesheet).
+ * Время в МИНУТАХ (как в Kaiten time_spent) — форматируем в часы на клиенте.
+ * Backend: stats-api.yaml#/components/schemas/Timesheet|TimesheetDay
+ */
+export type Timesheet = Schemas['Timesheet'];
+export type TimesheetDay = Schemas['TimesheetDay'];
+export type TimesheetEntry = Schemas['TimesheetEntry'];
+export type TimesheetMergeRequest = Schemas['TimesheetMergeRequest'];
