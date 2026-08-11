@@ -4,6 +4,7 @@ export type {
   PeriodSummary,
   HourlyStats,
   HourlyCell,
+  HourlyCellAuthor,
   ReviewStats,
   ReviewAuthor,
   DefectsByPeriodRequest,

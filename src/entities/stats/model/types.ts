@@ -23,6 +23,7 @@ export type PeriodSummary = Schemas['PeriodSummary'];
  */
 export type HourlyStats = Schemas['HourlyStats'];
 export type HourlyCell = Schemas['HourlyCell'];
+export type HourlyCellAuthor = Schemas['HourlyCellAuthor'];
 
 /**
  * Ревью-метрики (B2). Собираются из GitLab MR (approvals + notes).

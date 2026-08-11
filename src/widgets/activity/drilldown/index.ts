@@ -1,5 +1,6 @@
 import './styles.css';
 
-export { DrillDownDrawer } from './ui/DrillDownDrawer';
+export { DrillDownModal } from './ui/DrillDownModal';
 export { aggregateDailyDrill } from './lib/aggregate-daily';
-export type { DrillContent, DrillRow, DrillEnrichment } from './model/types';
+export { buildHourlyDrill } from './lib/hourly-drill';
+export type { DrillContent, DrillRow, DrillHighlight, DrillEnrichment } from './model/types';

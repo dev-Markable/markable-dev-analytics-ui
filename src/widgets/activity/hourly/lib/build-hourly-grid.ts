@@ -1,10 +1,12 @@
-import type { HourlyStats } from '@/entities/stats';
+import type { HourlyCellAuthor, HourlyStats } from '@/entities/stats';
 
 export interface HourlyGridCell {
   weekday: number; // 0=Пн … 6=Вс
   hour: number; // 0..23
   commits: number;
   addedLines: number;
+  /** Кто коммитил в этот час. Пусто на ответах бэка старше контракта 3.12.0. */
+  authors: readonly HourlyCellAuthor[];
 }
 
 export interface HourlyGrid {
@@ -31,6 +33,7 @@ export function buildHourlyGrid(data: HourlyStats | null): HourlyGrid {
       hour,
       commits: 0,
       addedLines: 0,
+      authors: [] as readonly HourlyCellAuthor[],
     })),
   );
 
@@ -45,6 +48,7 @@ export function buildHourlyGrid(data: HourlyStats | null): HourlyGrid {
     if (!target) continue;
     target.commits = cell.commits;
     target.addedLines = cell.addedLines ?? 0;
+    target.authors = cell.authors ?? [];
     totalCommits += cell.commits;
     if (cell.commits > maxCommits) {
       maxCommits = cell.commits;

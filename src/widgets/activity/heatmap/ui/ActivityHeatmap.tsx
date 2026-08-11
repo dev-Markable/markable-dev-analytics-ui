@@ -10,7 +10,8 @@ import {
   type DrillEnrichment,
 } from '@/widgets/activity/drilldown';
 import { CELL_GAP, CELL_SIZE, CELL_STEP, COLOR_SCALE } from '../config/colors';
-import { buildHeatmapGrid } from '../lib/build-grid';
+import { buildDayStrip, buildHeatmapGrid, DAY_STRIP_MAX_DAYS } from '../lib/build-grid';
+import { DayStrip } from './DayStrip';
 import { HeatmapCell } from './HeatmapCell';
 
 interface ActivityHeatmapProps {
@@ -24,6 +25,11 @@ const WEEKDAY_LABELS: readonly string[] = ['Пн', 'Ср', 'Пт'];
 
 export function ActivityHeatmap({ daily, range, enrichment, onDrill }: ActivityHeatmapProps) {
   const grid = useMemo(() => buildHeatmapGrid(daily, range), [daily, range]);
+
+  // Короткий период рисуем лентой дней: сетка недель на неделе схлопывается
+  // в одну колонку и занимает полкарточки ничем.
+  const strip = useMemo(() => buildDayStrip(daily, range), [daily, range]);
+  const asStrip = strip.length > 0 && strip.length <= DAY_STRIP_MAX_DAYS;
 
   const hasData = grid.maxCommits > 0;
 
@@ -51,7 +57,9 @@ export function ActivityHeatmap({ daily, range, enrichment, onDrill }: ActivityH
           </Typography.Title>
         </div>
         <Typography.Text type="secondary" className="leaderboard-card__description">
-          Каждая ячейка — день. Цвет — число коммитов. Клик — авторы дня.
+          {asStrip
+            ? 'День периода. Цвет — число коммитов. Клик — авторы дня.'
+            : 'Каждая ячейка — день. Колонка — неделя. Клик — авторы дня.'}
         </Typography.Text>
       </header>
 
@@ -63,6 +71,9 @@ export function ActivityHeatmap({ daily, range, enrichment, onDrill }: ActivityH
           />
         ) : (
           <div className="heatmap-wrap">
+            {asStrip ? (
+              <DayStrip days={strip} maxCommits={grid.maxCommits} onSelect={handleDayClick} />
+            ) : (
             <div className="heatmap-scroll">
               <div
                 className="heatmap-months"
@@ -111,6 +122,7 @@ export function ActivityHeatmap({ daily, range, enrichment, onDrill }: ActivityH
                 </div>
               </div>
             </div>
+            )}
 
             <footer className="heatmap-legend">
               <span className="heatmap-legend__caption">Меньше</span>

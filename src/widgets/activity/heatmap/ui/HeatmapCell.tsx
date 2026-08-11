@@ -1,50 +1,13 @@
 import { memo } from 'react';
 import { Tooltip } from 'antd';
-import { dayjs } from '@/shared/lib';
-import { formatNumber } from '@/shared/lib';
 import { CELL_SIZE, COLOR_SCALE, OUT_OF_RANGE_COLOR, colorIndex } from '../config/colors';
+import { CellTooltip } from './CellTooltip';
 import type { HeatmapDay } from '../lib/build-grid';
 
 interface HeatmapCellProps {
   day: HeatmapDay;
   maxCommits: number;
   onSelect?: (date: string) => void;
-}
-
-function CellTooltip({ day }: { day: HeatmapDay }) {
-  const dateLabel = dayjs(day.date).format('dddd, D MMMM YYYY');
-  if (day.commits === 0) {
-    return (
-      <div className="heatmap-tooltip">
-        <div className="heatmap-tooltip__title">{dateLabel}</div>
-        <div className="heatmap-tooltip__sub">Нет коммитов</div>
-      </div>
-    );
-  }
-  return (
-    <div className="heatmap-tooltip">
-      <div className="heatmap-tooltip__title">{dateLabel}</div>
-      <div className="heatmap-tooltip__row">
-        <span>Коммитов</span>
-        <span>
-          {formatNumber(day.commits)}
-          {day.mergeCommits > 0 && ` (+${day.mergeCommits} merge)`}
-        </span>
-      </div>
-      <div className="heatmap-tooltip__row">
-        <span>Авторов / репо</span>
-        <span>
-          {day.authors} · {day.repos}
-        </span>
-      </div>
-      <div className="heatmap-tooltip__row">
-        <span>Строк</span>
-        <span>
-          +{formatNumber(day.addedLines)} / −{formatNumber(day.deletedLines)}
-        </span>
-      </div>
-    </div>
-  );
 }
 
 export const HeatmapCell = memo(function HeatmapCell({

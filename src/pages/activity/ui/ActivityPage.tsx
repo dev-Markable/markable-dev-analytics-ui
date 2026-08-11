@@ -18,7 +18,7 @@ import { BusFactorCard } from '@/widgets/activity/bus-factor';
 import { ReviewsCard } from '@/widgets/activity/reviews';
 import { ReviewConcentrationCard } from '@/widgets/activity/review-concentration';
 import { DistributionCard } from '@/widgets/activity/distribution';
-import { DrillDownDrawer, type DrillContent, type DrillEnrichment } from '@/widgets/activity/drilldown';
+import { DrillDownModal, type DrillContent, type DrillEnrichment } from '@/widgets/activity/drilldown';
 
 export function ActivityPage() {
   useDocumentTitle('Активность');
@@ -122,7 +122,7 @@ export function ActivityPage() {
       <PageHeader title="Активность" subtitle={subtitle} />
 
       <PageSection>
-        <ActivitySummary daily={daily} daysInRange={daysInRange} />
+        <ActivitySummary daily={daily} range={range} />
       </PageSection>
 
       {/* Страница из восьми равнозначных секций читалась как поток карточек без
@@ -142,34 +142,23 @@ export function ActivityPage() {
             <HourlyHeatmap
               state={queryToAsyncState(hourlyQ)}
               title={`Активность по часам${teamEnabled ? ` · ${scope}` : ' · все команды'}`}
+              onDrill={setDrill}
+              enrichment={enrichmentByEmail}
             />
           </Col>
         </Row>
       </PageSection>
 
+      {/* Пары в рядах подобраны по смыслу и заодно по высоте: два коротких списка
+          по репозиториям стояли раньше рядом с высокими графиками и вытягивались
+          под них, оставляя внутри карточки по ~250px пустоты. */}
       <PageSection>
-        <SectionTitle hint="распределение объёма по репозиториям и людям">
+        <SectionTitle hint="объём по репозиториям и риск потери знаний">
           Над чем работаем
         </SectionTitle>
         <Row gutter={[16, 16]} align="stretch">
           <Col xs={24} xl={12}>
             <ReposList daily={daily} enrichment={enrichmentByEmail} onDrill={setDrill} />
-          </Col>
-          <Col xs={24} xl={12}>
-            <DistributionCard
-              state={queryToAsyncState(dashboardQ)}
-              onDrill={setDrill}
-              onRetry={retry}
-            />
-          </Col>
-        </Row>
-      </PageSection>
-
-      <PageSection>
-        <SectionTitle hint="кто ревьюит и насколько это концентрировано">Ревью</SectionTitle>
-        <Row gutter={[16, 16]} align="stretch">
-          <Col xs={24} xl={12}>
-            <ReviewConcentrationCard state={queryToAsyncState(reviewsQ)} onRetry={retry} />
           </Col>
           <Col xs={24} xl={12}>
             <BusFactorCard daily={daily} />
@@ -178,10 +167,29 @@ export function ActivityPage() {
       </PageSection>
 
       <PageSection>
+        <SectionTitle hint="насколько равномерно распределены активность и ревью">
+          Концентрация
+        </SectionTitle>
+        <Row gutter={[16, 16]} align="stretch">
+          <Col xs={24} xl={12}>
+            <DistributionCard
+              state={queryToAsyncState(dashboardQ)}
+              onDrill={setDrill}
+              onRetry={retry}
+            />
+          </Col>
+          <Col xs={24} xl={12}>
+            <ReviewConcentrationCard state={queryToAsyncState(reviewsQ)} onRetry={retry} />
+          </Col>
+        </Row>
+      </PageSection>
+
+      <PageSection>
+        <SectionTitle hint="кто сколько ревьюит">Ревью</SectionTitle>
         <ReviewsCard state={queryToAsyncState(reviewsQ)} range={range} onRetry={retry} />
       </PageSection>
 
-      <DrillDownDrawer content={drill} range={range} onClose={() => setDrill(null)} />
+      <DrillDownModal content={drill} range={range} onClose={() => setDrill(null)} />
     </>
   );
 }

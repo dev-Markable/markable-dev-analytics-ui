@@ -407,6 +407,27 @@
   border-bottom: none;
 }
 
+/* Сортированная колонка: AntD по умолчанию заливает её серым на всю высоту
+   таблицы — в тёмной теме это читается как блок, съехавший поверх строк.
+   Оставляем едва заметный тинт, а сигнал переносим на заголовок и стрелку. */
+.ant-table-wrapper .ant-table-tbody > tr > td.ant-table-column-sort {
+  background: transparent;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr:hover > td.ant-table-column-sort {
+  background: color-mix(in srgb, var(--ant-color-primary) 4%, transparent);
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th.ant-table-column-sort {
+  background: transparent;
+  color: var(--ant-color-text);
+}
+
+.ant-table-wrapper .ant-table-column-sorter-up.active,
+.ant-table-wrapper .ant-table-column-sorter-down.active {
+  color: var(--ant-color-primary);
+}
+
 /* Кнопки: плотнее по вертикали, мягче переход */
 .ant-btn {
   font-weight: 500;
