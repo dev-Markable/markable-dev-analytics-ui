@@ -3,7 +3,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  padding-block: 8px 24px;
+  padding-block: 10px 26px;
 }
 
 .page-header__main {
@@ -14,11 +14,12 @@
 
 .page-header__title.ant-typography {
   margin: 0;
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-size: 26px;
+  font-weight: 660;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
 }
 
 .page-header__subtitle {
-  font-size: 14px;
+  font-size: 13.5px;
 }

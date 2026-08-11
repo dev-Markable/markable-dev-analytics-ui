@@ -1,21 +1,14 @@
 import { useMemo } from 'react';
-import { Button, Layout, Tooltip, Typography } from 'antd';
+import { Button, Layout, Tooltip } from 'antd';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useSidebarStore } from '@/features/sidebar';
 import { isElevated, useCurrentUser } from '@/entities/auth';
-import { PRIMARY_NAV, SECONDARY_NAV, type NavItem as NavItemType } from '../config/nav-items';
+import { PRIMARY_NAV, type NavItem as NavItemType } from '../config/nav-items';
 import { Brand } from './Brand';
 import { NavItem } from './NavItem';
+import { UserMenu } from './UserMenu';
 
 const { Sider } = Layout;
-
-const sectionLabelStyle: React.CSSProperties = {
-  fontSize: 11,
-  textTransform: 'uppercase',
-  letterSpacing: '0.06em',
-  padding: '12px 12px 4px',
-  fontWeight: 600,
-};
 
 export function Sidebar() {
   const collapsed = useSidebarStore((s) => s.collapsed);
@@ -42,38 +35,19 @@ export function Sidebar() {
     >
       <Brand collapsed={collapsed} />
 
-      <nav
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          padding: collapsed ? '8px 8px' : '8px 12px',
-          gap: 2,
-          flex: 1,
-        }}
-      >
-        {!collapsed && (
-          <Typography.Text type="secondary" style={sectionLabelStyle}>
-            Аналитика
-          </Typography.Text>
-        )}
+      {/* Заголовка группы нет: раздел в сайдбаре один (служебное — в меню профиля),
+          и подпись «Аналитика» только добавляла шум над очевидным списком. */}
+      <nav className={`app-sider__nav${collapsed ? ' app-sider__nav--collapsed' : ''}`}>
         {visible(PRIMARY_NAV).map((item) => (
           <NavItem key={item.key} item={item} collapsed={collapsed} />
         ))}
-
-        {!collapsed ? (
-          <Typography.Text
-            type="secondary"
-            style={{ ...sectionLabelStyle, padding: '16px 12px 4px' }}
-          >
-            Управление
-          </Typography.Text>
-        ) : (
-          <div className="app-sider__nav-divider" />
-        )}
-        {visible(SECONDARY_NAV).map((item) => (
-          <NavItem key={item.key} item={item} collapsed={collapsed} />
-        ))}
       </nav>
+
+      {/* Профиль внизу сайдбара: в топбаре он оставался единственным элементом
+          справа и выглядел потерянным. */}
+      <div className="app-sider__user">
+        <UserMenu collapsed={collapsed} />
+      </div>
 
       <div
         className="app-sider__collapse-bar"

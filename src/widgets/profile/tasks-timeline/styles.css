@@ -226,7 +226,9 @@
 }
 
 .task-commits__row:hover {
-  background: var(--ant-color-bg-layout);
+  /* Единый язык подсветки строк: мягкий цветной тинт, не серая плита. */
+  background: color-mix(in srgb, var(--ant-color-primary) 7%, transparent);
+  border-radius: 10px;
 }
 
 .task-commits__date.ant-typography {

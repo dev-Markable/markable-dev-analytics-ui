@@ -1,23 +1,9 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Table } from 'antd';
-import { Users } from 'lucide-react';
-import { userDisplayName, type AuthorActivity } from '@/entities/user';
-import { downloadCsv, type CsvColumn, type DateRange } from '@/shared/lib';
-import { AsyncContent, EmptyState, ExportButton, SectionCard, SkeletonTable } from '@/shared/ui';
+import type { AuthorActivity } from '@/entities/user';
+import type { DateRange } from '@/shared/lib';
+import { AsyncContent, EmptyState, SkeletonTable } from '@/shared/ui';
 import { buildAuthorsColumns } from '../config/columns';
-
-const csvColumns: CsvColumn<AuthorActivity>[] = [
-  { header: 'Автор', value: (a) => userDisplayName({ name: a.displayName ?? null, username: null, email: a.email }) },
-  { header: 'Email', value: (a) => a.email },
-  { header: 'Категория', value: (a) => a.activity?.category ?? '' },
-  { header: 'Score', value: (a) => a.activity?.score ?? '' },
-  { header: 'Коммиты', value: (a) => a.commits },
-  { header: 'Не-мердж', value: (a) => a.nonMergeCommits },
-  { header: 'Merge', value: (a) => a.mergeCommits },
-  { header: 'Добавлено', value: (a) => a.addedLines },
-  { header: 'Удалено', value: (a) => a.deletedLines },
-  { header: 'Тесты', value: (a) => a.testAddedLines },
-];
 
 interface AuthorsTableProps {
   items: readonly AuthorActivity[];
@@ -44,26 +30,8 @@ export function AuthorsTable({
 
   const totalElements = items.length;
 
-  const handleExportCsv = useCallback(() => {
-    downloadCsv(`devpulse-авторы_${range.from}_${range.to}.csv`, items, csvColumns);
-  }, [items, range.from, range.to]);
-
   return (
-    <SectionCard
-      title="Все авторы"
-      icon={<Users size={16} />}
-      description={
-        totalElements > 0
-          ? `Полный список с пагинацией · ${totalElements} ${teamFilterEnabled ? 'команды' : 'авторов'}`
-          : 'Полный список с пагинацией'
-      }
-      actions={
-        totalElements > 0 ? (
-          <ExportButton size="small" onExportCsv={handleExportCsv} />
-        ) : undefined
-      }
-      bodyClassName="authors-table"
-    >
+    <div className="authors-table">
       <AsyncContent
         status={loading ? 'loading' : 'success'}
         isEmpty={totalElements === 0}
@@ -98,6 +66,6 @@ export function AuthorsTable({
           }}
         />
       </AsyncContent>
-    </SectionCard>
+    </div>
   );
 }

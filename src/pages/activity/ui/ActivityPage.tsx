@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Col, Row } from 'antd';
 import { useQuery } from '@tanstack/react-query';
-import { PageHeader, PageSection, ErrorState, LoadingState } from '@/shared/ui';
+import { PageHeader, PageSection, SectionTitle, ErrorState, LoadingState } from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useDateRange } from '@/features/date-range-filter';
 import { dailyQuery, hourlyQuery, reviewsQuery } from '@/entities/stats';
@@ -13,14 +13,12 @@ import { formatRange, rangeDays } from '@/shared/lib';
 import { ActivitySummary } from '@/widgets/activity/summary';
 import { ActivityHeatmap } from '@/widgets/activity/heatmap';
 import { HourlyHeatmap } from '@/widgets/activity/hourly';
-import { ReposChart } from '@/widgets/activity/repos';
-import { ContributorsList } from '@/widgets/activity/contributors';
+import { ReposList } from '@/widgets/activity/repos';
 import { BusFactorCard } from '@/widgets/activity/bus-factor';
 import { ReviewsCard } from '@/widgets/activity/reviews';
 import { ReviewConcentrationCard } from '@/widgets/activity/review-concentration';
 import { DistributionCard } from '@/widgets/activity/distribution';
-import { DrillDownDrawer, type DrillContent } from '@/widgets/activity/drilldown';
-import type { AuthorEnrichment } from '@/widgets/activity/contributors/lib/aggregate-contributors';
+import { DrillDownDrawer, type DrillContent, type DrillEnrichment } from '@/widgets/activity/drilldown';
 
 export function ActivityPage() {
   useDocumentTitle('Активность');
@@ -58,8 +56,8 @@ export function ActivityPage() {
 
   const rawDaily = useMemo(() => dailyQ.data ?? [], [dailyQ.data]);
 
-  const enrichmentByEmail = useMemo<ReadonlyMap<string, AuthorEnrichment>>(() => {
-    const map = new Map<string, AuthorEnrichment>();
+  const enrichmentByEmail = useMemo<ReadonlyMap<string, DrillEnrichment>>(() => {
+    const map = new Map<string, DrillEnrichment>();
     if (usersQ.data) {
       for (const u of usersQ.data) {
         map.set(u.email.toLowerCase(), {
@@ -127,11 +125,10 @@ export function ActivityPage() {
         <ActivitySummary daily={daily} daysInRange={daysInRange} />
       </PageSection>
 
+      {/* Страница из восьми равнозначных секций читалась как поток карточек без
+          структуры — группируем по смыслу: когда работаем → над чем → как ревьюим. */}
       <PageSection>
-        <DistributionCard state={queryToAsyncState(dashboardQ)} onDrill={setDrill} onRetry={retry} />
-      </PageSection>
-
-      <PageSection>
+        <SectionTitle hint="ритм команды по дням и часам">Когда работаем</SectionTitle>
         <Row gutter={[16, 16]} align="stretch">
           <Col xs={24} xl={12}>
             <ActivityHeatmap
@@ -151,22 +148,33 @@ export function ActivityPage() {
       </PageSection>
 
       <PageSection>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} xl={9}>
-            <ReposChart daily={daily} enrichment={enrichmentByEmail} onDrill={setDrill} />
+        <SectionTitle hint="распределение объёма по репозиториям и людям">
+          Над чем работаем
+        </SectionTitle>
+        <Row gutter={[16, 16]} align="stretch">
+          <Col xs={24} xl={12}>
+            <ReposList daily={daily} enrichment={enrichmentByEmail} onDrill={setDrill} />
           </Col>
-          <Col xs={24} xl={15}>
-            <ContributorsList daily={daily} range={range} enrichmentByEmail={enrichmentByEmail} />
+          <Col xs={24} xl={12}>
+            <DistributionCard
+              state={queryToAsyncState(dashboardQ)}
+              onDrill={setDrill}
+              onRetry={retry}
+            />
           </Col>
         </Row>
       </PageSection>
 
       <PageSection>
-        <BusFactorCard daily={daily} />
-      </PageSection>
-
-      <PageSection>
-        <ReviewConcentrationCard state={queryToAsyncState(reviewsQ)} onRetry={retry} />
+        <SectionTitle hint="кто ревьюит и насколько это концентрировано">Ревью</SectionTitle>
+        <Row gutter={[16, 16]} align="stretch">
+          <Col xs={24} xl={12}>
+            <ReviewConcentrationCard state={queryToAsyncState(reviewsQ)} onRetry={retry} />
+          </Col>
+          <Col xs={24} xl={12}>
+            <BusFactorCard daily={daily} />
+          </Col>
+        </Row>
       </PageSection>
 
       <PageSection>

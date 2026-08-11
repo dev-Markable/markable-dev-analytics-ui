@@ -11,6 +11,7 @@ import {
 import type { Commit } from '@/entities/commit';
 import { formatNumber } from '@/shared/lib';
 import { groupByHour } from '../lib/aggregate';
+import { ChartTooltip } from '@/shared/ui';
 
 interface ActivityByHourChartProps {
   commits: readonly Commit[];
@@ -33,20 +34,14 @@ interface CustomTooltipProps {
   label?: string;
 }
 
-function ChartTooltip({ active, payload, label }: CustomTooltipProps) {
+function HourTooltip({ active, payload, label }: CustomTooltipProps) {
   if (!active || !payload?.length) return null;
   const commits = payload[0]?.value as number | undefined;
   return (
-    <div className="weekly-tooltip">
-      <div className="weekly-tooltip__title">{label}</div>
-      <ul className="weekly-tooltip__list">
-        <li className="weekly-tooltip__row">
-          <span className="weekly-tooltip__swatch" style={{ background: COLORS.bar }} />
-          <span className="weekly-tooltip__label">Коммитов</span>
-          <span className="weekly-tooltip__value">{formatNumber(commits)}</span>
-        </li>
-      </ul>
-    </div>
+    <ChartTooltip
+      title={label}
+      rows={[{ label: 'Коммитов', swatch: COLORS.bar, value: formatNumber(commits) }]}
+    />
   );
 }
 
@@ -73,7 +68,7 @@ export function ActivityByHourChart({ commits }: ActivityByHourChartProps) {
           width={32}
           allowDecimals={false}
         />
-        <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgba(91, 108, 255, 0.06)' }} />
+        <Tooltip content={<HourTooltip />} cursor={{ fill: 'rgba(91, 108, 255, 0.06)' }} />
         <Bar dataKey="commits" fill={COLORS.bar} radius={[4, 4, 0, 0]} maxBarSize={24} />
       </BarChart>
     </ResponsiveContainer>

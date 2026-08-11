@@ -10,6 +10,7 @@ import {
 } from 'recharts';
 import { formatNumber } from '@/shared/lib';
 import type { DistributionStats, HistogramBin } from '../lib/distribution';
+import { ChartTooltip } from '@/shared/ui';
 
 interface HistogramChartProps {
   bins: readonly HistogramBin[];
@@ -30,7 +31,7 @@ const COLORS = {
 interface TooltipEntry {
   payload?: HistogramBin;
 }
-function ChartTooltip({
+function BinTooltip({
   active,
   payload,
   format,
@@ -42,18 +43,10 @@ function ChartTooltip({
   const b = payload?.[0]?.payload;
   if (!active || !b) return null;
   return (
-    <div className="weekly-tooltip">
-      <div className="weekly-tooltip__title">
-        {format(b.x0)} – {format(b.x1)}
-      </div>
-      <ul className="weekly-tooltip__list">
-        <li className="weekly-tooltip__row">
-          <span className="weekly-tooltip__swatch" style={{ background: COLORS.bar }} />
-          <span className="weekly-tooltip__label">Разработчиков</span>
-          <span className="weekly-tooltip__value">{formatNumber(b.count)}</span>
-        </li>
-      </ul>
-    </div>
+    <ChartTooltip
+      title={`${format(b.x0)} – ${format(b.x1)}`}
+      rows={[{ label: 'Разработчиков', swatch: COLORS.bar, value: formatNumber(b.count) }]}
+    />
   );
 }
 
@@ -92,7 +85,7 @@ export function HistogramChart({ bins, stats, format, onBinClick }: HistogramCha
           width={32}
         />
         <Tooltip
-          content={<ChartTooltip format={format} />}
+          content={<BinTooltip format={format} />}
           cursor={{ fill: 'rgba(91, 108, 255, 0.06)' }}
         />
 

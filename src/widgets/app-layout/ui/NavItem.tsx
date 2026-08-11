@@ -7,49 +7,36 @@ interface NavItemProps {
   collapsed?: boolean;
 }
 
-const baseStyle: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 10,
-  padding: '8px 12px',
-  borderRadius: 8,
-  color: 'var(--ant-color-text-secondary)',
-  fontSize: 14,
-  fontWeight: 500,
-  textDecoration: 'none',
-  transition: 'background 120ms ease, color 120ms ease',
-};
-
-const collapsedStyle: React.CSSProperties = {
-  ...baseStyle,
-  justifyContent: 'center',
-  gap: 0,
-};
-
-const activeStyle: React.CSSProperties = {
-  background: 'var(--ant-color-bg-layout)',
-  color: 'var(--ant-color-text)',
-};
-
+/**
+ * Пункт навигации сайдбара.
+ *
+ * Стили — классами, а не inline: раньше состояния задавались объектами стилей, из-за
+ * чего у пунктов не было ховера вообще (в inline-стилях `:hover` невыразим), а активный
+ * пункт заливался серым «слэбом» цвета фона страницы.
+ */
 export function NavItem({ item, collapsed = false }: NavItemProps) {
   const Icon = item.icon;
   const location = useLocation();
 
-  const isMatch =
-    item.matchPaths?.some((p) => location.pathname.startsWith(p)) ?? false;
+  const isMatch = item.matchPaths?.some((p) => location.pathname.startsWith(p)) ?? false;
 
   const link = (
     <NavLink
       to={item.path}
       end={item.path === '/'}
       aria-label={collapsed ? item.label : undefined}
-      style={({ isActive }) => ({
-        ...(collapsed ? collapsedStyle : baseStyle),
-        ...(isActive || isMatch ? activeStyle : null),
-      })}
+      className={({ isActive }) =>
+        [
+          'app-nav-link',
+          collapsed ? 'app-nav-link--collapsed' : '',
+          isActive || isMatch ? 'app-nav-link--active' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')
+      }
     >
-      <Icon size={16} strokeWidth={2} />
-      {!collapsed && <span>{item.label}</span>}
+      <Icon size={16} strokeWidth={2} className="app-nav-link__icon" />
+      {!collapsed && <span className="app-nav-link__label">{item.label}</span>}
     </NavLink>
   );
 

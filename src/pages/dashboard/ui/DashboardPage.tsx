@@ -1,8 +1,12 @@
 import { useMemo } from 'react';
-import { Col, Row } from 'antd';
+import { Collapse } from 'antd';
 import { useQuery } from '@tanstack/react-query';
-import { TrendingDown, TrendingUp } from 'lucide-react';
-import { PageHeader, PageSection } from '@/shared/ui';
+import { Users } from 'lucide-react';
+import { ExportButton, PageHeader, PageSection } from '@/shared/ui';
+import { PulseCard } from '@/widgets/dashboard/pulse';
+import { MyWeekCard } from '@/widgets/dashboard/my-week';
+import { OverviewCard } from '@/widgets/dashboard/overview';
+import { SectionLinks } from '@/widgets/dashboard/sections';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useApiError } from '@/shared/api';
 import { useDateRange } from '@/features/date-range-filter';
@@ -14,13 +18,11 @@ import {
   dashboardPrevQuery,
 } from '@/entities/dashboard';
 import type { AuthorActivity } from '@/entities/user';
-import { reviewsQuery, type ReviewAuthor } from '@/entities/stats';
-import { formatRange } from '@/shared/lib';
+import { dailyQuery, reviewsQuery, type ReviewAuthor } from '@/entities/stats';
+import { formatRange, pctChange } from '@/shared/lib';
 import { DASHBOARD_PAGE_SIZE } from '@/shared/config';
-import { SummaryGrid } from '@/widgets/dashboard/summary';
-import { LeaderboardCard } from '@/widgets/dashboard/leaderboard';
-import { AuthorsTable } from '@/widgets/dashboard/authors-table';
-import { SignalsInbox } from '@/widgets/dashboard/signals';
+import { RankingBoard } from '@/widgets/dashboard/leaderboard';
+import { AuthorsTable, useAuthorsCsvExport } from '@/widgets/dashboard/authors-table';
 
 export function DashboardPage() {
   useDocumentTitle('Дашборд');
@@ -33,6 +35,10 @@ export function DashboardPage() {
   const prevQ = useQuery(dashboardPrevQuery({ from: range.from, to: range.to }));
   // Ревью — только для ленты «Требует внимания» (MR без ревью, концентрация).
   const reviewsQ = useQuery(reviewsQuery({ from: range.from, to: range.to }));
+  // Пульс — дневной ряд. Команду фильтрует БД: у daily нет enrichment, клиентом не отфильтровать.
+  const dailyQ = useQuery(
+    dailyQuery({ from: range.from, to: range.to, team: teamEnabled ? scope : undefined }),
+  );
 
   const error = useApiError(dashboardQ.error);
   useApiErrorNotification(error, 'Не удалось загрузить дашборд');
@@ -54,6 +60,14 @@ export function DashboardPage() {
   const prevTotals = useMemo(
     () => (prevQ.data ? aggregateAuthors(prevItems) : null),
     [prevQ.data, prevItems],
+  );
+
+  // Дельта коммитов к предыдущему периоду — крупная метрика пульса.
+  const exportAuthorsCsv = useAuthorsCsvExport(filteredItems, range);
+
+  const commitsDeltaPct = useMemo(
+    () => (prevTotals ? pctChange(totals.totalCommits, prevTotals.totalCommits) : null),
+    [totals.totalCommits, prevTotals],
   );
 
   /**
@@ -101,66 +115,95 @@ export function DashboardPage() {
       <PageHeader title="Дашборд" subtitle={subtitle} />
 
       <PageSection>
-        <SummaryGrid totals={totals} prevTotals={prevTotals} loading={isLoadingInitial} />
+        <PulseCard
+          daily={dailyQ.data ?? []}
+          totalCommits={totals.totalCommits}
+          deltaPct={commitsDeltaPct}
+          loading={isLoadingInitial || (dailyQ.isPending && !dailyQ.data)}
+        />
       </PageSection>
 
+      {/* Персональный срез — сразу под пульсом: «что у команды» → «что у меня». */}
       <PageSection>
-        <SignalsInbox
-          current={filteredItems}
+        <MyWeekCard items={filteredItems} reviews={reviewAuthors} range={range} />
+      </PageSection>
+
+      {/* Сводка периода + риски одним блоком: цифры без дублей с пульсом,
+          лента рисков — компактной колонкой справа. */}
+      <PageSection>
+        <OverviewCard
+          totals={totals}
+          prevTotals={prevTotals}
+          items={filteredItems}
           previous={prevItems}
+          daily={dailyQ.data ?? []}
           reviews={reviewAuthors}
           range={range}
           loading={isLoadingInitial}
         />
       </PageSection>
 
+      {/* Единый рейтинг: лидеры и отстающие одним списком — раньше это были две
+          карточки в ряд, и «Аутсайдеры» почти всегда пустовали. */}
       <PageSection>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} xl={12}>
-            <LeaderboardCard
-              title="Топ активных"
-              description="Категория Активен или Топ, по убыванию score"
-              icon={<TrendingUp size={16} />}
-              items={topItems}
-              status={status}
-              error={error}
-              onRetry={() => void dashboardQ.refetch()}
-              variant="top"
-              range={range}
-              emptyDescription={
-                teamEnabled
-                  ? `В команде «${scope}» нет активности в этом периоде.`
-                  : 'За выбранный период активность не зафиксирована.'
-              }
-            />
-          </Col>
-          <Col xs={24} xl={12}>
-            <LeaderboardCard
-              title="Аутсайдеры"
-              description="Категория Неактивен или Ниже среднего"
-              icon={<TrendingDown size={16} />}
-              items={outsiderItems}
-              status={status}
-              error={error}
-              onRetry={() => void dashboardQ.refetch()}
-              variant="outsider"
-              range={range}
-              emptyDescription={
-                teamEnabled
-                  ? `Все в команде «${scope}» — Активен или Топ.`
-                  : 'Все авторы — Активен или Топ. Никто не попал в Неактивен/Ниже среднего.'
-              }
-            />
-          </Col>
-        </Row>
+        <RankingBoard
+          top={topItems}
+          outsiders={outsiderItems}
+          status={status}
+          error={error}
+          onRetry={() => void dashboardQ.refetch()}
+          range={range}
+          teamFilterEnabled={teamEnabled}
+          daily={dailyQ.data ?? []}
+          emptyDescription={
+            teamEnabled
+              ? `В команде «${scope}» нет активности в этом периоде.`
+              : 'За выбранный период активность не зафиксирована.'
+          }
+        />
       </PageSection>
 
+      {/* Входы в аналитические разделы — внизу, как «куда пойти дальше». */}
       <PageSection>
-        <AuthorsTable
-          items={filteredItems}
-          range={range}
-          loading={isLoading}
-          teamFilterEnabled={teamEnabled}
+        <SectionLinks range={range} team={teamEnabled ? scope : null} />
+      </PageSection>
+
+      {/* Полный список дублирует лидерборд выше, поэтому по умолчанию свёрнут:
+          лидерборд отвечает на «кто выделяется», таблица — на «покажи всех». */}
+      <PageSection>
+        <Collapse
+          ghost
+          className="dashboard-authors-collapse"
+          items={[
+            {
+              key: 'authors',
+              label: (
+                <span className="dashboard-authors-collapse__label">
+                  <Users size={15} />
+                  Все разработчики
+                  <span className="dashboard-authors-collapse__count">{filteredItems.length}</span>
+                </span>
+              ),
+              // Клик по кнопке не должен сворачивать блок — гасим всплытие.
+              extra: filteredItems.length > 0 && (
+                <span
+                  onClick={(e) => e.stopPropagation()}
+                  role="presentation"
+                  className="dashboard-authors-collapse__extra"
+                >
+                  <ExportButton size="small" onExportCsv={exportAuthorsCsv} />
+                </span>
+              ),
+              children: (
+                <AuthorsTable
+                  items={filteredItems}
+                  range={range}
+                  loading={isLoading}
+                  teamFilterEnabled={teamEnabled}
+                />
+              ),
+            },
+          ]}
         />
       </PageSection>
     </>

@@ -33,6 +33,7 @@ export {
   markDefectsAiAgent,
   getTimesheet,
   type PeriodQuery,
+  type DailyQuery,
   type HourlyQuery,
   type MergedMrQuery,
   type TimesheetQuery,

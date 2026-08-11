@@ -13,7 +13,7 @@
   flex-shrink: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  border-right: 1px solid var(--ant-color-border-secondary);
+  border-right: 1px solid var(--ant-color-split);
   display: flex;
   flex-direction: column;
 }
@@ -34,17 +34,12 @@
 .app-sider__collapse-bar {
   display: flex;
   align-items: center;
-  padding: 12px 12px;
-  border-top: 1px solid var(--ant-color-split);
-  margin-top: auto;
+  padding: 8px 12px;
 }
 
+/* Скроллбар сайдбара — по общим правилам (см. глобальный слой ниже), но уже. */
 .app-sider.ant-layout-sider::-webkit-scrollbar {
-  width: 6px;
-}
-.app-sider.ant-layout-sider::-webkit-scrollbar-thumb {
-  background: var(--ant-color-border);
-  border-radius: 3px;
+  width: 8px;
 }
 
 .app-topbar {
@@ -88,30 +83,74 @@
   }
 }
 
+/* ───── Профиль в сайдбаре ───── */
+
+.app-sider__user {
+  padding: 8px 12px;
+  border-top: 1px solid var(--ant-color-split);
+  margin-top: auto;
+}
+
 .user-menu {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  max-width: 200px;
-  padding: 4px 8px 4px 4px;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
   border: none;
-  border-radius: 999px;
+  border-radius: 12px;
   background: transparent;
   color: var(--ant-color-text);
   cursor: pointer;
-  transition: background 120ms ease;
+  text-align: left;
+  transition: background-color 150ms ease;
 }
 
 .user-menu:hover {
-  background: var(--ant-color-fill-tertiary);
+  background: var(--ant-color-fill-quaternary);
+}
+
+.user-menu--collapsed {
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.user-menu__ident {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .user-menu__name {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 580;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.user-menu__role {
+  font-size: 11.5px;
+  color: var(--ant-color-text-tertiary);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Двойной шеврон — привычный маркер «здесь меню» (Linear, Vercel, Slack). */
+.user-menu__chevron {
+  color: var(--ant-color-text-quaternary);
+  flex: none;
+  transition: color 150ms ease;
+}
+
+.user-menu:hover .user-menu__chevron {
+  color: var(--ant-color-text-secondary);
 }
 
 .app-content {
@@ -122,20 +161,21 @@
 }
 
 .app-sidebar-brand {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 10px;
-  padding: 16px 16px 12px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  /* Совпадает по горизонтали с пунктами навигации (12px паддинг nav + 12px пункта). */
+  padding: 18px 22px 16px;
+  font-weight: 640;
+  letter-spacing: -0.02em;
   color: var(--ant-color-text);
   font-size: 15px;
   text-decoration: none;
-  transition: opacity 120ms ease;
+  transition: opacity 150ms ease;
 }
 
 .app-sidebar-brand:hover {
-  opacity: 0.85;
+  opacity: 0.75;
 }
 
 .app-sidebar-brand__logo {
@@ -153,21 +193,78 @@
   color: var(--ant-color-text);
 }
 
-.app-nav-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  font-size: 14px;
-  font-weight: 500;
+/* ───── Навигация сайдбара ───── */
+
+.app-sider__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  flex: 1;
 }
 
-.app-nav-item__icon {
-  display: inline-flex;
+.app-sider__nav--collapsed {
+  padding-inline: 8px;
+}
+
+
+.app-nav-link {
+  display: flex;
   align-items: center;
+  gap: 11px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  color: var(--ant-color-text-secondary);
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  text-decoration: none;
+  position: relative;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.app-nav-link--collapsed {
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  gap: 0;
+  padding: 9px 0;
+}
+
+.app-nav-link:hover {
+  background: var(--ant-color-fill-quaternary);
+  color: var(--ant-color-text);
+}
+
+/* Активный пункт — фирменный тинт вместо серой плиты цвета фона страницы. */
+.app-nav-link--active {
+  background: color-mix(in srgb, var(--ant-color-primary) 10%, transparent);
+  color: var(--ant-color-primary);
+  font-weight: 560;
+}
+
+.app-nav-link--active:hover {
+  background: color-mix(in srgb, var(--ant-color-primary) 14%, transparent);
+  color: var(--ant-color-primary);
+}
+
+/* Иконка приглушена, пока пункт не активен: вес держит выбранный раздел. */
+.app-nav-link__icon {
+  color: var(--ant-color-text-quaternary);
+  flex: none;
+  transition: color 150ms ease;
+}
+
+.app-nav-link:hover .app-nav-link__icon {
+  color: var(--ant-color-text-secondary);
+}
+
+.app-nav-link--active .app-nav-link__icon {
+  color: inherit;
+}
+
+.app-nav-link__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ──────────────────────────────────────────────────────────── */
@@ -258,3 +355,98 @@
   color: var(--ant-color-primary);
 }
 
+
+/* ═════════ Премиальная полировка (глобальный слой) ═════════ */
+
+/* Теги: были плотные «кричащие» плашки — делаем тише и легче.
+   Цветные (color=...) не трогаем, у них своя семантика. */
+.ant-tag {
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.7;
+  padding-inline: 8px;
+  border-color: transparent;
+}
+
+/* Подсветка строки — скруглённая «пилюля», а не полоса во всю ширину.
+   Радиус вешаем на крайние ячейки: фон в antd рисует каждая td отдельно. */
+.ant-table-wrapper .ant-table-tbody > tr > td {
+  transition: background-color 0.15s ease;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr:hover > td:first-child,
+.ant-table-wrapper .ant-table-tbody > tr.ant-table-row-selected > td:first-child {
+  border-start-start-radius: 12px;
+  border-end-start-radius: 12px;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr:hover > td:last-child,
+.ant-table-wrapper .ant-table-tbody > tr.ant-table-row-selected > td:last-child {
+  border-start-end-radius: 12px;
+  border-end-end-radius: 12px;
+}
+
+/* Разделитель под наведённой строкой гасим — иначе линия режет скруглённый фон. */
+.ant-table-wrapper .ant-table-tbody > tr:hover > td {
+  border-bottom-color: transparent;
+}
+
+/* Таблицы: строка-разделитель тоньше, шапка «дышит» */
+.ant-table-wrapper .ant-table-thead > tr > th {
+  padding-block: 10px;
+  border-bottom: 1px solid var(--ant-color-split);
+}
+
+.ant-table-wrapper .ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--ant-color-split);
+}
+
+/* Последняя строка без разделителя — таблица не «обрывается» линией */
+.ant-table-wrapper .ant-table-tbody > tr:last-child > td {
+  border-bottom: none;
+}
+
+/* Кнопки: плотнее по вертикали, мягче переход */
+.ant-btn {
+  font-weight: 500;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+/* Единый фокус-ринг вместо разнобоя дефолтных outline */
+:where(button, a, [role='button'], .ant-select-selector, .ant-input):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--ant-color-primary) 55%, transparent);
+  outline-offset: 2px;
+}
+
+/* Скроллбары: тонкие, проявляются на ховере — как в нативных macOS-приложениях */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ant-color-fill-secondary) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--ant-color-fill-secondary);
+  border-radius: 999px;
+  /* Прозрачная рамка «сужает» ползунок, оставляя удобную зону захвата. */
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--ant-color-fill);
+}
+
+/* Пустые/ошибочные состояния — больше воздуха */
+.state-block {
+  padding-block: 40px;
+}

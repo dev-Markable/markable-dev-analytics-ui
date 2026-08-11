@@ -7,6 +7,7 @@ import {
   getSummary,
   getTimesheet,
   getWeekly,
+  type DailyQuery,
   type HourlyQuery,
   type MergedMrQuery,
   type PeriodQuery,
@@ -29,7 +30,7 @@ export const weeklyQuery = (q: PeriodQuery) =>
     enabled: enabledByPeriod(q),
   });
 
-export const dailyQuery = (q: PeriodQuery) =>
+export const dailyQuery = (q: DailyQuery) =>
   queryOptions({
     queryKey: ['stats', 'daily', q] as const,
     queryFn: ({ signal }) => getDaily(q, signal),

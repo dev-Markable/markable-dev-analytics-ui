@@ -1,2 +1,4 @@
 import './styles.css';
-export { LeaderboardCard } from './ui/LeaderboardCard';
+
+export { RankingBoard } from './ui/RankingBoard';
+export { detectAnomaliesByAuthor, type Anomaly } from './lib/detect-anomalies';

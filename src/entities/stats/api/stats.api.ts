@@ -43,7 +43,17 @@ export async function getWeekly(query: PeriodQuery, signal?: AbortSignal): Promi
   return data;
 }
 
-export async function getDaily(query: PeriodQuery, signal?: AbortSignal): Promise<DailyStat[]> {
+/**
+ * Daily поддерживает те же независимые опциональные фильтры, что и hourly:
+ * `email` (профиль) и `team` (командный срез). Фильтрация выполняется в БД —
+ * клиентом её не сделать: в ответе нет ни имени, ни команды автора.
+ */
+export interface DailyQuery extends PeriodQuery {
+  email?: string;
+  team?: string;
+}
+
+export async function getDaily(query: DailyQuery, signal?: AbortSignal): Promise<DailyStat[]> {
   const { data } = await apiClient.get<DailyStat[]>('/stats/daily', { params: query, signal });
   return data;
 }
