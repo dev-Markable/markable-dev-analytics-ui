@@ -1,6 +1,5 @@
 import type { ReviewAuthor, ReviewStats } from '@/entities/stats';
-
-export type Standing = 'above' | 'around' | 'below';
+import type { Standing } from '@/shared/ui';
 
 export interface ReviewMetricComparison {
   value: number;

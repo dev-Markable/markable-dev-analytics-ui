@@ -57,6 +57,8 @@ export function AuthorsTable({
           // даём горизонтальный скролл вместо ломки вёрстки.
           scroll={{ x: 'max-content' }}
           pagination={{
+            // При 8 авторах из 8 блок «1–8 из 8» с кнопками страниц — чистый шум.
+            hideOnSinglePage: true,
             current: page + 1,
             pageSize: PAGE_SIZE,
             total: totalElements,

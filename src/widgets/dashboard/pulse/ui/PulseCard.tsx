@@ -1,15 +1,26 @@
 import { useMemo } from 'react';
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ReferenceArea,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { Skeleton } from 'antd';
 import { GitCommit } from 'lucide-react';
 import type { DailyStat } from '@/entities/stats';
 import { DeltaBadge } from '@/shared/ui';
-import { dayjs, formatNumber, formatPctDelta } from '@/shared/lib';
-import { aggregatePulse, peakDay } from '../lib/aggregate-pulse';
+import { dayjs, formatNumber, formatPctDelta, type DateRange } from '@/shared/lib';
+import { aggregatePulse, nonWorkingBands, peakDay } from '../lib/aggregate-pulse';
 import { PulseTooltip } from './PulseTooltip';
 
 interface PulseCardProps {
   daily: readonly DailyStat[];
+  /** Период — ряд достраивается на всю его длину, а не только по дням с данными. */
+  range: DateRange;
   /** Всего коммитов за период (из summary) — крупная метрика. */
   totalCommits: number;
   /** Дельта к предыдущему периоду, %. null — сравнивать не с чем. */
@@ -24,9 +35,10 @@ interface PulseCardProps {
  * для взгляда: сначала «сколько всего и куда движемся», потом форма периода (провалы,
  * всплески, выходные), и только затем детали ниже.
  */
-export function PulseCard({ daily, totalCommits, deltaPct, loading }: PulseCardProps) {
-  const points = useMemo(() => aggregatePulse(daily), [daily]);
+export function PulseCard({ daily, range, totalCommits, deltaPct, loading }: PulseCardProps) {
+  const points = useMemo(() => aggregatePulse(daily, range), [daily, range]);
   const peak = useMemo(() => peakDay(points), [points]);
+  const bands = useMemo(() => nonWorkingBands(points), [points]);
 
   if (loading) {
     return (
@@ -70,6 +82,19 @@ export function PulseCard({ daily, totalCommits, deltaPct, loading }: PulseCardP
               </linearGradient>
             </defs>
             <CartesianGrid vertical={false} stroke="var(--ant-color-split)" />
+            {/* Выходные и праздники — фоновой полосой: провал на графике сразу
+                читается как календарь, а не как остановка команды. */}
+            {bands.map((band) => (
+              <ReferenceArea
+                key={band.from}
+                x1={band.from}
+                x2={band.to}
+                fill="var(--ant-color-text)"
+                fillOpacity={0.04}
+                stroke="none"
+                ifOverflow="extendDomain"
+              />
+            ))}
             <XAxis
               dataKey="date"
               tickFormatter={(d: string) => dayjs(d).format('D MMM')}

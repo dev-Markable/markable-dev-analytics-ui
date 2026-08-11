@@ -68,10 +68,9 @@
   white-space: nowrap;
 }
 
-.section-link__value {
-  font-size: 22px;
-  font-weight: 660;
-  letter-spacing: -0.02em;
+/* Счётчик внутри подписи: цифра заметна, но не ломает ряд собственной колонкой. */
+.section-link__count {
+  font-weight: 640;
   color: var(--ant-color-text);
   font-variant-numeric: tabular-nums;
 }

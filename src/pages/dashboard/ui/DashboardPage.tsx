@@ -117,6 +117,7 @@ export function DashboardPage() {
       <PageSection>
         <PulseCard
           daily={dailyQ.data ?? []}
+          range={range}
           totalCommits={totals.totalCommits}
           deltaPct={commitsDeltaPct}
           loading={isLoadingInitial || (dailyQ.isPending && !dailyQ.data)}

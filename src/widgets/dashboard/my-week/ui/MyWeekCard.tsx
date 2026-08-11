@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { GitCommit, MessageSquare, Plus, Trophy } from 'lucide-react';
 import type { AuthorActivity } from '@/entities/user';
-import { UserAvatar, userDisplayName } from '@/entities/user';
+import { UserAvatar, authorAsUser, userDisplayName } from '@/entities/user';
 import type { ReviewAuthor } from '@/entities/stats';
 import { useCurrentUser } from '@/entities/auth';
 import { ActivityBadge } from '@/entities/user';
@@ -33,15 +33,19 @@ export function MyWeekCard({ items, reviews, range }: MyWeekCardProps) {
   if (!mine) return null;
 
   const { me: author, rank, total, reviewsGiven, commentsGiven } = mine;
+  // AuthorActivity держит имя в displayName, а не в name: без конвертации
+  // userDisplayName падал на email — самая личная карточка дашборда здоровалась
+  // с человеком его почтой. UserAvatar по той же причине рисовал инициалы из email.
+  const user = authorAsUser(author);
 
   return (
     <section className="my-week">
       <div className="my-week__person">
-        <UserAvatar user={author} size={46} isLead={author.isLead} />
+        <UserAvatar user={user} size={46} isLead={author.isLead} />
         <div className="my-week__ident">
           <span className="my-week__eyebrow">Ваш период</span>
           <Link to={buildProfilePath(author.email, range)} className="my-week__name">
-            {userDisplayName(author)}
+            {userDisplayName(user)}
           </Link>
         </div>
       </div>

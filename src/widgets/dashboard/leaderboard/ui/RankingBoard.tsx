@@ -72,11 +72,10 @@ export function RankingBoard({
             />
           ))}
 
-          {outsiders.length > 0 && (
-            <div className="ranking__divider">
-              <span>Ниже среднего</span>
-            </div>
-          )}
+          {/* Линия отсечки без подписи: слова «ниже среднего» уже стоят бейджем
+              на каждой строке ниже, а заголовок над одним человеком читался как
+              публичная порка. Черта отделяет группу, ярлык не навешивает. */}
+          {outsiders.length > 0 && <div className="ranking__cutline" aria-hidden />}
 
           {outsiders.map((row, index) => (
             <RankingRow

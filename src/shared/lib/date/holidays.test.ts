@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { countWorkingDays, isWorkingDay } from './holidays';
+import { countWorkingDays, dayKind, isWorkingDay } from './holidays';
 
 describe('isWorkingDay', () => {
   it('будни — рабочие', () => {
@@ -74,5 +74,29 @@ describe('countWorkingDays', () => {
   it('один рабочий день → 1, один выходной → 0', () => {
     expect(countWorkingDays('2026-08-12', '2026-08-12')).toBe(1);
     expect(countWorkingDays('2026-08-08', '2026-08-08')).toBe(0);
+  });
+});
+
+describe('dayKind', () => {
+  it('обычный будний день — рабочий', () => {
+    expect(dayKind('2026-08-12')).toBe('working'); // среда
+  });
+
+  it('суббота и воскресенье — выходные', () => {
+    expect(dayKind('2026-08-08')).toBe('weekend');
+    expect(dayKind('2026-08-09')).toBe('weekend');
+  });
+
+  it('праздник в будний день — праздник, а не выходной', () => {
+    expect(dayKind('2026-06-12')).toBe('holiday'); // День России, пятница
+    expect(dayKind('2026-02-23')).toBe('holiday'); // понедельник
+  });
+
+  it('праздник, выпавший на выходной, остаётся праздником', () => {
+    expect(dayKind('2026-05-09')).toBe('holiday'); // суббота — День Победы
+  });
+
+  it('перенос праздника — тоже праздник: 11 мая нерабочий из-за 9 мая', () => {
+    expect(dayKind('2026-05-11')).toBe('holiday'); // понедельник
   });
 });

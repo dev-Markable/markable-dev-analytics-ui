@@ -57,10 +57,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.metric-card__value .profile-summary__lines--compact {
-  font-size: 22px;
-}
-
 .metric-card__foot {
   display: flex;
   align-items: center;

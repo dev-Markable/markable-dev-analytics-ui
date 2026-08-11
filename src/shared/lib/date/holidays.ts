@@ -111,6 +111,31 @@ export function isWorkingDay(date: Dayjs | string): boolean {
   return !shiftedHolidays(d.year()).has(iso);
 }
 
+/** Тип дня для UI: рабочий, выходной (сб/вс) или нерабочий праздничный. */
+export type DayKind = 'working' | 'weekend' | 'holiday';
+
+/**
+ * Классифицирует день для подписей и штриховки на графиках.
+ *
+ * Отдельно от {@link isWorkingDay}, потому что метрикам достаточно «да/нет», а
+ * человеку в тултипе полезно знать, почему день пустой: суббота — это одно,
+ * первое мая — другое.
+ *
+ * Перенос праздника с выходного считается праздником, а не выходным: 11 мая
+ * нерабочий именно из-за Дня Победы.
+ */
+export function dayKind(date: Dayjs | string): DayKind {
+  const d = dayjs(date);
+  const iso = isoOf(d);
+  const override = YEAR_OVERRIDES[d.year()];
+
+  if (override?.workdays?.includes(iso)) return 'working';
+  if (override?.holidays?.includes(iso)) return 'holiday';
+  if (isFixedHoliday(d) || shiftedHolidays(d.year()).has(iso)) return 'holiday';
+  if (isWeekend(d)) return 'weekend';
+  return 'working';
+}
+
 /**
  * Количество рабочих дней в интервале включительно.
  * Интервал «задом наперёд» даёт 0 — вызывающему не нужно проверять порядок дат.

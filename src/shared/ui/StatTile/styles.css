@@ -1,0 +1,70 @@
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 10px;
+  background: var(--ant-color-bg-layout);
+}
+
+.stat-tile__head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.stat-tile__value {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--ant-color-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.stat-tile__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ant-color-text-secondary);
+  min-width: 0;
+}
+
+.stat-tile__hint {
+  font-size: 12px;
+  color: var(--ant-color-text-tertiary);
+}
+
+.stat-tile__standing {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.stat-tile__standing-avg {
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-tile__standing--up {
+  color: var(--ant-color-success);
+  background: var(--ant-color-success-bg);
+}
+
+.stat-tile__standing--down {
+  color: var(--ant-color-error);
+  background: var(--ant-color-error-bg);
+}
+
+.stat-tile__standing--flat {
+  color: var(--ant-color-text-secondary);
+  background: var(--ant-color-fill-tertiary);
+}
