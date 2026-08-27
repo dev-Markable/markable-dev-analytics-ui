@@ -129,12 +129,6 @@
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-@media (max-width: 600px) {
-  .perf-pair {
-    grid-template-columns: 1fr;
-  }
-}
-
 @media print {
   .app-sider,
   .app-topbar,
@@ -143,7 +137,7 @@
     display: none !important;
   }
 
-  .perf-kpi,
+  .stat-tile,
   .perf-subject.ant-card,
   .leaderboard-card.ant-card {
     box-shadow: none !important;

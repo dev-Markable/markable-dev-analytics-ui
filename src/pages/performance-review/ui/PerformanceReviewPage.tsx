@@ -3,7 +3,14 @@ import { Button, Col, Row } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { Printer } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
-import { PageHeader, PageSection, EmptyState, ErrorState, LoadingState } from '@/shared/ui';
+import {
+  PageHeader,
+  PageSection,
+  SectionTitle,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+} from '@/shared/ui';
 import { useDocumentTitle, useApiErrorNotification } from '@/shared/hooks';
 import { useApiError } from '@/shared/api';
 import { type DateRange } from '@/shared/lib';
@@ -126,8 +133,12 @@ export function PerformanceReviewPage() {
             <PerfSubject review={review} />
           </PageSection>
 
+          {/* Досье читается сверху вниз как разговор: сколько сделал → на что ушло
+              время → как быстро → чем подтверждается. Раньше это был плоский поток
+              из шести карточек без единого заголовка группы. */}
           <PageSection>
-            <Row gutter={[16, 16]}>
+            <SectionTitle hint="объём кода и участие в ревью">Что сделал</SectionTitle>
+            <Row gutter={[16, 16]} align="stretch">
               <Col xs={24} xl={12}>
                 <CodeSummaryCard metrics={review.metrics} />
               </Col>
@@ -138,26 +149,36 @@ export function PerformanceReviewPage() {
           </PageSection>
 
           <PageSection>
-            <DefectsByUrgency defects={review.kaiten.defects} />
-          </PageSection>
-
-          <PageSection>
-            <DevelopmentRollupCard rollup={review.kaiten.development} />
-          </PageSection>
-
-          <PageSection>
-            <Row gutter={[16, 16]}>
-              <Col xs={24} xl={12}>
-                <CycleTimeCard cycle={review.kaiten.cycleTime} />
+            <SectionTitle hint="дефекты, разработка и соотношение между ними">
+              На что уходила работа
+            </SectionTitle>
+            <Row gutter={[16, 16]} align="stretch">
+              <Col xs={24} xl={14}>
+                <DefectsByUrgency defects={review.kaiten.defects} />
               </Col>
-              <Col xs={24} xl={12}>
+              {/* Баланс — короткая карточка, поэтому стоит рядом с дефектами, а не
+                  с высоким cycle-time: там он вытягивался и наполовину пустовал. */}
+              <Col xs={24} xl={10}>
                 <WorkBalanceCard balance={review.kaiten.balance} />
               </Col>
             </Row>
           </PageSection>
 
           <PageSection>
-            <Row gutter={[16, 16]}>
+            <SectionTitle hint="юскейсы, сгруппированные по корневым задачам">
+              Разработка
+            </SectionTitle>
+            <DevelopmentRollupCard rollup={review.kaiten.development} />
+          </PageSection>
+
+          <PageSection>
+            <SectionTitle hint="от «в работу» до «готово»">Как быстро</SectionTitle>
+            <CycleTimeCard cycle={review.kaiten.cycleTime} />
+          </PageSection>
+
+          <PageSection>
+            <SectionTitle hint="конкретика для разговора 1:1">Пруфы</SectionTitle>
+            <Row gutter={[16, 16]} align="stretch">
               <Col xs={24} xl={12}>
                 <FirefightingCard items={review.notable.firefighting} />
               </Col>

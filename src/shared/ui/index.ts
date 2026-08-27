@@ -4,7 +4,13 @@ export { SectionTitle } from './SectionTitle';
 export { SectionCard } from './SectionCard';
 export { AsyncContent } from './AsyncContent';
 export { MetricCard } from './MetricCard';
-export { StatTile, type Standing, type StatTileComparison } from './StatTile';
+export {
+  StatTile,
+  type Standing,
+  type StatTileComparison,
+  type StatTileDelta,
+} from './StatTile';
+export { RatioBar, type RatioSegment, type RatioTone } from './RatioBar';
 export { DeltaBadge } from './DeltaBadge';
 export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';

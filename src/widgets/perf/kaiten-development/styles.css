@@ -1,122 +1,217 @@
-.root-task__collapse.ant-collapse > .ant-collapse-item {
-  border-bottom: 1px solid var(--ant-color-split);
-}
+/* ── Корневые задачи ─────────────────────────────────────────────────────────
+   Был AntD Collapse в режиме accordion: голые строки и невозможность раскрыть
+   две задачи разом. Теперь тот же список с раскрытием, что в таймшите и в
+   задачах профиля, плюс прогресс прямо в строке. */
 
-.root-task__collapse.ant-collapse > .ant-collapse-item:last-child {
-  border-bottom: none;
-}
-
-.root-task__collapse .ant-collapse-header {
-  padding: 12px 0 !important;
-}
-
-.root-task__collapse .ant-collapse-content-box {
-  padding: 4px 0 12px 36px !important;
-}
-
-.root-task__header {
+.root-task__list {
   display: flex;
+  flex-direction: column;
+}
+
+.root-task {
+  border-top: 1px solid var(--ant-color-split);
+}
+.root-task:first-child {
+  border-top: none;
+}
+
+.root-task__head {
+  display: grid;
+  grid-template-columns: 18px 22px minmax(0, 1fr) 150px 20px;
   align-items: center;
-  gap: 12px;
-  min-width: 0;
-  flex: 1;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 8px;
+  background: none;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  transition: background-color 0.15s ease;
+}
+
+.root-task__head:disabled {
+  cursor: default;
+}
+
+.root-task__head:hover:not(:disabled),
+.root-task--open .root-task__head {
+  background: var(--ant-color-fill-quaternary);
+}
+
+.root-task__chevron {
+  display: inline-flex;
+  color: var(--ant-color-text-quaternary);
+  transition: transform 0.18s ease;
+}
+
+.root-task--open .root-task__chevron {
+  transform: rotate(90deg);
+  color: var(--ant-color-primary);
 }
 
 .root-task__icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  background: var(--ant-color-fill-quaternary);
-  color: var(--ant-color-text-secondary);
-  flex-shrink: 0;
-}
-
-.root-task__title-wrap {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-}
-
-.root-task__title-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-  color: inherit;
-}
-
-.root-task__title-link:hover .root-task__title {
-  color: var(--ant-color-primary);
-}
-
-.root-task__title.ant-typography {
-  margin: 0;
-  min-width: 0;
-  font-size: 14px;
-}
-
-.root-task__title-icon {
-  flex-shrink: 0;
   color: var(--ant-color-text-quaternary);
 }
 
-.root-task__use-cases {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.root-task__title {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ant-color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.use-case-row {
+/* Прогресс в строке отвечает на вопрос, ради которого в досье и заглядывают:
+   доведено или висит. Числа юскейсов для этого не хватало. */
+.root-task__progress {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 6px 10px;
-  border-radius: 8px;
+  gap: 10px;
+}
+
+.root-task__bar {
+  flex: 1 1 auto;
+  height: 5px;
+  border-radius: 999px;
   background: var(--ant-color-fill-quaternary);
+  overflow: hidden;
+}
+
+.root-task__bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ant-color-primary) 55%, transparent);
+  transition: width 0.25s ease;
+}
+
+.root-task__bar-fill--done {
+  background: var(--ant-color-success);
+}
+
+.root-task__count {
+  font-size: 12px;
+  color: var(--ant-color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.root-task__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ant-color-text-quaternary);
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    color 0.15s ease;
+}
+
+.root-task__head:hover .root-task__link,
+.root-task__link:focus-visible {
+  opacity: 1;
+}
+
+.root-task__link:hover {
+  color: var(--ant-color-primary);
+}
+
+/* ── Юскейсы внутри ──────────────────────────────────────────────────────── */
+
+.root-task__use-cases {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 0 8px 10px 42px;
+  padding: 4px 0 4px 12px;
+  border-left: 1px solid var(--ant-color-split);
+  list-style: none;
 }
 
 .use-case-row__link {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: 7px minmax(0, 1fr) auto auto 14px;
   align-items: center;
-  gap: 6px;
-  min-width: 0;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 8px;
   color: inherit;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
 }
 
-.use-case-row__link:hover .use-case-row__title {
-  color: var(--ant-color-primary);
+a.use-case-row__link:hover {
+  background: var(--ant-color-fill-quaternary);
 }
 
-.use-case-row__title.ant-typography {
-  font-size: 13px;
-  min-width: 0;
+/* Статус точкой: в списке из пяти строк пять одинаковых зелёных плашек
+   читались как украшение, а не как информация. */
+.use-case-row__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ant-color-text-quaternary);
+}
+
+.use-case-row__dot--done {
+  background: var(--ant-color-success);
+}
+
+.use-case-row__dot--in_progress {
+  background: var(--ant-color-primary);
+}
+
+.use-case-row__dot--new {
+  background: var(--ant-color-warning);
+}
+
+.use-case-row__title {
+  font-size: 12.5px;
+  color: var(--ant-color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.use-case-row__type,
+.use-case-row__status {
+  font-size: 11px;
+  color: var(--ant-color-text-quaternary);
+  white-space: nowrap;
 }
 
 .use-case-row__link-icon {
-  flex-shrink: 0;
   color: var(--ant-color-text-quaternary);
+  opacity: 0;
+  transition: opacity 0.15s ease;
 }
 
-.use-case-row__meta {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
+a.use-case-row__link:hover .use-case-row__link-icon {
+  opacity: 1;
 }
 
-.use-case-row__tag {
-  margin: 0;
-  font-size: 11px;
+@media (prefers-reduced-motion: reduce) {
+  .root-task__chevron,
+  .root-task__bar-fill {
+    transition: none;
+  }
 }
 
-.use-case-row__tag--type {
-  color: var(--ant-color-text-secondary);
+@media (max-width: 900px) {
+  .root-task__head {
+    grid-template-columns: 18px 22px minmax(0, 1fr) 90px 20px;
+  }
+  .use-case-row__link {
+    grid-template-columns: 7px minmax(0, 1fr) auto 14px;
+  }
+  .use-case-row__type {
+    display: none;
+  }
 }

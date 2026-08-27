@@ -1,9 +1,9 @@
-import { Card, Tooltip, Typography } from 'antd';
-import { Code2, FlaskConical } from 'lucide-react';
-import type { PerformanceMetrics } from '@/entities/performance-review';
-import { formatNumber } from '@/shared/lib';
-import { PerfMetricTile } from '@/widgets/perf/metric-tile';
-import { testRatio } from '../lib/test-ratio';
+import { Code2 } from "lucide-react";
+import type { PerformanceMetrics } from "@/entities/performance-review";
+import { formatNumber } from "@/shared/lib";
+import { RatioBar, SectionCard, StatTile } from "@/shared/ui";
+import { toTileDelta } from "@/widgets/perf/shared";
+import { testRatio } from "../lib/test-ratio";
 
 interface CodeSummaryCardProps {
   metrics: PerformanceMetrics;
@@ -13,88 +13,60 @@ export function CodeSummaryCard({ metrics }: CodeSummaryCardProps) {
   const added = metrics.addedLines.current;
   const deleted = metrics.deletedLines.current;
   const tests = metrics.testAddedLines.current;
-  const total = added + deleted;
-  const addedPct = total > 0 ? (added / total) * 100 : 0;
-  const deletedPct = total > 0 ? (deleted / total) * 100 : 0;
   const testPct = testRatio(tests, added);
 
   return (
-    <Card variant="borderless" className="leaderboard-card">
-      <header className="leaderboard-card__header">
-        <div className="leaderboard-card__title">
-          <span className="leaderboard-card__icon">
-            <Code2 size={16} />
-          </span>
-          <Typography.Title level={4} className="leaderboard-card__title-text">
-            Код
-          </Typography.Title>
-        </div>
-        <Typography.Text type="secondary" className="leaderboard-card__description">
-          Объём коммитов и строк за период.
-        </Typography.Text>
-      </header>
-
-      <div className="leaderboard-card__body">
-        <div className="perf-pair">
-          <PerfMetricTile
-            label="Коммиты"
-            metric={metrics.commits}
+    <SectionCard
+      title="Код"
+      icon={<Code2 size={16} />}
+      description="Объём коммитов и строк за период"
+    >
+      <div className="perf-card">
+        <div className="perf-card__tiles">
+          <StatTile
+            variant="inset"
             size="lg"
+            value={formatNumber(metrics.commits.current)}
+            label="коммитов"
             hint={`без merge: ${formatNumber(metrics.nonMergeCommits.current)}`}
+            delta={toTileDelta(metrics.commits)}
           />
-          <PerfMetricTile
-            label="Добавлено строк"
-            metric={metrics.addedLines}
+          <StatTile
+            variant="inset"
             size="lg"
-            accent="primary"
+            value={formatNumber(added)}
+            label="строк добавлено"
+            hint={
+              testPct != null
+                ? `${formatNumber(tests)} строк тестов — ${testPct}% от добавленного`
+                : `${formatNumber(tests)} строк тестов`
+            }
+            delta={toTileDelta(metrics.addedLines)}
           />
         </div>
 
-        {total > 0 && (
-          <div className="code-summary__split">
-            <Typography.Text type="secondary" className="code-summary__split-label">
-              Распределение изменённых строк
-            </Typography.Text>
-            <div className="code-summary__bar" role="img" aria-label="Добавлено / удалено">
-              {addedPct > 0 && (
-                <Tooltip title={`Добавлено: ${formatNumber(added)}`}>
-                  <span
-                    className="code-summary__seg code-summary__seg--added"
-                    style={{ width: `${addedPct}%` }}
-                  >
-                    {addedPct >= 12 && `+${formatNumber(added)}`}
-                  </span>
-                </Tooltip>
-              )}
-              {deletedPct > 0 && (
-                <Tooltip title={`Удалено: ${formatNumber(deleted)}`}>
-                  <span
-                    className="code-summary__seg code-summary__seg--deleted"
-                    style={{ width: `${deletedPct}%` }}
-                  >
-                    {deletedPct >= 12 && `−${formatNumber(deleted)}`}
-                  </span>
-                </Tooltip>
-              )}
-            </div>
-          </div>
-        )}
-
-        <div className="code-summary__tests">
-          <FlaskConical size={14} />
-          <Typography.Text className="code-summary__tests-label">
-            Тестовый код
-          </Typography.Text>
-          <Typography.Text strong className="code-summary__tests-value">
-            {formatNumber(tests)} строк
-          </Typography.Text>
-          {testPct != null && (
-            <Typography.Text type="secondary" className="code-summary__tests-hint">
-              {testPct}% от добавленного
-            </Typography.Text>
-          )}
-        </div>
+        <RatioBar
+          caption="Распределение изменённых строк"
+          segments={[
+            {
+              key: "added",
+              label: "Добавлено",
+              value: added,
+              tone: "success",
+              inlineLabel: `+${formatNumber(added)}`,
+            },
+            {
+              key: "deleted",
+              label: "Удалено",
+              value: deleted,
+              tone: "error",
+              inlineLabel: `−${formatNumber(deleted)}`,
+            },
+          ]}
+          legend={false}
+          emptyText="За период строки не менялись"
+        />
       </div>
-    </Card>
+    </SectionCard>
   );
 }

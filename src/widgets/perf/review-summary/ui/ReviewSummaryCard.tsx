@@ -1,16 +1,12 @@
-import { Card, Tooltip, Typography } from 'antd';
-import { MessagesSquare } from 'lucide-react';
-import type { PerformanceMetrics } from '@/entities/performance-review';
-import { formatNumber } from '@/shared/lib';
-import { PerfMetricTile } from '@/widgets/perf/metric-tile';
-import { engagement, givenShare } from '../lib/engagement';
+import { MessagesSquare } from "lucide-react";
+import type { PerformanceMetrics } from "@/entities/performance-review";
+import { formatHours, formatNumber } from "@/shared/lib";
+import { RatioBar, SectionCard, StatTile } from "@/shared/ui";
+import { toTileDelta } from "@/widgets/perf/shared";
+import { engagement } from "../lib/engagement";
 
 interface ReviewSummaryCardProps {
   metrics: PerformanceMetrics;
-}
-
-function formatSharePct(value: number): string {
-  return `${Math.round(value * 100)}%`;
 }
 
 export function ReviewSummaryCard({ metrics }: ReviewSummaryCardProps) {
@@ -18,82 +14,54 @@ export function ReviewSummaryCard({ metrics }: ReviewSummaryCardProps) {
   const commentsGiven = metrics.commentsGiven.current;
   const reviewsReceived = metrics.reviewsReceived.current;
   const givenSum = engagement(reviewsGiven, commentsGiven);
-  const share = givenShare(givenSum, reviewsReceived);
 
   return (
-    <Card variant="borderless" className="leaderboard-card">
-      <header className="leaderboard-card__header">
-        <div className="leaderboard-card__title">
-          <span className="leaderboard-card__icon">
-            <MessagesSquare size={16} />
-          </span>
-          <Typography.Title level={4} className="leaderboard-card__title-text">
-            Ревью
-          </Typography.Title>
-        </div>
-        <Typography.Text type="secondary" className="leaderboard-card__description">
-          Время до merge, объём своих MR и вовлечённость в чужие.
-        </Typography.Text>
-      </header>
-
-      <div className="leaderboard-card__body">
-        <div className="perf-pair">
-          <PerfMetricTile
-            label="Ср. время до merge"
-            metric={metrics.avgTimeToMergeHours}
+    <SectionCard
+      title="Ревью"
+      icon={<MessagesSquare size={16} />}
+      description="Время до merge, объём своих MR и вовлечённость в чужие"
+    >
+      <div className="perf-card">
+        <div className="perf-card__tiles">
+          <StatTile
+            variant="inset"
             size="lg"
-            accent="primary"
-            hours
-            lowerIsBetter
+            value={formatHours(metrics.avgTimeToMergeHours.current)}
+            label="ср. время до merge"
             hint={`смержено MR: ${formatNumber(metrics.mergedMrCount.current)}`}
+            // Рост времени до merge — плохая новость, хотя стрелка смотрит вверх.
+            delta={toTileDelta(metrics.avgTimeToMergeHours, {
+              lowerIsBetter: true,
+            })}
           />
-          <PerfMetricTile
-            label="Ревью (approve)"
-            metric={metrics.reviewsGiven}
+          <StatTile
+            variant="inset"
             size="lg"
+            value={formatNumber(reviewsGiven)}
+            label="approve чужих MR"
             hint={`комментариев: ${formatNumber(commentsGiven)}`}
+            delta={toTileDelta(metrics.reviewsGiven)}
           />
         </div>
 
-        {share != null ? (
-          <div className="review-summary__split">
-            <Typography.Text type="secondary" className="review-summary__split-label">
-              Даёт ревью vs получает
-            </Typography.Text>
-            <div className="review-summary__bar" role="img" aria-label="Даёт vs получает">
-              {share > 0 && (
-                <Tooltip
-                  title={`Даёт: approve ${formatNumber(reviewsGiven)} + комментариев ${formatNumber(commentsGiven)} = ${formatNumber(givenSum)}`}
-                >
-                  <span
-                    className="review-summary__seg review-summary__seg--given"
-                    style={{ width: `${share * 100}%` }}
-                  >
-                    {share >= 0.12 && `Даёт ${formatSharePct(share)}`}
-                  </span>
-                </Tooltip>
-              )}
-              {share < 1 && (
-                <Tooltip title={`Получает ревью: ${formatNumber(reviewsReceived)}`}>
-                  <span
-                    className="review-summary__seg review-summary__seg--received"
-                    style={{ width: `${(1 - share) * 100}%` }}
-                  >
-                    {1 - share >= 0.12 && `Получает ${formatSharePct(1 - share)}`}
-                  </span>
-                </Tooltip>
-              )}
-            </div>
-            <Typography.Text type="secondary" className="review-summary__split-hint">
-              Engagement = approve + комментарии к чужим MR
-            </Typography.Text>
-          </div>
-        ) : (
-          <Typography.Text type="secondary" className="review-summary__empty">
-            Ревью-активности за период нет.
-          </Typography.Text>
-        )}
+        <RatioBar
+          caption="Даёт ревью vs получает"
+          segments={[
+            { key: "given", label: "Даёт", value: givenSum, tone: "primary" },
+            {
+              key: "received",
+              label: "Получает",
+              value: reviewsReceived,
+              tone: "muted",
+            },
+          ]}
+          emptyText="За период не участвовал в ревью"
+        />
+
+        <p className="perf-card__note">
+          Вовлечённость = approve + комментарии к чужим MR
+        </p>
       </div>
-    </Card>
+    </SectionCard>
   );
 }

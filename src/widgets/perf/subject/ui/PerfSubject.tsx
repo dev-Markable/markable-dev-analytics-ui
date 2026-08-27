@@ -1,5 +1,5 @@
-import { Card, Tag, Typography } from 'antd';
-import { Crown, Users } from 'lucide-react';
+import { Card, Typography } from 'antd';
+import { Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { UserAvatar, userDisplayName } from '@/entities/user';
 import type { PerformanceReview } from '@/entities/performance-review';
@@ -23,15 +23,13 @@ export function PerfSubject({ review }: PerfSubjectProps) {
           </Typography.Title>
           <div className="perf-subject__sub">
             <Typography.Text type="secondary">{subject.email}</Typography.Text>
-            {subject.team && subject.isLead && (
-              <Tag color="gold" icon={<Crown size={12} />}>
-                Лид команды «{subject.team}»
-              </Tag>
-            )}
-            {subject.team && !subject.isLead && (
-              <Tag color="blue" icon={<Users size={12} />}>
+            {subject.team && (
+              /* Тот же чип, что в профиле: цветные AntD-теги спорили по весу
+                 с именем, ради которого карточку и открывают. */
+              <span className="perf-subject__team">
+                {subject.isLead && <Crown size={11} />}
                 {subject.team}
-              </Tag>
+              </span>
             )}
           </div>
         </div>
