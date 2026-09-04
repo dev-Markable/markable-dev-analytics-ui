@@ -34,3 +34,35 @@ describe('aggregateTotals', () => {
     expect(aggregateTotals(daily).activeDays).toBe(1);
   });
 });
+
+describe('aggregateTotals: активные дни и выходные', () => {
+  it('отделяет коммиты в выходные от рабочих дней', () => {
+    // 6–7 августа 2026 — чт/пт, 8-е — суббота.
+    const totals = aggregateTotals([
+      makeDaily({ date: '2026-08-06', commits: 3 }),
+      makeDaily({ date: '2026-08-07', commits: 2 }),
+      makeDaily({ date: '2026-08-08', commits: 1 }),
+    ]);
+
+    expect(totals.activeDays).toBe(3);
+    expect(totals.weekendDays).toBe(1);
+  });
+
+  it('праздник считается нерабочим наравне с выходным', () => {
+    // 12 июня 2026 — День России, пятница.
+    const totals = aggregateTotals([makeDaily({ date: '2026-06-12', commits: 4 })]);
+
+    expect(totals.activeDays).toBe(1);
+    expect(totals.weekendDays).toBe(1);
+  });
+
+  it('день без коммитов не считается активным', () => {
+    const totals = aggregateTotals([
+      makeDaily({ date: '2026-08-06', commits: 0 }),
+      makeDaily({ date: '2026-08-07', commits: 2 }),
+    ]);
+
+    expect(totals.activeDays).toBe(1);
+    expect(totals.weekendDays).toBe(0);
+  });
+});

@@ -2,8 +2,11 @@ import type { ThemeConfig } from 'antd';
 
 export const lightTheme: ThemeConfig = {
   token: {
-    colorPrimary: '#5b6cff',
-    colorInfo: '#5b6cff',
+    // Затемнён относительно старого #5b6cff: тот давал ~4.2:1 на белом —
+    // ниже AA для мелкого цветного текста (навигация, ссылки). #4353d6 даёт
+    // 6.1:1 в обе стороны: цветной текст на белом и белый на primary-кнопке.
+    colorPrimary: '#4353d6',
+    colorInfo: '#4353d6',
     colorSuccess: '#00b87c',
     colorWarning: '#f5a524',
     colorError: '#ef4444',
@@ -25,7 +28,8 @@ export const lightTheme: ThemeConfig = {
     colorTextTertiary: '#8a909c',
     colorTextQuaternary: '#b0b6c0',
 
-    fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+    fontFamily:
+      '"Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
     fontSize: 14,
     fontSizeHeading1: 28,
     fontSizeHeading2: 22,
@@ -35,9 +39,9 @@ export const lightTheme: ThemeConfig = {
     fontWeightStrong: 600,
     lineHeight: 1.5,
 
-    borderRadius: 8,
-    borderRadiusLG: 12,
-    borderRadiusSM: 6,
+    borderRadius: 10,
+    borderRadiusLG: 16,
+    borderRadiusSM: 8,
 
     controlHeight: 36,
     controlHeightLG: 40,
@@ -53,9 +57,9 @@ export const lightTheme: ThemeConfig = {
     motion: true,
   },
   components: {
-    Card: { borderRadiusLG: 12, paddingLG: 20, headerBg: 'transparent' },
+    Card: { borderRadiusLG: 16, paddingLG: 20, headerBg: 'transparent' },
     Button: {
-      borderRadius: 8,
+      borderRadius: 10,
       fontWeight: 500,
       controlHeight: 36,
       primaryShadow: 'none',
@@ -63,20 +67,21 @@ export const lightTheme: ThemeConfig = {
       dangerShadow: 'none',
     },
     Table: {
-      headerBg: '#f7f8fa',
+      // Шапка без заливки: таблица читается как список, а не как «сетка Excel».
+      headerBg: 'transparent',
       headerColor: '#5b6271',
-      rowHoverBg: '#f7f8fa',
-      cellPaddingBlock: 12,
-      headerSplitColor: '#e6e9ee',
+      rowHoverBg: 'rgba(67,83,214,.05)',
+      cellPaddingBlock: 16,
+      headerSplitColor: 'transparent',
     },
-    Input: { borderRadius: 8, paddingBlock: 8 },
-    Select: { borderRadius: 8 },
+    Input: { borderRadius: 10, paddingBlock: 8 },
+    Select: { borderRadius: 10 },
     Menu: {
-      itemBorderRadius: 8,
+      itemBorderRadius: 10,
       itemHeight: 36,
       itemHoverBg: '#eef0f4',
       itemSelectedBg: '#eef0ff',
-      itemSelectedColor: '#5b6cff',
+      itemSelectedColor: '#4353d6',
       itemMarginInline: 8,
     },
     Tag: { borderRadiusSM: 6, defaultBg: '#eef0f4', defaultColor: '#5b6271' },
@@ -84,8 +89,8 @@ export const lightTheme: ThemeConfig = {
     Layout: { headerBg: '#eef0f4', siderBg: '#ffffff', bodyBg: '#eef0f4' },
     Tooltip: { colorBgSpotlight: '#0a0a0a' },
     Statistic: { titleFontSize: 13, contentFontSize: 28 },
-    Modal: { borderRadiusLG: 12 },
-    Drawer: { borderRadiusLG: 12 },
-    Segmented: { borderRadius: 8, controlHeight: 32, itemSelectedBg: '#ffffff' },
+    Modal: { borderRadiusLG: 16 },
+    Drawer: { borderRadiusLG: 16 },
+    Segmented: { borderRadius: 10, controlHeight: 32, itemSelectedBg: '#ffffff' },
   },
 };

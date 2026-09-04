@@ -1,4 +1,5 @@
 import type { DailyStat } from '@/entities/stats';
+import { isWorkingDay } from '@/shared/lib';
 
 export interface ActivityTotals {
   totalCommits: number;
@@ -9,6 +10,12 @@ export interface ActivityTotals {
   uniqueAuthors: number;
   uniqueRepos: number;
   activeDays: number;
+  /**
+   * Из них выпало на выходные и праздники. Считаем отдельно, чтобы не смешивать
+   * с нормой: работа в выходной — это не «плюс к дисциплине», а то, что стоит
+   * заметить.
+   */
+  weekendDays: number;
 }
 
 export function aggregateTotals(daily: readonly DailyStat[]): ActivityTotals {
@@ -33,6 +40,11 @@ export function aggregateTotals(daily: readonly DailyStat[]): ActivityTotals {
     totalTestAddedLines += d.testAddedLines;
   }
 
+  let weekendDays = 0;
+  for (const date of dates) {
+    if (!isWorkingDay(date)) weekendDays += 1;
+  }
+
   return {
     totalCommits,
     totalMergeCommits,
@@ -42,6 +54,7 @@ export function aggregateTotals(daily: readonly DailyStat[]): ActivityTotals {
     uniqueAuthors: authors.size,
     uniqueRepos: repos.size,
     activeDays: dates.size,
+    weekendDays,
   };
 }
 

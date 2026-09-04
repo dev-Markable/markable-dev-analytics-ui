@@ -1,5 +1,5 @@
 import type { DailyStat } from '@/entities/stats';
-import { dayjs, type DateRange } from '@/shared/lib';
+import { dayKind, dayjs, type DateRange, type DayKind } from '@/shared/lib';
 
 export interface HeatmapDay {
   date: string;
@@ -123,4 +123,52 @@ export function buildHeatmapGrid(
     maxCommits,
     monthMarkers,
   };
+}
+
+/** Порог, ниже которого сетка недель вырождается и вместо неё рисуется лента дней. */
+export const DAY_STRIP_MAX_DAYS = 14;
+
+export interface StripDay extends HeatmapDay {
+  /** Рабочий / выходной / праздник — нерабочие дни в ленте приглушены. */
+  kind: DayKind;
+}
+
+/**
+ * Лента дней для коротких периодов.
+ *
+ * Сетка недель (колонка = неделя) окупается на квартале и годе, но выбранная
+ * неделя давала ровно одну колонку из семи клеток посреди полупустой карточки —
+ * а неделя и две выбираются чаще всего. Здесь каждый день периода получает
+ * подпись и число, и полкарточки перестают пропадать впустую.
+ *
+ * Дни, ещё не наступившие, в ленту не попадают: пустой хвост будущего читался
+ * бы как простой (та же отсечка, что в пульсе и в счётчике активных дней).
+ */
+export function buildDayStrip(daily: readonly DailyStat[], range: DateRange): StripDay[] {
+  const byDate = aggregate(daily);
+  const today = dayjs().startOf('day');
+  const start = dayjs(range.from).startOf('day');
+  const endRaw = dayjs(range.to).startOf('day');
+  const end = endRaw.isAfter(today, 'day') ? today : endRaw;
+
+  const days: StripDay[] = [];
+  for (let cursor = start; !cursor.isAfter(end, 'day'); cursor = cursor.add(1, 'day')) {
+    const key = cursor.format('YYYY-MM-DD');
+    const agg = byDate.get(key);
+    days.push({
+      date: key,
+      weekday: cursor.isoWeekday() - 1,
+      column: days.length,
+      commits: agg?.commits ?? 0,
+      mergeCommits: agg?.mergeCommits ?? 0,
+      addedLines: agg?.addedLines ?? 0,
+      deletedLines: agg?.deletedLines ?? 0,
+      testAddedLines: agg?.testAddedLines ?? 0,
+      authors: agg?.authors.size ?? 0,
+      repos: agg?.repos.size ?? 0,
+      outOfRange: false,
+      kind: dayKind(key),
+    });
+  }
+  return days;
 }

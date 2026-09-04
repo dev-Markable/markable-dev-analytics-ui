@@ -1,8 +1,8 @@
-import { Card, Typography } from 'antd';
 import { ExternalLink, Rocket } from 'lucide-react';
 import type { DeliveredFeature } from '@/entities/performance-review';
 import { formatNumber } from '@/shared/lib';
 import { deliveryProgress } from '../lib/progress';
+import { EmptyState, SectionCard } from '@/shared/ui';
 
 interface DeliveredFeaturesCardProps {
   items: DeliveredFeature[];
@@ -10,28 +10,15 @@ interface DeliveredFeaturesCardProps {
 
 export function DeliveredFeaturesCard({ items }: DeliveredFeaturesCardProps) {
   return (
-    <Card variant="borderless" className="leaderboard-card">
-      <header className="leaderboard-card__header">
-        <div className="leaderboard-card__title">
-          <span className="leaderboard-card__icon">
-            <Rocket size={16} />
-          </span>
-          <Typography.Title level={4} className="leaderboard-card__title-text">
-            🚀 Доставленные доработки
-          </Typography.Title>
-        </div>
-        <Typography.Text type="secondary" className="leaderboard-card__description">
-          Корневые задачи с завершёнными юскейсами — что довёл до релиза.
-        </Typography.Text>
-      </header>
-
-      <div className="leaderboard-card__body">
-        {items.length === 0 ? (
-          <Typography.Text type="secondary">
-            За период не довёл фичи до релиза.
-          </Typography.Text>
-        ) : (
-          <ul className="delivered-list">
+    <SectionCard
+      title="Доставленные доработки"
+      icon={<Rocket size={16} />}
+      description="Корневые задачи с завершёнными юскейсами — что довёл до релиза"
+    >
+      {items.length === 0 ? (
+        <EmptyState title="Ничего не доставлено" description="За период ни одна корневая задача не дошла до завершённых юскейсов." />
+      ) : (
+        <ul className="delivered-list">
             {items.map((feat) => {
               const progress = deliveryProgress(feat.doneCount, feat.totalCount);
               const pct = Math.round(progress * 100);
@@ -87,8 +74,7 @@ export function DeliveredFeaturesCard({ items }: DeliveredFeaturesCardProps) {
               );
             })}
           </ul>
-        )}
-      </div>
-    </Card>
+      )}
+    </SectionCard>
   );
 }

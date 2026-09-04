@@ -1,0 +1,76 @@
+.app-splash {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  min-height: 60vh;
+  padding: 48px 24px;
+}
+
+.app-splash__mark {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* Мягкое «дыхание» — движение есть, но не мигает и не отвлекает. */
+  animation: app-splash-breathe 1.8s ease-in-out infinite;
+}
+
+.app-splash__logo {
+  width: 40px;
+  height: 40px;
+}
+
+.app-splash__name {
+  font-size: 22px;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+  color: var(--ant-color-text);
+}
+
+/* Indeterminate-полоса: бегунок ездит внутри трека. */
+.app-splash__bar {
+  position: relative;
+  width: 168px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--ant-color-fill-tertiary);
+  overflow: hidden;
+}
+
+.app-splash__bar::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  border-radius: 999px;
+  background: var(--ant-color-primary);
+  animation: app-splash-slide 1.1s ease-in-out infinite;
+}
+
+.app-splash__label {
+  font-size: 13px;
+  color: var(--ant-color-text-tertiary);
+}
+
+@keyframes app-splash-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.62; }
+}
+
+@keyframes app-splash-slide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+
+/* Уважаем системную настройку «меньше движения». */
+@media (prefers-reduced-motion: reduce) {
+  .app-splash__mark,
+  .app-splash__bar::after {
+    animation: none;
+  }
+  .app-splash__bar::after {
+    width: 100%;
+    opacity: 0.5;
+  }
+}

@@ -7,13 +7,6 @@ export const STATUS_LABEL: Record<UseCaseStatus, string> = {
   UNKNOWN: 'Не определена',
 };
 
-export const STATUS_COLOR: Record<UseCaseStatus, string> = {
-  NEW: 'default',
-  IN_PROGRESS: 'processing',
-  DONE: 'success',
-  UNKNOWN: 'default',
-};
-
 export const TYPE_LABEL: Record<UseCaseType, string> = {
   DEVELOPMENT: 'Разработка',
   TASK: 'Задача',

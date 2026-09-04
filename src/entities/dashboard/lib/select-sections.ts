@@ -21,7 +21,12 @@ export const isUnderperforming = (author: AuthorActivity): boolean =>
  *   либо `activity == null` — graceful fallback при отсутствии данных),
  *   первые `maxN` по score.
  * - **Outsiders** — авторы с категорией `INACTIVE` или `BELOW_AVERAGE`,
- *   до `maxN` самых низких, worst-first.
+ *   до `maxN` самых низких по score.
+ *
+ * Обе секции — в исходном убывающем порядке. Рейтинг рендерится одним
+ * непрерывным списком с продолжающейся нумерацией позиций, поэтому порядок
+ * внутри аутсайдеров тоже должен быть убывающим: иначе «8-е место» оказывается
+ * выше «3-го» по score и номера врут.
  *
  * Множества дизъюнктны по построению: один автор не может одновременно
  * быть и не быть underperforming.
@@ -33,8 +38,8 @@ export function selectDashboardSections(
   // sortedAuthors уже отсортирован по score desc. filter сохраняет порядок.
   const top = sortedAuthors.filter((a) => !isUnderperforming(a)).slice(0, maxN);
   const underperformers = sortedAuthors.filter(isUnderperforming);
-  // slice(-maxN) → последние = самые низкие; reverse → worst first.
-  const outsiders = underperformers.slice(-maxN).reverse();
+  // slice(-maxN) → последние maxN = самые низкие; порядок не меняем.
+  const outsiders = underperformers.slice(-maxN);
 
   return { top, outsiders };
 }

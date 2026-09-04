@@ -1,10 +1,11 @@
-.profile-summary__lines {
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  letter-spacing: -0.02em;
+.profile-code {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
 }
 
-.profile-summary__lines-sep {
-  color: var(--ant-color-text-tertiary);
-  font-weight: 500;
+@media (max-width: 900px) {
+  .profile-code {
+    grid-template-columns: 1fr;
+  }
 }

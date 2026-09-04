@@ -1,15 +1,25 @@
 export { PageHeader } from './PageHeader';
 export { PageSection } from './PageSection';
+export { SectionTitle } from './SectionTitle';
 export { SectionCard } from './SectionCard';
 export { AsyncContent } from './AsyncContent';
 export { MetricCard } from './MetricCard';
+export {
+  StatTile,
+  type Standing,
+  type StatTileComparison,
+  type StatTileDelta,
+} from './StatTile';
+export { RatioBar, type RatioSegment, type RatioTone } from './RatioBar';
 export { DeltaBadge } from './DeltaBadge';
 export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';
 export { LoadingState } from './LoadingState';
+export { AppSplash } from './AppSplash';
 export { RetryButton } from './RetryButton';
 export { SkeletonTable } from './SkeletonTable';
 export { DataTable, type DataTableProps } from './DataTable';
 export { ExportButton, type ExportButtonProps } from './ExportButton';
 export { Sparkline } from './Sparkline';
+export { ChartTooltip, type ChartTooltipRow } from './ChartTooltip';
 export { ErrorBoundary } from './ErrorBoundary';

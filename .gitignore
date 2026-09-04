@@ -25,3 +25,7 @@ yarn-error.log*
 /build
 /target
 .openapi-cache
+
+# Инкрементальный кэш tsc (tsconfig.*.tsbuildinfo): машинный артефакт,
+# перезаписывается на каждой сборке и шумит в diff'ах.
+*.tsbuildinfo

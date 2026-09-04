@@ -5,93 +5,6 @@
   margin-top: 4px;
 }
 
-.leaderboard-row {
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 14px;
-  padding: 10px 12px;
-  margin-inline: -12px;
-  border-radius: 10px;
-  color: inherit;
-  text-decoration: none;
-  transition: background 120ms ease;
-}
-
-.leaderboard-row:hover {
-  background: var(--ant-color-bg-layout);
-}
-
-.leaderboard-row__author {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-
-.leaderboard-row__identity {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  line-height: 1.2;
-}
-
-.leaderboard-row__name.ant-typography {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ant-color-text);
-}
-
-.leaderboard-row__email.ant-typography {
-  font-size: 12px;
-}
-
-.leaderboard-row__sub-line {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.leaderboard-row__sub-line .leaderboard-row__email {
-  min-width: 0;
-  flex-shrink: 1;
-}
-
-.leaderboard-row__metrics {
-  display: inline-grid;
-  grid-template-columns: 140px 180px;
-  align-items: center;
-  gap: 24px;
-}
-
-.leaderboard-row__metric {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  line-height: 1.15;
-  white-space: nowrap;
-  min-width: 0;
-}
-
-.leaderboard-row__metric-value.ant-typography {
-  font-size: 14px;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.leaderboard-row__metric-label.ant-typography {
-  font-size: 11px;
-  text-transform: lowercase;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-.leaderboard-row__metric--lines .leaderboard-row__metric-value.ant-typography {
-  color: var(--ant-color-text-secondary);
-  font-feature-settings: 'tnum';
-}
-
 .leaderboard-skeleton {
   display: flex;
   flex-direction: column;
@@ -113,19 +26,192 @@
   gap: 6px;
 }
 
-.leaderboard-row__name-line {
+/* ───────────── Номер позиции ───────────── */
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  /* Обычная позиция — без подложки: акцент остаётся у медалей. */
+  color: var(--ant-color-text-quaternary);
+}
+
+/* Медали — мягкий тинт + насыщенный текст вместо заливки градиентом.
+   Так они читаются как акцент, а не как наклейка. */
+.rank-badge--gold {
+  color: #b7791f;
+  background: color-mix(in srgb, #f5b544 20%, transparent);
+}
+.rank-badge--silver {
+  color: #667085;
+  background: color-mix(in srgb, #98a2b3 22%, transparent);
+}
+.rank-badge--bronze {
+  color: #a85f2e;
+  background: color-mix(in srgb, #d59461 22%, transparent);
+}
+
+/* В тёмной теме тинты те же, а текст светлее — иначе тонет в фоне. */
+[data-theme='dark'] .rank-badge--gold {
+  color: #f5b544;
+}
+[data-theme='dark'] .rank-badge--silver {
+  color: #c3cad6;
+}
+[data-theme='dark'] .rank-badge--bronze {
+  color: #d59461;
+}
+
+/* ═════════ Рейтинг активности (единый список) ═════════ */
+
+.ranking {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ranking-row {
+  display: grid;
+  grid-template-columns: 26px 34px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 14px;
+  margin-inline: -8px;
+  border-radius: 14px;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 140ms ease;
+}
+
+
+.ranking-row:hover {
+  background: color-mix(in srgb, var(--ant-color-primary) 6%, transparent);
+}
+
+.ranking-row__identity {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.ranking-row__name-line {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
-  max-width: 100%;
 }
 
-.leaderboard-row__name-line .leaderboard-row__name {
-  min-width: 0;
-  flex-shrink: 1;
+.ranking-row__name {
+  font-size: 14px;
+  font-weight: 560;
+  letter-spacing: -0.01em;
+  color: var(--ant-color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.leaderboard-row__name-line .activity-badge {
+.ranking-row__email {
+  font-size: 12px;
+  color: var(--ant-color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Аутсайдеры приглушены — акцент остаётся у лидеров. */
+.ranking-row--outsider .ranking-row__name {
+  color: var(--ant-color-text-secondary);
+  font-weight: 500;
+}
+
+.ranking-row__commits {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.15;
+  min-width: 116px;
+}
+
+.ranking-row__commits-value {
+  font-size: 17px;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+  color: var(--ant-color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.ranking-row__commits-label {
+  font-size: 11px;
+  color: var(--ant-color-text-quaternary);
+  white-space: nowrap;
+}
+
+/* Строки кода: цветом, а не сплошным серым — знак читается без вчитывания. */
+.ranking-row__lines {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.25;
+  min-width: 92px;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ranking-row__added {
+  color: var(--ant-color-success);
+}
+
+.ranking-row__deleted {
+  color: var(--ant-color-text-quaternary);
+}
+
+/* Разделитель «Ниже среднего» */
+.ranking__cutline {
+  height: 1px;
+  margin: 12px 6px 6px 6px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--ant-color-split) 12%,
+    var(--ant-color-split) 88%,
+    transparent
+  );
+}
+
+@media (max-width: 860px) {
+  .ranking-row {
+    grid-template-columns: 26px 34px minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+  .ranking-row__lines {
+    display: none;
+  }
+}
+
+/* ───────────── Бейджи аномалий ───────────── */
+
+.anomaly-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   flex-shrink: 0;
+}
+
+.anomaly-badge.ant-tag {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 0 6px;
+  line-height: 18px;
+  border-radius: 999px;
 }

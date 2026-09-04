@@ -1,15 +1,17 @@
 import { useMemo } from 'react';
-import { Col, Row } from 'antd';
-import { CheckCircle2, GitCommit, GitMerge, Kanban, Plus, TestTube } from 'lucide-react';
-import { MetricCard } from '@/shared/ui';
+import { StatTile } from '@/shared/ui';
 import { formatNumber, formatPercent, safeDiv } from '@/shared/lib';
-import type { AuthorSummary } from '@/entities/user';
+import type { AuthorSummary, AuthorActivity } from '@/entities/user';
 import type { KaitenCard } from '@/entities/kaiten-card';
 import { summarizeCards } from '../lib/aggregate-cards';
+import { buildProfileCodeStats } from '../lib/compare-code';
 
 interface ProfileSummaryProps {
   summary: AuthorSummary;
   cards: readonly KaitenCard[];
+  /** Авторы команды за тот же период — база для сравнения. undefined = сравнения нет. */
+  teamAuthors?: readonly AuthorActivity[];
+  email: string;
 }
 
 /**
@@ -23,87 +25,57 @@ const typeBreakdown = (dev: number, defect: number): string => {
   return parts.join(' · ');
 };
 
-/**
- * Шестизначные числа (≥ 100 000) не влезают в xl=4 при стандартном
- * value-размере. Триггер по числу, а не по длине строки —
- * однозначно, без зависимости от формата группировки разрядов.
- */
-const LINES_COMPACT_FROM = 100_000;
-
-export function ProfileSummary({ summary, cards }: ProfileSummaryProps) {
-  const mergeRatio = safeDiv(summary.mergeCommits, summary.commits) * 100;
+export function ProfileSummary({ summary, cards, teamAuthors, email }: ProfileSummaryProps) {
   const testRatio = safeDiv(summary.testAddedLines, summary.addedLines) * 100;
   const nonMerge = summary.commits - summary.mergeCommits;
-
-  const linesCompact =
-    summary.addedLines >= LINES_COMPACT_FROM ||
-    summary.deletedLines >= LINES_COMPACT_FROM;
+  const linesPerCommit = safeDiv(summary.addedLines, nonMerge);
 
   const c = useMemo(() => summarizeCards(cards), [cards]);
-  const activeHint = typeBreakdown(c.activeDev, c.activeDefect) || `из ${formatNumber(c.total)} всего`;
-  const closedHint = c.total > 0
-    ? typeBreakdown(c.closedDev, c.closedDefect) ||
-      formatPercent(safeDiv(c.closed, c.total) * 100, 0)
-    : '—';
+  const closedHint =
+    c.total > 0
+      ? typeBreakdown(c.closedDev, c.closedDefect) ||
+        formatPercent(safeDiv(c.closed, c.total) * 100, 0)
+      : '—';
+
+  const team = useMemo(
+    () => buildProfileCodeStats(teamAuthors, email),
+    [teamAuthors, email],
+  );
 
   return (
-    <Row gutter={[16, 16]}>
-      <Col xs={24} sm={12} md={8} xl={4}>
-        <MetricCard
-          label="Коммитов всего"
-          value={formatNumber(summary.commits)}
-          hint={`не-мердж: ${formatNumber(nonMerge)}`}
-          icon={<GitCommit size={16} />}
-        />
-      </Col>
-      <Col xs={24} sm={12} md={8} xl={4}>
-        <MetricCard
-          label="Merge-коммитов"
-          value={formatNumber(summary.mergeCommits)}
-          hint={`${formatPercent(mergeRatio, 1)} от всех`}
-          icon={<GitMerge size={16} />}
-        />
-      </Col>
-      <Col xs={24} sm={12} md={8} xl={4}>
-        <MetricCard
-          label="Добавлено / удалено"
-          value={
-            <span
-              className={`profile-summary__lines${linesCompact ? ' profile-summary__lines--compact' : ''}`}
-            >
-              {formatNumber(summary.addedLines)}
-              <span className="profile-summary__lines-sep"> / </span>
-              {formatNumber(summary.deletedLines)}
-            </span>
-          }
-          hint="строк"
-          icon={<Plus size={16} />}
-        />
-      </Col>
-      <Col xs={24} sm={12} md={8} xl={4}>
-        <MetricCard
-          label="Тестовых строк"
-          value={formatNumber(summary.testAddedLines)}
-          hint={`${formatPercent(testRatio, 1)} от добавленных`}
-          icon={<TestTube size={16} />}
-        />
-      </Col>
-      <Col xs={24} sm={12} md={8} xl={4}>
-        <MetricCard
-          label="Карточек в работе"
-          value={formatNumber(c.active)}
-          hint={activeHint}
-          icon={<Kanban size={16} />}
-        />
-      </Col>
-      <Col xs={24} sm={12} md={8} xl={4}>
-        <MetricCard
-          label="Карточек закрыто"
-          value={formatNumber(c.closed)}
-          hint={closedHint}
-          icon={<CheckCircle2 size={16} />}
-        />
-      </Col>
-    </Row>
+    // «Коммитов всего», «Добавлено/удалено» и «Карточек в работе» переехали в hero —
+    // здесь остаются только не продублированные показатели.
+    //
+    // «Merge-коммиты» убраны: у большинства это ноль (rebase-воркфлоу), а треть ряда
+    // карточка занимала. Само число не потеряно — оно подписью под коммитами в hero.
+    <div className="profile-code">
+      <StatTile
+        value={formatPercent(testRatio, 1)}
+        label="тестовый код"
+        hint={`${formatNumber(summary.testAddedLines)} строк из ${formatNumber(summary.addedLines)}`}
+        comparison={
+          team
+            ? {
+                standing: team.testRatio.standing,
+                avgLabel: formatPercent(team.testRatio.teamAvg, 1),
+              }
+            : undefined
+        }
+      />
+      <StatTile
+        value={formatNumber(Math.round(linesPerCommit))}
+        label="строк на коммит"
+        hint={
+          team
+            ? `по команде ~${formatNumber(Math.round(team.linesPerCommit.teamAvg))} · ${formatNumber(nonMerge)} не-мердж коммитов`
+            : `${formatNumber(nonMerge)} не-мердж коммитов`
+        }
+      />
+      <StatTile
+        value={formatNumber(c.closed)}
+        label="карточек закрыто"
+        hint={closedHint}
+      />
+    </div>
   );
 }

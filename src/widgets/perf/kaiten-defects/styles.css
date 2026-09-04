@@ -1,55 +1,36 @@
-.kaiten-defects__kpis {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
-  margin-bottom: 16px;
+/* «Горящие» — сигнальная плитка: остальные три просто раскладывают то же
+   множество, а эта требует реакции. */
+.kaiten-defects__hot .stat-tile {
+  border-color: color-mix(in srgb, var(--ant-color-error) 35%, transparent);
+  background: color-mix(in srgb, var(--ant-color-error) 7%, var(--ant-color-bg-layout));
 }
 
-.kaiten-defects__kpi {
+.kaiten-defects__hot .stat-tile__value {
+  color: var(--ant-color-error);
+}
+
+.kaiten-defects__spread {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 12px 14px;
-  border: 1px solid var(--ant-color-border);
-  border-radius: 10px;
-  background: var(--ant-color-bg-container);
+  gap: 8px;
 }
 
-.kaiten-defects__kpi--hot {
-  border-color: color-mix(in srgb, #dc2626 35%, var(--ant-color-border));
-  background: color-mix(in srgb, #dc2626 6%, var(--ant-color-bg-container));
-}
-
-.kaiten-defects__kpi-label {
+.kaiten-defects__caption {
   font-size: 12px;
-  font-weight: 500;
-  color: var(--ant-color-text-secondary);
-}
-
-.kaiten-defects__kpi--hot .kaiten-defects__kpi-label {
-  color: #dc2626;
-}
-
-.kaiten-defects__kpi-value {
-  font-size: 22px;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.05;
-}
-
-.kaiten-defects__kpi-hint {
-  font-size: 11px;
+  letter-spacing: 0.01em;
   color: var(--ant-color-text-quaternary);
 }
 
 .kaiten-defects__bar {
   display: flex;
+  gap: 3px;
   height: 14px;
+  background: none;
+}
+
+.kaiten-defects__seg {
   border-radius: 999px;
-  overflow: hidden;
-  background: var(--ant-color-fill-tertiary);
-  margin-bottom: 10px;
+  min-width: 6px;
 }
 
 .kaiten-defects__seg {

@@ -1,30 +1,18 @@
 .metric-card.ant-card {
-  border: 1px solid var(--ant-color-border);
-  border-radius: 12px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 16px;
   background: var(--ant-color-bg-container);
-  box-shadow:
-    0 1px 2px rgba(15, 17, 21, 0.04),
-    0 4px 12px rgba(15, 17, 21, 0.05);
-  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  box-shadow: 0 1px 2px rgba(15, 17, 21, 0.04);
+  /* Метрика — не кнопка: на hover только чуть проявляем границу, без подъёма и теней. */
+  transition: border-color 160ms ease;
 }
 
 .metric-card.ant-card:hover {
-  border-color: var(--ant-color-text-quaternary);
-  box-shadow:
-    0 2px 4px rgba(15, 17, 21, 0.06),
-    0 12px 24px rgba(15, 17, 21, 0.08);
+  border-color: var(--ant-color-border);
 }
 
 [data-theme='dark'] .metric-card.ant-card {
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.4),
-    0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-[data-theme='dark'] .metric-card.ant-card:hover {
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.5),
-    0 12px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 .metric-card .ant-card-body {
@@ -42,7 +30,7 @@
 }
 
 .metric-card__label {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 500;
   letter-spacing: 0.01em;
   text-transform: none;
@@ -52,23 +40,21 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: var(--ant-color-bg-layout);
-  color: var(--ant-color-text-secondary);
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--ant-color-fill-quaternary);
+  color: var(--ant-color-text-tertiary);
 }
 
 .metric-card__value {
-  font-size: 28px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  font-size: 30px;
+  font-weight: 660;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
   color: var(--ant-color-text);
-}
-
-.metric-card__value .profile-summary__lines--compact {
-  font-size: 22px;
+  /* Цифры одной ширины — колонки метрик не «пляшут» при обновлении данных. */
+  font-variant-numeric: tabular-nums;
 }
 
 .metric-card__foot {

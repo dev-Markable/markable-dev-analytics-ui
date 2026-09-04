@@ -1,0 +1,69 @@
+.chart-tooltip {
+  min-width: 184px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: var(--ant-color-bg-elevated);
+  border: 1px solid var(--ant-color-border-secondary);
+  box-shadow: 0 8px 28px rgba(15, 17, 21, 0.12);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+[data-theme='dark'] .chart-tooltip {
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+}
+
+.chart-tooltip__title {
+  font-size: 12.5px;
+  font-weight: 620;
+  letter-spacing: -0.01em;
+  color: var(--ant-color-text);
+  margin-bottom: 7px;
+}
+
+.chart-tooltip__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chart-tooltip__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-tooltip__row--muted {
+  opacity: 0.72;
+}
+
+.chart-tooltip__swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 3px;
+  flex: none;
+}
+
+.chart-tooltip__label {
+  color: var(--ant-color-text-tertiary);
+  /* Тянется, прижимая значение к правому краю — колонка цифр выравнивается. */
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
+
+.chart-tooltip__value {
+  color: var(--ant-color-text);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chart-tooltip__footer {
+  margin-top: 7px;
+  padding-top: 7px;
+  border-top: 1px solid var(--ant-color-split);
+  font-size: 11px;
+  color: var(--ant-color-text-quaternary);
+}

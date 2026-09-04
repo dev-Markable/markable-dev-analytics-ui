@@ -1,0 +1,115 @@
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 10px;
+}
+
+/* Плитка прямо на странице — свой контейнерный фон. С фоном страницы она
+   сливалась и читалась как потерянный текст без карточки. */
+.stat-tile--plain {
+  background: var(--ant-color-bg-container);
+  box-shadow: 0 1px 2px rgba(15, 17, 21, 0.04);
+}
+
+[data-theme='dark'] .stat-tile--plain {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Плитка внутри SectionCard — приглушённая вставка на белом теле карточки. */
+.stat-tile--inset {
+  background: var(--ant-color-bg-layout);
+}
+
+.stat-tile__head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.stat-tile__value {
+  font-size: 24px;
+  line-height: 1.15;
+  color: var(--ant-color-text);
+  white-space: nowrap;
+}
+
+/* Крупный вариант — главная цифра блока: дисплейная пропорция из base.css. */
+.stat-tile--lg .stat-tile__value {
+  font-size: 32px;
+}
+
+.stat-tile--lg .stat-tile__head {
+  flex-wrap: wrap;
+}
+
+/* Дельта к прошлому периоду. Тон задаёт `good`, а не знак: рост времени до
+   merge — плохая новость, рост коммитов — хорошая. */
+.stat-tile__delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 550;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.stat-tile__delta--good {
+  color: var(--ant-color-success);
+  background: var(--ant-color-success-bg);
+}
+
+.stat-tile__delta--bad {
+  color: var(--ant-color-error);
+  background: var(--ant-color-error-bg);
+}
+
+.stat-tile__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ant-color-text-secondary);
+  min-width: 0;
+}
+
+.stat-tile__hint {
+  font-size: 12px;
+  color: var(--ant-color-text-tertiary);
+}
+
+.stat-tile__standing {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.stat-tile__standing-avg {
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-tile__standing--up {
+  color: var(--ant-color-success);
+  background: var(--ant-color-success-bg);
+}
+
+.stat-tile__standing--down {
+  color: var(--ant-color-error);
+  background: var(--ant-color-error-bg);
+}
+
+.stat-tile__standing--flat {
+  color: var(--ant-color-text-secondary);
+  background: var(--ant-color-fill-tertiary);
+}

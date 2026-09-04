@@ -3,34 +3,17 @@ interface RankBadgeProps {
   variant?: 'top' | 'outsider';
 }
 
-const TOP_GRADIENTS: Record<number, string> = {
-  1: 'linear-gradient(135deg, #f7c945 0%, #f59e0b 100%)',
-  2: 'linear-gradient(135deg, #d0d5dd 0%, #98a2b3 100%)',
-  3: 'linear-gradient(135deg, #d59461 0%, #a85f2e 100%)',
-};
+/** Медали только для первой тройки топа; остальные — просто номер. */
+const MEDAL: Record<number, string> = { 1: 'gold', 2: 'silver', 3: 'bronze' };
 
+/**
+ * Номер позиции в лидерборде. Первая тройка — мягкий тинт медали, дальше номер без
+ * подложки: плашка у каждой строки создавала лишний шум и «съедала» акцент у топ-3.
+ */
 export function RankBadge({ rank, variant = 'top' }: RankBadgeProps) {
-  const gradient = variant === 'top' ? TOP_GRADIENTS[rank] : undefined;
-  const isMedal = Boolean(gradient);
+  const medal = variant === 'top' ? MEDAL[rank] : undefined;
 
   return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: 28,
-        height: 28,
-        borderRadius: 8,
-        background: gradient ?? 'var(--ant-color-bg-layout)',
-        color: isMedal ? '#fff' : 'var(--ant-color-text-secondary)',
-        fontSize: 12,
-        fontWeight: 600,
-        letterSpacing: '-0.01em',
-        flexShrink: 0,
-      }}
-    >
-      {rank}
-    </span>
+    <span className={`rank-badge${medal ? ` rank-badge--${medal}` : ''}`}>{rank}</span>
   );
 }

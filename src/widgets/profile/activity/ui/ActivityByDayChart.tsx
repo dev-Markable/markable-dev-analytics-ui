@@ -13,6 +13,7 @@ import type { Commit } from '@/entities/commit';
 import type { DateRange } from '@/shared/lib';
 import { formatCompact, formatNumber } from '@/shared/lib';
 import { groupByDay } from '../lib/aggregate';
+import { ChartTooltip } from '@/shared/ui';
 
 interface ActivityByDayChartProps {
   commits: readonly Commit[];
@@ -38,26 +39,18 @@ interface CustomTooltipProps {
   label?: string;
 }
 
-function ChartTooltip({ active, payload, label }: CustomTooltipProps) {
+function DayTooltip({ active, payload, label }: CustomTooltipProps) {
   if (!active || !payload?.length) return null;
   const commits = payload.find((p) => p.dataKey === 'commits')?.value;
   const lines = payload.find((p) => p.dataKey === 'addedLines')?.value;
   return (
-    <div className="weekly-tooltip">
-      <div className="weekly-tooltip__title">{label}</div>
-      <ul className="weekly-tooltip__list">
-        <li className="weekly-tooltip__row">
-          <span className="weekly-tooltip__swatch" style={{ background: COLORS.commits }} />
-          <span className="weekly-tooltip__label">Коммитов</span>
-          <span className="weekly-tooltip__value">{formatNumber(commits as number)}</span>
-        </li>
-        <li className="weekly-tooltip__row">
-          <span className="weekly-tooltip__swatch" style={{ background: COLORS.addedLines }} />
-          <span className="weekly-tooltip__label">Добавлено</span>
-          <span className="weekly-tooltip__value">{formatNumber(lines as number)}</span>
-        </li>
-      </ul>
-    </div>
+    <ChartTooltip
+      title={label}
+      rows={[
+        { label: 'Коммитов', swatch: COLORS.commits, value: formatNumber(commits as number) },
+        { label: 'Добавлено', swatch: COLORS.addedLines, value: formatNumber(lines as number) },
+      ]}
+    />
   );
 }
 
@@ -101,7 +94,7 @@ export function ActivityByDayChart({ commits, range }: ActivityByDayChartProps) 
           axisLine={false}
           width={48}
         />
-        <Tooltip content={<ChartTooltip />} cursor={{ stroke: COLORS.commits, strokeOpacity: 0.2 }} />
+        <Tooltip content={<DayTooltip />} cursor={{ stroke: COLORS.commits, strokeOpacity: 0.2 }} />
         <Area
           yAxisId="left"
           type="monotone"

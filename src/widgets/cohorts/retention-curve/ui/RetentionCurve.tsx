@@ -13,6 +13,7 @@ import type { CohortRetention } from '@/entities/cohort';
 import { AsyncContent, EmptyState, SectionCard } from '@/shared/ui';
 import type { AsyncState } from '@/shared/api';
 import { computeRollingRetention, type RollingPoint } from '../lib/rolling';
+import { ChartTooltip } from '@/shared/ui';
 
 interface RetentionCurveProps {
   state: AsyncState<CohortRetention>;
@@ -27,24 +28,23 @@ const COLORS = {
 
 const pct = (v: number) => `${Math.round(v * 100)}%`;
 
-function ChartTooltip({ active, payload }: { active?: boolean; payload?: { payload?: RollingPoint }[] }) {
+function RetentionTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: { payload?: RollingPoint }[];
+}) {
   const d = payload?.[0]?.payload;
   if (!active || !d) return null;
   return (
-    <div className="weekly-tooltip">
-      <div className="weekly-tooltip__title">Через {d.offset} мес.</div>
-      <ul className="weekly-tooltip__list">
-        <li className="weekly-tooltip__row">
-          <span className="weekly-tooltip__swatch" style={{ background: COLORS.line }} />
-          <span className="weekly-tooltip__label">Активны</span>
-          <span className="weekly-tooltip__value">{pct(d.retention)}</span>
-        </li>
-        <li className="weekly-tooltip__row">
-          <span className="weekly-tooltip__label">Когорт в расчёте</span>
-          <span className="weekly-tooltip__value">{d.cohorts}</span>
-        </li>
-      </ul>
-    </div>
+    <ChartTooltip
+      title={`Через ${d.offset} мес.`}
+      rows={[
+        { label: 'Активны', swatch: COLORS.line, value: pct(d.retention) },
+        { label: 'Когорт в расчёте', value: d.cohorts },
+      ]}
+    />
   );
 }
 
@@ -95,7 +95,7 @@ export function RetentionCurve({ state, onRetry }: RetentionCurveProps) {
               tickFormatter={pct}
               width={40}
             />
-            <Tooltip content={<ChartTooltip />} cursor={{ stroke: COLORS.line, strokeOpacity: 0.2 }} />
+            <Tooltip content={<RetentionTooltip />} cursor={{ stroke: COLORS.line, strokeOpacity: 0.2 }} />
             <Area
               type="monotone"
               dataKey="retention"

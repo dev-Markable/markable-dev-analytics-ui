@@ -24,9 +24,8 @@
   margin-left: 24px;
   margin-bottom: 4px;
   height: 14px;
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.02em;
   color: var(--ant-color-text-tertiary);
   font-variant-numeric: tabular-nums;
 }
@@ -81,6 +80,15 @@
   cursor: pointer;
 }
 
+/* Сегодня: контур поверх любой ступени шкалы — «мы здесь» на длинной сетке. */
+.heatmap__cell--today {
+  box-shadow: inset 0 0 0 1px var(--ant-color-text-tertiary);
+}
+
+.heatmap__cell--today:hover {
+  box-shadow: inset 0 0 0 1px var(--ant-color-text-secondary), 0 0 0 1px var(--ant-color-border);
+}
+
 .heatmap-legend {
   display: inline-flex;
   align-items: center;
@@ -128,4 +136,78 @@
 
 .heatmap-tooltip__row > span:first-child {
   color: rgba(255, 255, 255, 0.6);
+}
+
+/* ── Лента дней (короткий период) ────────────────────────────────────────────
+   Сетка недель на выбранной неделе давала одну колонку из семи клеток в
+   полупустой карточке. Здесь каждый день периода — колонка с подписью. */
+
+.day-strip {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 6px;
+  padding: 4px 0 2px;
+}
+
+.day-strip__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 4px 9px;
+  background: none;
+  border: none;
+  border-radius: 10px;
+  font: inherit;
+  color: inherit;
+  cursor: default;
+  transition: background-color 0.15s ease;
+}
+
+.day-strip__day--clickable {
+  cursor: pointer;
+}
+
+.day-strip__day--clickable:hover {
+  background: var(--ant-color-fill-quaternary);
+}
+
+.day-strip__weekday {
+  font-size: 10.5px;
+  text-transform: lowercase;
+  color: var(--ant-color-text-quaternary);
+  letter-spacing: 0.02em;
+}
+
+.day-strip__num {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ant-color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ячейка тянется на ширину колонки — на неделе это широкий брусок,
+   на двух неделях — узкий, но шкала цвета остаётся общей с сеткой. */
+.day-strip__cell {
+  width: 100%;
+  height: 26px;
+  border-radius: 6px;
+}
+
+.day-strip__commits {
+  font-size: 11px;
+  color: var(--ant-color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Выходные и праздники приглушены: пустая суббота — не простой команды. */
+.day-strip__day--off .day-strip__num,
+.day-strip__day--off .day-strip__weekday {
+  color: var(--ant-color-text-quaternary);
+}
+
+.day-strip__day--off .day-strip__cell {
+  opacity: 0.45;
 }

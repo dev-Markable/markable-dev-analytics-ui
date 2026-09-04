@@ -61,8 +61,9 @@
   white-space: nowrap;
 }
 
-.notable-list__sub.ant-typography {
+.notable-list__sub {
   font-size: 12px;
+  color: var(--ant-color-text-tertiary);
   font-variant-numeric: tabular-nums;
 }
 

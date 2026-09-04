@@ -1,6 +1,7 @@
 import type { TooltipProps } from 'recharts';
 import type { ValueType, NameType } from 'recharts/types/component/DefaultTooltipContent';
 import { formatNumber } from '@/shared/lib';
+import { ChartTooltip } from '@/shared/ui';
 import { CHART_COLORS } from '../config/series';
 
 const SERIES_LABELS: Record<string, string> = {
@@ -19,24 +20,17 @@ export function WeeklyTooltip({ active, payload, label }: TooltipProps<ValueType
   if (!active || !payload || payload.length === 0) return null;
 
   return (
-    <div className="weekly-tooltip">
-      <div className="weekly-tooltip__title">{label}</div>
-      <ul className="weekly-tooltip__list">
-        {payload.map((entry) => {
-          const key = entry.dataKey as string;
-          const value = typeof entry.value === 'number' ? entry.value : null;
-          return (
-            <li key={key} className="weekly-tooltip__row">
-              <span
-                className="weekly-tooltip__swatch"
-                style={{ background: SERIES_COLORS[key] ?? entry.color }}
-              />
-              <span className="weekly-tooltip__label">{SERIES_LABELS[key] ?? key}</span>
-              <span className="weekly-tooltip__value">{formatNumber(value)}</span>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
+    <ChartTooltip
+      title={label}
+      rows={payload.map((entry) => {
+        const key = entry.dataKey as string;
+        const value = typeof entry.value === 'number' ? entry.value : null;
+        return {
+          label: SERIES_LABELS[key] ?? key,
+          swatch: SERIES_COLORS[key] ?? entry.color,
+          value: formatNumber(value),
+        };
+      })}
+    />
   );
 }

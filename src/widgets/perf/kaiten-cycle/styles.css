@@ -67,10 +67,9 @@
 }
 
 .cycle-time-section__label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--ant-color-text-secondary);
-  text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 

@@ -6,6 +6,11 @@ import type { AsyncState } from '@/shared/api';
 import { AsyncContent, EmptyState } from '@/shared/ui';
 import { formatNumber } from '@/shared/lib';
 import {
+  buildHourlyDrill,
+  type DrillContent,
+  type DrillEnrichment,
+} from '@/widgets/activity/drilldown';
+import {
   buildHourlyGrid,
   intensityLevel,
   WEEKDAY_LABELS,
@@ -16,6 +21,10 @@ interface HourlyHeatmapProps {
   state: AsyncState<HourlyStats>;
   /** Подпись в шапке: командный / по автору. */
   title?: string;
+  /** Клик по ячейке — разбор среза. Без него ячейки остаются некликабельными. */
+  onDrill?: (content: DrillContent) => void;
+  /** Имена, аватары и команды по email — в ячейке приходит только адрес. */
+  enrichment?: ReadonlyMap<string, DrillEnrichment>;
 }
 
 // Подписи часов — каждые 3 часа, чтобы не сливалось.
@@ -59,8 +68,48 @@ function HourlySkeleton() {
   );
 }
 
-export function HourlyHeatmap({ state, title = 'Активность по часам' }: HourlyHeatmapProps) {
+export function HourlyHeatmap({
+  state,
+  title = 'Активность по часам',
+  onDrill,
+  enrichment,
+}: HourlyHeatmapProps) {
   const grid = useMemo(() => buildHourlyGrid(state.data), [state.data]);
+
+  // Суммы по дню и по часу считаем один раз на сетку: в обработчике клика они
+  // нужны для долей, а пересчитывать 7×24 на каждый клик незачем.
+  const totals = useMemo(() => {
+    const byWeekday = grid.rows.map((row) => row.reduce((sum, c) => sum + c.commits, 0));
+    const byHour = Array.from({ length: 24 }, (_, h) =>
+      grid.rows.reduce((sum, row) => sum + (row[h]?.commits ?? 0), 0),
+    );
+    const active = grid.rows.flat().filter((c) => c.commits > 0);
+    const ranked = [...active].sort((a, b) => b.commits - a.commits);
+    return { byWeekday, byHour, activeCells: active.length, ranked };
+  }, [grid]);
+
+  const handleCellClick = (weekday: number, hour: number) => {
+    const cell = grid.rows[weekday]?.[hour];
+    if (!onDrill || !cell || cell.commits === 0) return;
+    const rank =
+      totals.ranked.findIndex((c) => c.weekday === weekday && c.hour === hour) + 1;
+    onDrill(
+      buildHourlyDrill({
+        weekday,
+        weekdayLabel: WEEKDAY_LABELS[weekday] ?? '',
+        hour,
+        commits: cell.commits,
+        addedLines: cell.addedLines,
+        authors: cell.authors,
+        enrichment,
+        totalCommits: grid.totalCommits,
+        weekdayCommits: totals.byWeekday[weekday] ?? 0,
+        hourCommits: totals.byHour[hour] ?? 0,
+        rank,
+        activeCells: totals.activeCells,
+      }),
+    );
+  };
 
   const peakLabel = grid.peak
     ? `${WEEKDAY_LABELS[grid.peak.weekday]} ${String(grid.peak.hour).padStart(2, '0')}:00 · ${formatNumber(grid.peak.commits)} коммитов`
@@ -125,11 +174,13 @@ export function HourlyHeatmap({ state, title = 'Активность по час
                   >
                     {row.map((cell) => {
                       const bg = HOURLY_COLOR_SCALE[intensityLevel(cell.commits, grid.maxCommits)];
+                      const clickable = cell.commits > 0 && Boolean(onDrill);
                       const node = (
                         <div
-                          className="hourly__cell"
+                          className={`hourly__cell${clickable ? ' hourly__cell--clickable' : ''}`}
                           style={{ backgroundColor: bg }}
                           aria-label={`${WEEKDAY_LABELS[weekday]} ${cell.hour}:00 — ${cell.commits}`}
+                          onClick={clickable ? () => handleCellClick(weekday, cell.hour) : undefined}
                         />
                       );
                       if (cell.commits === 0) return <div key={cell.hour}>{node}</div>;
@@ -165,11 +216,14 @@ export function HourlyHeatmap({ state, title = 'Активность по час
               ))}
 
               <footer className="heatmap-legend" style={{ marginLeft: 28 }}>
-                <span className="heatmap-legend__caption">Меньше</span>
+                <span className="heatmap-legend__caption">0</span>
                 {HOURLY_COLOR_SCALE.map((color, i) => (
                   <span key={i} className="heatmap-legend__cell" style={{ background: color }} />
                 ))}
-                <span className="heatmap-legend__caption">Больше</span>
+                {/* Правая граница шкалы — реальный максимум периода, как в суточной heatmap. */}
+                <span className="heatmap-legend__caption">
+                  макс. {formatNumber(grid.maxCommits)}
+                </span>
               </footer>
             </div>
           </div>

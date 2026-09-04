@@ -14,11 +14,28 @@ export interface DrillRow {
   stats: DrillStat[];
 }
 
-/** Готовое содержимое панели drill-down. Виджеты собирают его и отдают наверх. */
+/**
+ * Крупная цифра среза с пояснением — для срезов, где разбивки по людям нет.
+ *
+ * Почасовая сетка такой случай: HourlyCell в контракте держит только
+ * (weekday, hour, commits, addedLines), автора в ней нет и собрать список
+ * разработчиков неоткуда. Вместо пустой панели показываем то, что из этих
+ * данных действительно выводится — вес ячейки в периоде и её место в неделе.
+ */
+export interface DrillHighlight {
+  label: string;
+  value: string;
+  hint?: string;
+}
+
+/** Готовое содержимое drill-down. Виджеты собирают его и отдают наверх. */
 export interface DrillContent {
   title: string;
   subtitle?: string;
+  /** Разбивка по людям. Пустая, если срез её не поддерживает. */
   rows: DrillRow[];
+  /** Цифры среза — показываются над списком или вместо него. */
+  highlights?: DrillHighlight[];
 }
 
 /** Минимум enrichment'а для daily-срезов (в daily есть только email). */

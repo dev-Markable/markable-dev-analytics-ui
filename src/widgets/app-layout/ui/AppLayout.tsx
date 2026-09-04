@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { Layout } from 'antd';
 import { Outlet, useLocation } from 'react-router-dom';
-import { ErrorBoundary, LoadingState } from '@/shared/ui';
+import { AppSplash, ErrorBoundary } from '@/shared/ui';
 import { CommandPalette } from '@/features/command-palette';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
@@ -26,7 +26,7 @@ export function AppLayout() {
               ловились (чанк не загрузился → boundary покажет fallback).
             */}
             <ErrorBoundary resetKey={pathname}>
-              <Suspense fallback={<LoadingState fullPage label="Загрузка…" />}>
+              <Suspense fallback={<AppSplash />}>
                 <Outlet />
               </Suspense>
             </ErrorBoundary>

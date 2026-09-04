@@ -68,3 +68,15 @@
     opacity: 0.9;
   }
 }
+
+/* Кликабельная ячейка — разбор среза в модалке. */
+.hourly__cell--clickable {
+  cursor: pointer;
+  transition: outline-color 0.12s ease;
+  outline: 1.5px solid transparent;
+  outline-offset: 1px;
+}
+
+.hourly__cell--clickable:hover {
+  outline-color: var(--ant-color-primary);
+}

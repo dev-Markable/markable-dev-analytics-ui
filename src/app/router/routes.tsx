@@ -22,6 +22,9 @@ const DefectsPage = lazy(() =>
 const MergedMrsPage = lazy(() =>
   import('@/pages/merged-mrs').then((m) => ({ default: m.MergedMrsPage })),
 );
+const TimesheetPage = lazy(() =>
+  import('@/pages/timesheet').then((m) => ({ default: m.TimesheetPage })),
+);
 const ComparePage = lazy(() =>
   import('@/pages/compare').then((m) => ({ default: m.ComparePage })),
 );
@@ -63,6 +66,7 @@ export function AppRouter() {
         <Route path={ROUTES.activity} element={<ActivityPage />} />
         <Route path={ROUTES.defects} element={<DefectsPage />} />
         <Route path={ROUTES.mergedMrs} element={<MergedMrsPage />} />
+        <Route path={ROUTES.timesheet} element={<TimesheetPage />} />
         <Route
           path={ROUTES.compare}
           element={

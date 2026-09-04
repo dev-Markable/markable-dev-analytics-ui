@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { ChartTooltip } from '@/shared/ui';
 import type { LorenzPoint } from '../lib/concentration';
 
 interface LorenzChartProps {
@@ -33,25 +34,17 @@ const pct = (v: number) => `${Math.round(v * 100)}%`;
 interface TooltipEntry {
   payload?: Datum;
 }
-function ChartTooltip({ active, payload }: { active?: boolean; payload?: TooltipEntry[] }) {
+function LorenzTooltip({ active, payload }: { active?: boolean; payload?: TooltipEntry[] }) {
   const d = payload?.[0]?.payload;
   if (!active || !d) return null;
   return (
-    <div className="weekly-tooltip">
-      <div className="weekly-tooltip__title">{pct(d.x)} ревьюеров</div>
-      <ul className="weekly-tooltip__list">
-        <li className="weekly-tooltip__row">
-          <span className="weekly-tooltip__swatch" style={{ background: COLORS.curve }} />
-          <span className="weekly-tooltip__label">дают approve</span>
-          <span className="weekly-tooltip__value">{pct(d.y)}</span>
-        </li>
-        <li className="weekly-tooltip__row">
-          <span className="weekly-tooltip__swatch" style={{ background: COLORS.equality }} />
-          <span className="weekly-tooltip__label">при равенстве</span>
-          <span className="weekly-tooltip__value">{pct(d.equality)}</span>
-        </li>
-      </ul>
-    </div>
+    <ChartTooltip
+      title={`${pct(d.x)} ревьюеров`}
+      rows={[
+        { label: 'дают approve', swatch: COLORS.curve, value: pct(d.y) },
+        { label: 'при равенстве', swatch: COLORS.equality, value: pct(d.equality) },
+      ]}
+    />
   );
 }
 
@@ -102,7 +95,7 @@ export function LorenzChart({ points, gini }: LorenzChartProps) {
             tickFormatter={pct}
             width={40}
           />
-          <Tooltip content={<ChartTooltip />} cursor={{ stroke: COLORS.curve, strokeOpacity: 0.2 }} />
+          <Tooltip content={<LorenzTooltip />} cursor={{ stroke: COLORS.curve, strokeOpacity: 0.2 }} />
           <Line
             type="linear"
             dataKey="equality"

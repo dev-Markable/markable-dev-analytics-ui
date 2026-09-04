@@ -1,7 +1,6 @@
-import { Tag, Tooltip, Typography } from 'antd';
 import { ExternalLink } from 'lucide-react';
 import type { UseCaseRef } from '@/entities/performance-review';
-import { STATUS_COLOR, STATUS_LABEL, TYPE_LABEL } from '../config/use-case';
+import { STATUS_LABEL, TYPE_LABEL } from '../config/use-case';
 
 interface UseCaseRowProps {
   useCase: UseCaseRef;
@@ -10,33 +9,36 @@ interface UseCaseRowProps {
 export function UseCaseRow({ useCase }: UseCaseRowProps) {
   const { id, title, url, status, type } = useCase;
 
-  const titleNode = (
-    <Typography.Text className="use-case-row__title" ellipsis={{ tooltip: title }}>
-      {title}
-    </Typography.Text>
+  const body = (
+    <>
+      {/* Статус точкой, а не цветным тегом: в списке из пяти строк пять
+          одинаковых зелёных плашек читались как украшение. */}
+      <span
+        className={`use-case-row__dot use-case-row__dot--${status.toLowerCase()}`}
+        title={STATUS_LABEL[status]}
+      />
+      <span className="use-case-row__title">{title}</span>
+      <span className="use-case-row__type">{TYPE_LABEL[type]}</span>
+      <span className="use-case-row__status">{STATUS_LABEL[status]}</span>
+      {url && <ExternalLink size={12} className="use-case-row__link-icon" />}
+    </>
   );
 
   return (
     <li className="use-case-row">
       {url ? (
-        <a href={url} target="_blank" rel="noreferrer noopener" className="use-case-row__link">
-          {titleNode}
-          <Tooltip title={`Открыть карточку #${id}`}>
-            <ExternalLink size={13} className="use-case-row__link-icon" />
-          </Tooltip>
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="use-case-row__link"
+          title={`Открыть карточку #${id}`}
+        >
+          {body}
         </a>
       ) : (
-        titleNode
+        <span className="use-case-row__link">{body}</span>
       )}
-
-      <div className="use-case-row__meta">
-        <Tag bordered={false} color={STATUS_COLOR[status]} className="use-case-row__tag">
-          {STATUS_LABEL[status]}
-        </Tag>
-        <Tag bordered={false} className="use-case-row__tag use-case-row__tag--type">
-          {TYPE_LABEL[type]}
-        </Tag>
-      </div>
     </li>
   );
 }

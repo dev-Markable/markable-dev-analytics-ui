@@ -8,9 +8,10 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  transition: background 0.12s ease;
+  padding: 12px 14px;
+  margin-inline: -8px;
+  border-radius: 14px;
+  transition: background-color 140ms ease;
 }
 
 .signals__row--link {
@@ -18,8 +19,9 @@
   color: inherit;
 }
 
+/* Единый язык подсветки строк (лидерборд, таблицы, профиль). */
 .signals__row--link:hover {
-  background: var(--ant-color-fill-tertiary);
+  background: color-mix(in srgb, var(--ant-color-primary) 7%, transparent);
 }
 
 .signals__icon {
@@ -59,8 +61,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 13.5px;
+  font-weight: 580;
   color: var(--ant-color-text);
 }
 
@@ -79,7 +81,7 @@
 
 .signals__skeleton {
   height: 160px;
-  border-radius: 10px;
+  border-radius: 14px;
   background: linear-gradient(
     90deg,
     var(--ant-color-fill-tertiary) 25%,
@@ -97,4 +99,38 @@
   100% {
     background-position: 0 0;
   }
+}
+
+.signals__empty {
+  margin: 0;
+  padding: 12px 4px;
+  font-size: 12.5px;
+  color: var(--ant-color-text-tertiary);
+}
+
+/* Кнопка-раскрытие: «и ещё N» было тупиком — до остальных сигналов было не добраться. */
+.signals__toggle {
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ant-color-text-secondary);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 520;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.signals__toggle:hover {
+  background: color-mix(in srgb, var(--ant-color-warning) 14%, transparent);
+  color: var(--ant-color-text);
+}
+
+/* В модалке места много — строки просторнее. */
+.signals__list--modal .signals__row {
+  padding: 11px 12px;
+  border-radius: 12px;
 }

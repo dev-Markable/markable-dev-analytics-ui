@@ -13,9 +13,8 @@
 }
 
 .settings-meta dt {
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.01em;
   color: var(--ant-color-text-tertiary);
   font-weight: 500;
 }
@@ -27,7 +26,7 @@
 }
 
 .settings-meta__mono {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 12px !important;
   word-break: break-all;
 }

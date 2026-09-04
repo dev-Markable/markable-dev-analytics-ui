@@ -5,10 +5,13 @@ import {
   getMergedMrs,
   getReviews,
   getSummary,
+  getTimesheet,
   getWeekly,
+  type DailyQuery,
   type HourlyQuery,
   type MergedMrQuery,
   type PeriodQuery,
+  type TimesheetQuery,
 } from './stats.api';
 
 const enabledByPeriod = (q: PeriodQuery): boolean => Boolean(q.from && q.to);
@@ -27,7 +30,7 @@ export const weeklyQuery = (q: PeriodQuery) =>
     enabled: enabledByPeriod(q),
   });
 
-export const dailyQuery = (q: PeriodQuery) =>
+export const dailyQuery = (q: DailyQuery) =>
   queryOptions({
     queryKey: ['stats', 'daily', q] as const,
     queryFn: ({ signal }) => getDaily(q, signal),
@@ -54,4 +57,12 @@ export const mergedMrsQuery = (q: MergedMrQuery) =>
     queryFn: ({ signal }) => getMergedMrs(q, signal),
     // Требует и период, и конкретную команду (раздел team-scoped).
     enabled: enabledByPeriod(q) && Boolean(q.team),
+  });
+
+export const timesheetQuery = (q: TimesheetQuery) =>
+  queryOptions({
+    queryKey: ['stats', 'timesheet', q] as const,
+    queryFn: ({ signal }) => getTimesheet(q, signal),
+    // Требует и период, и конкретного разработчика.
+    enabled: enabledByPeriod(q) && Boolean(q.email),
   });

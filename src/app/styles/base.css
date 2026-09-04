@@ -5,6 +5,38 @@
   --topbar-height: 56px;
   --page-padding: 24px;
   --section-gap: 24px;
+
+  /* ── Радиусы: три ступени вместо россыпи 7/8/9/10/12 ──
+     sm — чипы/теги/мелкие вставки, md — контролы/плитки (совпадает с AntD
+     borderRadius), lg — карточки/модалки. */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* ── Категорийная палитра данных ──
+     Один цвет = одна сущность во всём приложении (сегменты сравнения, типы
+     карточек, серии графиков). Семантика статусов (success/error) тут не
+     дублируется: это цвета СУЩНОСТЕЙ, а не хорошести. Light/dark значения
+     переопределяются ниже по [data-theme]. */
+  --viz-dev: #5b6cff;
+  --viz-defect: #e05656;
+  --viz-task: #0e9f6e;
+  --viz-other: #98a1ad;
+  --viz-team-1: #5b6cff;
+  --viz-team-2: #0ea5b7;
+  --viz-team-3: #d97706;
+  --viz-team-4: #9333ea;
+}
+
+[data-theme='dark'] {
+  --viz-dev: #7c8aff;
+  --viz-defect: #f87171;
+  --viz-task: #34d399;
+  --viz-other: #6a7280;
+  --viz-team-1: #7c8aff;
+  --viz-team-2: #38bdf8;
+  --viz-team-3: #fbbf24;
+  --viz-team-4: #c084fc;
 }
 
 * {
@@ -23,6 +55,22 @@ body,
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    system-ui, sans-serif;
+  /* Вариативный Inter несёт всю ось 100–900: промежуточные веса (560/620/680)
+     рендерятся как есть. Запрет синтетики — если шрифт не загрузился, вес
+    snapнется к ближайшему настоящему, а не замылится фейковым жирнением. */
+  font-synthesis: none;
+  /* Оптический размер: крупные цифры заголовков сами берут Display-срез
+     (плотнее по начертанию, контрастнее в мелких деталях). */
+  font-optical-sizing: auto;
 }
 
+/* Дисплейные числа: главные цифры страницы (пульс дашборда, hero профиля,
+   крупные StatTile). Только здесь — таблицы и плитки остаются рабочим Inter'ом
+   с tabular-nums. */
+.display-num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.035em;
+  font-weight: 680;
+}

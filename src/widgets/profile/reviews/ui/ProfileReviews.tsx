@@ -1,13 +1,20 @@
-import { useMemo } from 'react';
-import { Typography } from 'antd';
-import { MessagesSquare } from 'lucide-react';
-import type { ReviewStats } from '@/entities/stats';
-import type { AsyncState } from '@/shared/api';
-import { AsyncContent, EmptyState, LoadingState, SectionCard } from '@/shared/ui';
-import { formatNumber } from '@/shared/lib';
-import { formatHours } from '@/widgets/activity/reviews/lib/reviews';
-import { buildProfileReviewStats, type ReviewMetricComparison } from '../lib/compare';
-import { StandingBadge } from './StandingBadge';
+import { useMemo } from "react";
+import { MessagesSquare } from "lucide-react";
+import type { ReviewStats } from "@/entities/stats";
+import type { AsyncState } from "@/shared/api";
+import {
+  AsyncContent,
+  EmptyState,
+  LoadingState,
+  SectionCard,
+  StatTile,
+} from "@/shared/ui";
+import { formatNumber } from "@/shared/lib";
+import { formatHours } from "@/widgets/activity/reviews/lib/reviews";
+import {
+  buildProfileReviewStats,
+  type ReviewMetricComparison,
+} from "../lib/compare";
 
 interface ProfileReviewsProps {
   state: AsyncState<ReviewStats>;
@@ -24,34 +31,33 @@ function MetricRow({
   cmp: ReviewMetricComparison;
 }) {
   return (
-    <div className="profile-reviews__metric">
-      <div className="profile-reviews__metric-head">
-        <Typography.Text className="profile-reviews__metric-value">
-          {formatNumber(cmp.value)}
-        </Typography.Text>
-        <Typography.Text type="secondary" className="profile-reviews__metric-label">
-          {label}
-        </Typography.Text>
-      </div>
-      <Typography.Text type="secondary" className="profile-reviews__metric-hint">
-        {hint}
-      </Typography.Text>
-      <StandingBadge standing={cmp.standing} teamAvg={cmp.teamAvg} />
-    </div>
+    <StatTile
+      variant="inset"
+      value={formatNumber(cmp.value)}
+      label={label}
+      hint={hint}
+      comparison={{
+        standing: cmp.standing,
+        avgLabel: formatNumber(Math.round(cmp.teamAvg)),
+      }}
+    />
   );
 }
 
 export function ProfileReviews({ state, email }: ProfileReviewsProps) {
-  const data = useMemo(() => buildProfileReviewStats(state.data, email), [state.data, email]);
+  const data = useMemo(
+    () => buildProfileReviewStats(state.data, email),
+    [state.data, email],
+  );
 
   return (
     <SectionCard
-      title="Ревью"
+      title="Участие в ревью"
       icon={<MessagesSquare size={16} />}
       description={
         data
           ? `#${data.engagementRank} из ${data.activeReviewers} по вовлечённости · ср. время до merge ${formatHours(data.author.avgTimeToMergeHours)}`
-          : 'Участие в ревью за период (GitLab MR)'
+          : "Участие в ревью за период (GitLab MR)"
       }
     >
       <AsyncContent
@@ -70,9 +76,21 @@ export function ProfileReviews({ state, email }: ProfileReviewsProps) {
       >
         {data && (
           <div className="profile-reviews">
-            <MetricRow label="Approve" hint="чужих MR одобрено" cmp={data.reviewsGiven} />
-            <MetricRow label="Комментариев" hint="к чужим MR" cmp={data.commentsGiven} />
-            <MetricRow label="Получено ревью" hint="его MR отревьюили" cmp={data.reviewsReceived} />
+            <MetricRow
+              label="Approve"
+              hint="чужих MR одобрено"
+              cmp={data.reviewsGiven}
+            />
+            <MetricRow
+              label="Комментариев"
+              hint="к чужим MR"
+              cmp={data.commentsGiven}
+            />
+            <MetricRow
+              label="Получено ревью"
+              hint="его MR отревьюили"
+              cmp={data.reviewsReceived}
+            />
           </div>
         )}
       </AsyncContent>

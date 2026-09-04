@@ -1,14 +1,13 @@
-import { useCallback, useDeferredValue, useMemo, useState } from 'react';
-import { Card, Input, Typography } from 'antd';
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { Input } from 'antd';
 import { ListTree, Search } from 'lucide-react';
 import { extractCardId, type Commit } from '@/entities/commit';
 import type { KaitenCard } from '@/entities/kaiten-card';
 import { useDebouncedValue } from '@/shared/hooks';
 import { downloadCsv, formatDateTime, type CsvColumn } from '@/shared/lib';
-import { DataTable, EmptyState, ExportButton } from '@/shared/ui';
-import { buildTaskColumns } from '../config/columns';
+import { EmptyState, ExportButton, SectionCard } from '@/shared/ui';
 import { groupCommitsByTask, ORPHAN_KEY, type TaskGroup } from '../lib/group-commits';
-import { TaskCommitsBreakdown } from './TaskCommitsBreakdown';
+import { TaskRow } from './TaskRow';
 
 interface TasksTimelineProps {
   commits: readonly Commit[];
@@ -30,6 +29,8 @@ const commitCsvColumns: CsvColumn<Commit>[] = [
 ];
 
 const SEARCH_DEBOUNCE_MS = 250;
+/** Сколько задач показываем сразу. Дальше — по кнопке: в списке пагинация избыточна. */
+const PAGE_SIZE = 20;
 
 const matchesQuery = (group: TaskGroup, q: string): boolean => {
   if (!q) return true;
@@ -53,6 +54,7 @@ export function TasksTimeline({ commits, cards, email }: TasksTimelineProps) {
   // Пара с useDebouncedValue: debounce убирает дрожание ввода (250 мс),
   // deferred — гарантирует что даже после debounce фильтр не лочит UI.
   const deferredQuery = useDeferredValue(debounced);
+  const [shown, setShown] = useState(PAGE_SIZE);
 
   const handleExportCsv = useCallback(() => {
     const safeEmail = email.replace(/[^a-z0-9]+/gi, '-');
@@ -67,7 +69,10 @@ export function TasksTimeline({ commits, cards, email }: TasksTimelineProps) {
     return allGroups.filter((g) => matchesQuery(g, q));
   }, [allGroups, deferredQuery]);
 
-  const columns = useMemo(() => buildTaskColumns(), []);
+  // Новый фильтр — снова первая «страница»: иначе после поиска по узкому запросу
+  // остаётся раскрытым длинный хвост от предыдущего.
+  useEffect(() => setShown(PAGE_SIZE), [deferredQuery]);
+
 
   const totalTasks = allGroups.length;
   const orphanCount = allGroups.find((g) => g.key === ORPHAN_KEY)?.totalCommits ?? 0;
@@ -79,34 +84,20 @@ export function TasksTimeline({ commits, cards, email }: TasksTimelineProps) {
   const isEmpty = filtered.length === 0;
 
   return (
-    <Card variant="borderless" className="leaderboard-card">
-      <header className="leaderboard-card__header">
-        <div className="leaderboard-card__title">
-          <span className="leaderboard-card__icon">
-            <ListTree size={16} />
-          </span>
-          <Typography.Title level={4} className="leaderboard-card__title-text">
-            Задачи и коммиты
-          </Typography.Title>
-        </div>
-        <Typography.Text type="secondary" className="leaderboard-card__description">
-          {description}
-        </Typography.Text>
-        {commits.length > 0 && (
-          <div className="leaderboard-card__actions">
-            <ExportButton size="small" onExportCsv={handleExportCsv} />
-          </div>
-        )}
-      </header>
-
-      <div className="leaderboard-card__body authors-table">
+    <SectionCard
+      title="По карточкам Kaiten"
+      icon={<ListTree size={16} />}
+      description={description}
+      actions={commits.length > 0 && <ExportButton size="small" onExportCsv={handleExportCsv} />}
+    >
+      <div className="tasks-timeline">
         <Input
           placeholder="Поиск по задаче, сообщению, репозиторию…"
           prefix={<Search size={14} />}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           allowClear
-          style={{ maxWidth: 480, marginBottom: 12 }}
+          className="tasks-timeline__search"
         />
 
         {isEmpty ? (
@@ -119,24 +110,25 @@ export function TasksTimeline({ commits, cards, email }: TasksTimelineProps) {
             }
           />
         ) : (
-          <DataTable<TaskGroup>
-            data={filtered}
-            status="success"
-            columns={columns}
-            rowKey={(row) => row.key}
-            scroll={{ x: 'max-content' }}
-            expandable={{
-              expandedRowRender: (record) => <TaskCommitsBreakdown commits={record.commits} />,
-              rowExpandable: (record) => record.commits.length > 0,
-            }}
-            pagination={{
-              pageSize: 25,
-              showSizeChanger: false,
-              showTotal: (total, [from, to]) => `${from}–${to} из ${total}`,
-            }}
-          />
+          <>
+            <div className="tasks-list">
+              {filtered.slice(0, shown).map((task) => (
+                <TaskRow key={task.key} task={task} />
+              ))}
+            </div>
+            {filtered.length > shown && (
+              <button
+                type="button"
+                className="tasks-list__more"
+                onClick={() => setShown((n) => n + PAGE_SIZE)}
+              >
+                Показать ещё {Math.min(PAGE_SIZE, filtered.length - shown)} из{' '}
+                {filtered.length - shown}
+              </button>
+            )}
+          </>
         )}
       </div>
-    </Card>
+    </SectionCard>
   );
 }

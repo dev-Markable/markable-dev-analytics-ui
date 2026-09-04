@@ -1,7 +1,102 @@
+/* ── Модалка разбора среза ───────────────────────────────────────────────────
+   Была Drawer шириной 520px: срез клали набок, список авторов ужимался в узкую
+   колонку, а жест «шторка сбоку» читался как панель настроек. */
+
+.drilldown-modal .ant-modal-content {
+  padding: 0;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.drilldown-modal .ant-modal-header {
+  margin: 0;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--ant-color-split);
+  border-radius: 0;
+}
+
+.drilldown-modal .ant-modal-body {
+  padding: 16px 16px 18px;
+  max-height: min(62vh, 560px);
+  overflow-y: auto;
+}
+
+.drilldown-modal .ant-modal-close {
+  top: 18px;
+  inset-inline-end: 18px;
+}
+
+.drilldown__head {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-inline-end: 28px;
+}
+
+.drilldown__title {
+  font-size: 17px;
+  font-weight: 620;
+  letter-spacing: -0.01em;
+  color: var(--ant-color-text);
+}
+
 .drilldown__subtitle {
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--ant-color-text-tertiary);
+}
+
+/* Цифры среза — там, где разбивки по людям нет (почасовая сетка). */
+.drilldown__highlights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  padding: 4px 8px 2px;
+}
+
+.drilldown__highlight {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 16px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 12px;
+  background: var(--ant-color-bg-layout);
+}
+
+.drilldown__highlight-value {
+  font-size: 22px;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--ant-color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.drilldown__highlight-label {
+  font-size: 12px;
+  color: var(--ant-color-text-secondary);
+}
+
+.drilldown__highlight-hint {
+  font-size: 11px;
+  color: var(--ant-color-text-quaternary);
+}
+
+.drilldown__rank {
+  width: 20px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 12px;
+  color: var(--ant-color-text-quaternary);
+  font-variant-numeric: tabular-nums;
+}
+
+.drilldown__foot {
   display: block;
-  margin-bottom: 12px;
-  font-size: 13px;
+  margin-top: 12px;
+  padding-inline: 10px;
+  font-size: 11.5px;
 }
 
 .drilldown__list {
@@ -21,7 +116,7 @@
 }
 
 .drilldown__row:hover {
-  background: var(--ant-color-fill-tertiary);
+  background: color-mix(in srgb, var(--ant-color-primary) 6%, transparent);
 }
 
 /* Аватар не должен сжиматься flex'ом — иначе круг превращается в овал. */

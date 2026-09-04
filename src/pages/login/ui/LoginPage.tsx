@@ -172,16 +172,54 @@ export function LoginPage() {
         </section>
 
         <aside className="login-hero" aria-hidden="true">
-          <div className="login-hero__grid">
+          {/* Пульс — фирменный мотив DevPulse. Это декоративная композиция, не данные:
+              анонимного агрегата без сессии взять неоткуда, а честная «картинка без
+              цифр» лучше фальшивого графика с подписями. Выходные читаются провалами,
+              пик отмечен точкой — как на настоящем дашборде. */}
+          <div className="login-hero__pulse">
+            <svg viewBox="0 0 480 168" fill="none">
+              <defs>
+                <linearGradient id="login-pulse-fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--ant-color-primary)" stopOpacity={0.2} />
+                  <stop offset="100%" stopColor="var(--ant-color-primary)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              {/* выходные */}
+              <rect x="78" y="14" width="54" height="138" rx="6" fill="var(--ant-color-fill-quaternary)" opacity="0.5" />
+              <rect x="228" y="14" width="54" height="138" rx="6" fill="var(--ant-color-fill-quaternary)" opacity="0.5" />
+              {/* область под линией */}
+              <path
+                d="M0 74 L30 58 L60 78 L90 124 L120 130 L150 62 L180 44 L210 72 L240 118 L270 128 L300 58 L330 48 L360 64 L390 34 L420 66 L450 54 L480 46 L480 152 L0 152 Z"
+                fill="url(#login-pulse-fill)"
+              />
+              {/* базовая линия */}
+              <line x1="0" y1="152" x2="480" y2="152" stroke="var(--ant-color-border-secondary)" strokeDasharray="2 4" />
+              {/* пульс */}
+              <path
+                d="M0 74 L30 58 L60 78 L90 124 L120 130 L150 62 L180 44 L210 72 L240 118 L270 128 L300 58 L330 48 L360 64 L390 34 L420 66 L450 54 L480 46"
+                stroke="var(--ant-color-primary)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              {/* пик */}
+              <circle cx="390" cy="34" r="8" fill="var(--ant-color-primary)" opacity="0.18" />
+              <circle cx="390" cy="34" r="3.5" fill="var(--ant-color-primary)" />
+            </svg>
+          </div>
+
+          <div className="login-hero__list">
             {FEATURES.map((feature) => {
               const Icon = feature.icon;
               return (
                 <div key={feature.title} className="login-feature">
                   <span className="login-feature__icon">
-                    <Icon size={20} />
+                    <Icon size={15} />
                   </span>
-                  <div className="login-feature__title">{feature.title}</div>
-                  <div className="login-feature__desc">{feature.desc}</div>
+                  <div>
+                    <div className="login-feature__title">{feature.title}</div>
+                    <div className="login-feature__desc">{feature.desc}</div>
+                  </div>
                 </div>
               );
             })}
