@@ -29,20 +29,22 @@ describe('selectDashboardSections', () => {
     const { top, outsiders } = selectDashboardSections(authors, 10);
 
     expect(top.map((a) => a.email)).toEqual(['star@x5.ru', 'active@x5.ru']);
-    expect(outsiders.map((a) => a.email)).toEqual(['inactive@x5.ru', 'below@x5.ru']);
+    expect(outsiders.map((a) => a.email)).toEqual(['below@x5.ru', 'inactive@x5.ru']);
 
     // Дизъюнктность: никто не в обоих
     const overlap = top.filter((t) => outsiders.some((o) => o.email === t.email));
     expect(overlap).toHaveLength(0);
   });
 
-  it('outsiders отсортированы worst-first', () => {
+  it('outsiders в убывающем порядке score — как top, рейтинг монотонен', () => {
     const authors = [
       makeAuthorWithCategory('below@x5.ru', 'BELOW_AVERAGE', 0.5),
       makeAuthorWithCategory('inactive@x5.ru', 'INACTIVE', 0.05),
     ];
     const { outsiders } = selectDashboardSections(authors, 10);
-    expect(outsiders.map((a) => a.email)).toEqual(['inactive@x5.ru', 'below@x5.ru']);
+    // Убывание, а не worst-first: список рендерится одним рейтингом
+    // с продолжающейся нумерацией — номера позиций не должны врать.
+    expect(outsiders.map((a) => a.email)).toEqual(['below@x5.ru', 'inactive@x5.ru']);
   });
 
   it('top ограничен maxN', () => {

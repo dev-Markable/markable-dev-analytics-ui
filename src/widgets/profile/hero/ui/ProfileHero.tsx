@@ -78,7 +78,7 @@ interface StatProps {
 function Stat({ value, label, hint, tone }: StatProps) {
   return (
     <div className="profile-hero__stat">
-      <span className={`profile-hero__stat-value${tone ? ` profile-hero__stat-value--${tone}` : ''}`}>
+      <span className={`profile-hero__stat-value display-num${tone ? ` profile-hero__stat-value--${tone}` : ''}`}>
         {value}
       </span>
       <span className="profile-hero__stat-label">{label}</span>

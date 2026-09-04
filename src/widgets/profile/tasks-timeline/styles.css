@@ -24,9 +24,8 @@
 }
 
 .kaiten-column__name.ant-typography {
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--ant-color-text-secondary);
 }
@@ -72,7 +71,7 @@
 }
 
 .kaiten-card__id {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 11px;
   color: var(--ant-color-text-tertiary);
   font-weight: 500;
@@ -193,7 +192,7 @@
 }
 
 .task-row__id {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 11px;
   font-weight: 550;
   color: var(--ant-color-text-tertiary);

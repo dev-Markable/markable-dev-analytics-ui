@@ -81,28 +81,31 @@
   min-width: 4px;
 }
 
+/* Цвета сущностей — из категорийной палитры данных (base.css): один цвет =
+   одна сущность во всём приложении, независимо от темы и статусов success/error,
+   которые здесь означали бы «хорошо/плохо», а это состав работы, не оценка. */
 .cmp-tasks__mix-seg--development,
 .cmp-tasks__legend-dot--development,
 .cmp-tasks__task-bar-fill--development {
-  background: var(--ant-color-primary);
+  background: var(--viz-dev);
 }
 
 .cmp-tasks__mix-seg--defect,
 .cmp-tasks__legend-dot--defect,
 .cmp-tasks__task-bar-fill--defect {
-  background: var(--ant-color-error);
+  background: var(--viz-defect);
 }
 
 .cmp-tasks__mix-seg--task,
 .cmp-tasks__legend-dot--task,
 .cmp-tasks__task-bar-fill--task {
-  background: var(--ant-color-success);
+  background: var(--viz-task);
 }
 
 .cmp-tasks__mix-seg--other,
 .cmp-tasks__legend-dot--other,
 .cmp-tasks__task-bar-fill--other {
-  background: var(--ant-color-text-quaternary);
+  background: var(--viz-other);
 }
 
 .cmp-tasks__legend {
@@ -187,7 +190,7 @@ a.cmp-tasks__task-link:hover {
 }
 
 .cmp-tasks__task-id {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 11px;
   color: var(--ant-color-text-tertiary);
   font-variant-numeric: tabular-nums;

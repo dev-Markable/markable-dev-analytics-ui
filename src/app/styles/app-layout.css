@@ -25,16 +25,62 @@
   min-height: 100vh;
 }
 
+.app-sider__brandbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 6px;
+}
+
+/* Свёрнутый сайдбар: логотип и кнопка разворачивания столбцом по центру. */
+.app-sider__brandbar--collapsed {
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 0 6px;
+}
+
+/* Свёрнутый: без боковых паддингов, чтобы лого встал по центру колонки. */
+.app-sider__brandbar--collapsed .app-sidebar-brand {
+  padding: 6px 0;
+}
+
+/* Кнопка сворачивания — тихий «чип»: волосяная рамка, приглушённая иконка.
+   Голый antd-text был иконкой-призраком без affordance; рамка даёт зоне клика
+   форму, а ховер — тот же язык, что у круглых кнопок темы в топбаре. */
+.app-sider__collapse {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ant-color-text-tertiary);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    transform 120ms ease;
+}
+
+.app-sider__collapse:hover {
+  background: var(--ant-color-fill-quaternary);
+  border-color: var(--ant-color-border);
+  color: var(--ant-color-text);
+}
+
+.app-sider__collapse:active {
+  transform: scale(0.94);
+}
+
 .app-sider__nav-divider {
   height: 1px;
   background: var(--ant-color-split);
   margin: 12px 8px;
-}
-
-.app-sider__collapse-bar {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
 }
 
 /* Скроллбар сайдбара — по общим правилам (см. глобальный слой ниже), но уже. */
@@ -67,6 +113,57 @@
   justify-self: end;
 }
 
+/* ───── Свежесть данных (правый угол топбара) ───── */
+
+.topbar-freshness {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  margin-inline: -9px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  color: var(--ant-color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.topbar-freshness:hover {
+  color: var(--ant-color-text);
+  background: var(--ant-color-fill-quaternary);
+}
+
+.topbar-freshness--error,
+.topbar-freshness--error:hover {
+  color: var(--ant-color-error);
+}
+
+/* Ключевые кадры run-status-spin общие (shared.css). */
+.topbar-freshness__spin {
+  animation: run-status-spin 1.2s linear infinite;
+}
+
+.topbar-freshness__tip {
+  font-size: 12px;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.topbar-freshness__tip-title {
+  font-weight: 600;
+}
+
+.topbar-freshness__tip-hint {
+  margin-top: 4px;
+  padding-top: 5px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  opacity: 0.6;
+}
+
 .app-topbar__center {
   min-width: 0;
   display: flex;
@@ -86,19 +183,32 @@
 /* ───── Профиль в сайдбаре ───── */
 
 .app-sider__user {
-  padding: 8px 12px;
-  border-top: 1px solid var(--ant-color-split);
+  padding: 0 0 12px;
   margin-top: auto;
+}
+
+/* Разделитель футера врезан от краёв, как разделитель навигации выше:
+   во всю ширину линия читалась тяжёлой перекладиной у самой кромки сайдбара. */
+.app-sider__user::before {
+  content: '';
+  display: block;
+  height: 1px;
+  background: var(--ant-color-split);
+  margin: 12px 8px 10px;
 }
 
 .user-menu {
   display: flex;
   align-items: center;
   gap: 10px;
-  width: 100%;
-  padding: 8px 10px;
+  /* Плашка ховера встаёт на те же x=12..227, что и у пунктов навигации,
+     аватар — на x=24, в колонке с иконками навигации. */
+  box-sizing: border-box;
+  width: calc(100% - 24px);
+  margin: 0 12px;
+  padding: 8px 12px;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--ant-color-text);
   cursor: pointer;
@@ -112,6 +222,7 @@
 
 .user-menu--collapsed {
   justify-content: center;
+  margin: 0 auto;
   padding: 8px 0;
 }
 
@@ -164,8 +275,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  /* Совпадает по горизонтали с пунктами навигации (12px паддинг nav + 12px пункта). */
-  padding: 18px 22px 16px;
+  /* Лого на x=22: обёртка brandbar даёт 12, сам бренд — 10. */
+  padding: 6px 10px;
   font-weight: 640;
   letter-spacing: -0.02em;
   color: var(--ant-color-text);
@@ -191,6 +302,29 @@
   font-weight: 600;
   letter-spacing: -0.015em;
   color: var(--ant-color-text);
+}
+
+/* ───── Мини-лента пульса под брендом: 14 дней, тише навигации ───── */
+
+.app-sider__pulse {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 20px;
+  padding: 0 22px;
+  margin-top: -8px;
+  margin-bottom: 10px;
+}
+
+.app-sider__pulse-bar {
+  flex: 1;
+  min-height: 2px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--ant-color-primary) 35%, transparent);
+}
+
+.app-sider__pulse-bar--today {
+  background: var(--ant-color-primary);
 }
 
 /* ───── Навигация сайдбара ───── */
@@ -276,6 +410,14 @@
   background: var(--ant-color-bg-container);
 }
 
+/* Тёмная тема: свет сверху. Плоская граница со всех сторон читалась тяжело —
+   волосяной хайлайт по верхней кромке даёт «освещённую» панель, как в нативных
+   тёмных интерфейсах. Компоненты с собственным box-shadow (.pulse,
+   .stat-tile--plain, .leaderboard-card) получают тот же inset у себя в css. */
+[data-theme='dark'] .ant-card {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
 .ant-table-wrapper .ant-table {
   background: var(--ant-color-bg-container);
 }
@@ -284,16 +426,18 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Шапки таблиц — sentence case. CAPS+трекинг читались как генеренный штамп
+   и кричали громче данных; сигнал сортировки остаётся на цвете и стрелке. */
 .ant-table-wrapper .ant-table-thead > tr > th {
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 12.5px;
+  font-weight: 550;
+  letter-spacing: 0.01em;
 }
 
 .ant-typography code,
 .commit-hash {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular,
+    Menlo, Consolas, monospace;
   font-size: 0.9em;
 }
 
@@ -361,7 +505,7 @@
 /* Теги: были плотные «кричащие» плашки — делаем тише и легче.
    Цветные (color=...) не трогаем, у них своя семантика. */
 .ant-tag {
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   font-size: 11.5px;
   font-weight: 500;
   line-height: 1.7;
@@ -377,14 +521,14 @@
 
 .ant-table-wrapper .ant-table-tbody > tr:hover > td:first-child,
 .ant-table-wrapper .ant-table-tbody > tr.ant-table-row-selected > td:first-child {
-  border-start-start-radius: 12px;
-  border-end-start-radius: 12px;
+  border-start-start-radius: var(--radius-md);
+  border-end-start-radius: var(--radius-md);
 }
 
 .ant-table-wrapper .ant-table-tbody > tr:hover > td:last-child,
 .ant-table-wrapper .ant-table-tbody > tr.ant-table-row-selected > td:last-child {
-  border-start-end-radius: 12px;
-  border-end-end-radius: 12px;
+  border-start-end-radius: var(--radius-md);
+  border-end-end-radius: var(--radius-md);
 }
 
 /* Разделитель под наведённой строкой гасим — иначе линия режет скруглённый фон. */

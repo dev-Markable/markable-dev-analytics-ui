@@ -39,6 +39,12 @@ export function PulseCard({ daily, range, totalCommits, deltaPct, loading }: Pul
   const points = useMemo(() => aggregatePulse(daily, range), [daily, range]);
   const peak = useMemo(() => peakDay(points), [points]);
   const bands = useMemo(() => nonWorkingBands(points), [points]);
+  // Единственный анимированный момент приложения: линия пульса отрисовывается
+  // один раз при монтировании. При reduced-motion и рефетчах — статика.
+  const reduceMotion = useMemo(
+    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    [],
+  );
 
   if (loading) {
     return (
@@ -55,7 +61,7 @@ export function PulseCard({ daily, range, totalCommits, deltaPct, loading }: Pul
           <span className="pulse__label">
             <GitCommit size={14} /> Коммиты за период
           </span>
-          <span className="pulse__value">
+          <span className="pulse__value display-num">
             {formatNumber(totalCommits)}
             {deltaPct !== null && (
               <DeltaBadge value={deltaPct} format={formatPctDelta} />
@@ -73,7 +79,7 @@ export function PulseCard({ daily, range, totalCommits, deltaPct, loading }: Pul
       </header>
 
       <div className="pulse__chart">
-        <ResponsiveContainer width="100%" height={148}>
+        <ResponsiveContainer width="100%" height={200}>
           <AreaChart data={points} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
             <defs>
               <linearGradient id="pulse-fill" x1="0" y1="0" x2="0" y2="1">
@@ -118,6 +124,9 @@ export function PulseCard({ daily, range, totalCommits, deltaPct, loading }: Pul
               strokeWidth={2}
               fill="url(#pulse-fill)"
               activeDot={{ r: 4, strokeWidth: 0 }}
+              isAnimationActive={!reduceMotion}
+              animationDuration={700}
+              animationEasing="ease-out"
             />
           </AreaChart>
         </ResponsiveContainer>

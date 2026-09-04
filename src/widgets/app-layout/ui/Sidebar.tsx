@@ -1,11 +1,12 @@
 import { useMemo } from 'react';
-import { Button, Layout, Tooltip } from 'antd';
+import { Layout, Tooltip } from 'antd';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useSidebarStore } from '@/features/sidebar';
 import { isElevated, useCurrentUser } from '@/entities/auth';
 import { PRIMARY_NAV, type NavItem as NavItemType } from '../config/nav-items';
 import { Brand } from './Brand';
 import { NavItem } from './NavItem';
+import { SidebarPulse } from './SidebarPulse';
 import { UserMenu } from './UserMenu';
 
 const { Sider } = Layout;
@@ -33,7 +34,27 @@ export function Sidebar() {
       breakpoint="lg"
       trigger={null}
     >
-      <Brand collapsed={collapsed} />
+      {/* Кнопка сворачивания — в строке бренда: это управление самим сайдбаром,
+          а не пункт низа колонки. Внизу остаётся только футер с пользователем. */}
+      <div className={`app-sider__brandbar${collapsed ? ' app-sider__brandbar--collapsed' : ''}`}>
+        <Brand collapsed={collapsed} />
+        <Tooltip title={collapsed ? 'Развернуть' : 'Свернуть'} placement="right">
+          <button
+            type="button"
+            className="app-sider__collapse"
+            onClick={toggle}
+            aria-label={collapsed ? 'Развернуть сайдбар' : 'Свернуть сайдбар'}
+            aria-expanded={!collapsed}
+          >
+            {collapsed ? (
+              <PanelLeftOpen size={15} strokeWidth={1.8} />
+            ) : (
+              <PanelLeftClose size={15} strokeWidth={1.8} />
+            )}
+          </button>
+        </Tooltip>
+      </div>
+      {!collapsed && <SidebarPulse />}
 
       {/* Заголовка группы нет: раздел в сайдбаре один (служебное — в меню профиля),
           и подпись «Аналитика» только добавляла шум над очевидным списком. */}
@@ -47,21 +68,6 @@ export function Sidebar() {
           справа и выглядел потерянным. */}
       <div className="app-sider__user">
         <UserMenu collapsed={collapsed} />
-      </div>
-
-      <div
-        className="app-sider__collapse-bar"
-        style={{ justifyContent: collapsed ? 'center' : 'flex-end' }}
-      >
-        <Tooltip title={collapsed ? 'Развернуть' : 'Свернуть'} placement="right">
-          <Button
-            type="text"
-            size="small"
-            onClick={toggle}
-            icon={collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
-            aria-label={collapsed ? 'Развернуть сайдбар' : 'Свернуть сайдбар'}
-          />
-        </Tooltip>
       </div>
     </Sider>
   );

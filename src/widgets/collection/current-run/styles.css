@@ -46,9 +46,8 @@
 }
 
 .run-card__details dt {
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.01em;
   color: var(--ant-color-text-tertiary);
   font-weight: 500;
 }
@@ -61,7 +60,7 @@
 }
 
 .run-card__id {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 12px;
   color: var(--ant-color-text-secondary) !important;
   overflow: hidden;

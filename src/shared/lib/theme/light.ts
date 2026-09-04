@@ -2,8 +2,11 @@ import type { ThemeConfig } from 'antd';
 
 export const lightTheme: ThemeConfig = {
   token: {
-    colorPrimary: '#5b6cff',
-    colorInfo: '#5b6cff',
+    // Затемнён относительно старого #5b6cff: тот давал ~4.2:1 на белом —
+    // ниже AA для мелкого цветного текста (навигация, ссылки). #4353d6 даёт
+    // 6.1:1 в обе стороны: цветной текст на белом и белый на primary-кнопке.
+    colorPrimary: '#4353d6',
+    colorInfo: '#4353d6',
     colorSuccess: '#00b87c',
     colorWarning: '#f5a524',
     colorError: '#ef4444',
@@ -25,7 +28,8 @@ export const lightTheme: ThemeConfig = {
     colorTextTertiary: '#8a909c',
     colorTextQuaternary: '#b0b6c0',
 
-    fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+    fontFamily:
+      '"Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
     fontSize: 14,
     fontSizeHeading1: 28,
     fontSizeHeading2: 22,
@@ -66,7 +70,7 @@ export const lightTheme: ThemeConfig = {
       // Шапка без заливки: таблица читается как список, а не как «сетка Excel».
       headerBg: 'transparent',
       headerColor: '#5b6271',
-      rowHoverBg: 'rgba(91,104,255,.05)',
+      rowHoverBg: 'rgba(67,83,214,.05)',
       cellPaddingBlock: 16,
       headerSplitColor: 'transparent',
     },
@@ -77,7 +81,7 @@ export const lightTheme: ThemeConfig = {
       itemHeight: 36,
       itemHoverBg: '#eef0f4',
       itemSelectedBg: '#eef0ff',
-      itemSelectedColor: '#5b6cff',
+      itemSelectedColor: '#4353d6',
       itemMarginInline: 8,
     },
     Tag: { borderRadiusSM: 6, defaultBg: '#eef0f4', defaultColor: '#5b6271' },

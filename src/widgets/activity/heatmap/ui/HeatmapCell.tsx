@@ -7,12 +7,15 @@ import type { HeatmapDay } from '../lib/build-grid';
 interface HeatmapCellProps {
   day: HeatmapDay;
   maxCommits: number;
+  /** Сегодняшний день получает контур — точку «мы здесь» на длинной сетке. */
+  isToday?: boolean;
   onSelect?: (date: string) => void;
 }
 
 export const HeatmapCell = memo(function HeatmapCell({
   day,
   maxCommits,
+  isToday,
   onSelect,
 }: HeatmapCellProps) {
   const bg = day.outOfRange
@@ -26,7 +29,7 @@ export const HeatmapCell = memo(function HeatmapCell({
     <div
       className={`heatmap__cell${day.outOfRange ? ' heatmap__cell--muted' : ''}${
         clickable ? ' heatmap__cell--clickable' : ''
-      }`}
+      }${isToday && !day.outOfRange ? ' heatmap__cell--today' : ''}`}
       style={{
         gridColumn: day.column + 1,
         gridRow: day.weekday + 1,

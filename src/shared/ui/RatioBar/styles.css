@@ -5,9 +5,8 @@
 }
 
 .ratio-bar__caption {
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.01em;
   color: var(--ant-color-text-quaternary);
 }
 

@@ -15,7 +15,7 @@
 }
 
 [data-theme='dark'] .stat-tile--plain {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 /* Плитка внутри SectionCard — приглушённая вставка на белом теле карточки. */
@@ -32,15 +32,12 @@
 
 .stat-tile__value {
   font-size: 24px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
   line-height: 1.15;
   color: var(--ant-color-text);
-  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-/* Крупный вариант — главная цифра блока. */
+/* Крупный вариант — главная цифра блока: дисплейная пропорция из base.css. */
 .stat-tile--lg .stat-tile__value {
   font-size: 32px;
 }

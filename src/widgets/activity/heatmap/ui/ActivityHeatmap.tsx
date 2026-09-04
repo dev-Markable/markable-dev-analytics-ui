@@ -3,7 +3,7 @@ import { Card, Typography } from 'antd';
 import { CalendarRange } from 'lucide-react';
 import type { DailyStat } from '@/entities/stats';
 import { EmptyState } from '@/shared/ui';
-import { dayjs, type DateRange } from '@/shared/lib';
+import { dayjs, formatNumber, type DateRange } from '@/shared/lib';
 import {
   aggregateDailyDrill,
   type DrillContent,
@@ -23,8 +23,18 @@ interface ActivityHeatmapProps {
 
 const WEEKDAY_LABELS: readonly string[] = ['Пн', 'Ср', 'Пт'];
 
+// Границы ступеней colorIndex — четверти от максимума периода.
+const LEGEND_TITLES: readonly string[] = [
+  '0 коммитов',
+  'до 25% максимума',
+  '25–50% максимума',
+  '50–75% максимума',
+  'больше 75% максимума',
+];
+
 export function ActivityHeatmap({ daily, range, enrichment, onDrill }: ActivityHeatmapProps) {
   const grid = useMemo(() => buildHeatmapGrid(daily, range), [daily, range]);
+  const today = useMemo(() => dayjs().format('YYYY-MM-DD'), []);
 
   // Короткий период рисуем лентой дней: сетка недель на неделе схлопывается
   // в одну колонку и занимает полкарточки ничем.
@@ -116,6 +126,7 @@ export function ActivityHeatmap({ daily, range, enrichment, onDrill }: ActivityH
                       key={c.date}
                       day={c}
                       maxCommits={grid.maxCommits}
+                      isToday={c.date === today}
                       onSelect={handleDayClick}
                     />
                   ))}
@@ -125,15 +136,20 @@ export function ActivityHeatmap({ daily, range, enrichment, onDrill }: ActivityH
             )}
 
             <footer className="heatmap-legend">
-              <span className="heatmap-legend__caption">Меньше</span>
+              <span className="heatmap-legend__caption">0</span>
               {COLOR_SCALE.map((color, i) => (
                 <span
                   key={i}
                   className="heatmap-legend__cell"
                   style={{ background: color }}
+                  title={LEGEND_TITLES[i]}
                 />
               ))}
-              <span className="heatmap-legend__caption">Больше</span>
+              {/* Правая граница шкалы — реальное число, а не абстрактное «больше»:
+                  легенда, у которой оба конца — слова, ничего не измеряет. */}
+              <span className="heatmap-legend__caption">
+                макс. {formatNumber(grid.maxCommits)}
+              </span>
             </footer>
           </div>
         )}

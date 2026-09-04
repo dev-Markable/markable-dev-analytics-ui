@@ -94,54 +94,65 @@
 
 /* ───────────────────────── фичер-панель ───────────────────────── */
 
+/* Тихая панель: интерес даёт композиция пульса внутри, а не градиентная
+   заливка и не шесть одинаковых карточек-фич поверх. */
 .login-hero {
   display: flex;
-  align-items: center;
-  padding: 32px;
-  border-radius: 20px;
-  box-shadow: var(--ant-box-shadow-tertiary);
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--ant-color-primary) 10%, var(--ant-color-bg-container)),
-    var(--ant-color-bg-container) 70%
-  );
-}
-
-.login-hero__grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  width: 100%;
-}
-
-.login-feature {
-  padding: 18px;
-  border-radius: 14px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 30px;
+  padding: 36px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--ant-color-border-secondary);
   background: var(--ant-color-bg-container);
 }
 
+[data-theme='dark'] .login-hero {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.login-hero__pulse svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Список фич без карточечного хрома: иконка + название + строка пояснения.
+   Карточки тут спорили друг с другом за внимание — список читается оглавлением. */
+.login-hero__list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 24px;
+}
+
+.login-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
 .login-feature__icon {
   display: inline-flex;
-  width: 40px;
-  height: 40px;
   align-items: center;
   justify-content: center;
-  margin-bottom: 12px;
-  border-radius: 11px;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  margin-top: 1px;
+  border-radius: var(--radius-sm);
   background: var(--ant-color-primary-bg);
   color: var(--ant-color-primary);
 }
 
 .login-feature__title {
-  margin-bottom: 4px;
-  font-size: 14px;
+  margin-bottom: 2px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--ant-color-text);
 }
 
 .login-feature__desc {
-  font-size: 12.5px;
+  font-size: 12px;
   line-height: 1.45;
   color: var(--ant-color-text-secondary);
 }

@@ -7,10 +7,9 @@
 
 .section-title__text {
   margin: 0;
-  font-size: 12px;
-  font-weight: 640;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 620;
+  letter-spacing: -0.005em;
   color: var(--ant-color-text-tertiary);
   white-space: nowrap;
 }

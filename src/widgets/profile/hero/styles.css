@@ -194,13 +194,11 @@
   min-width: 96px;
 }
 
+/* Пропорции и трекинг дисплейных цифр — в .display-num (base.css). */
 .profile-hero__stat-value {
-  font-size: 26px;
-  font-weight: 660;
+  font-size: 28px;
   line-height: 1.1;
-  letter-spacing: -0.025em;
   color: var(--ant-color-text);
-  font-variant-numeric: tabular-nums;
 }
 
 .profile-hero__stat-value--added {

@@ -2,10 +2,11 @@ import { Space } from 'antd';
 import { DateRangeFilter } from '@/features/date-range-filter';
 import { TeamScopePicker } from '@/features/team-scope';
 import { CommandTrigger } from '@/features/command-palette';
+import { DataFreshness } from './DataFreshness';
 
 /**
  * Топбар в три зоны: слева глобальные фильтры, по центру — поиск (командная палитра),
- * справа — тема и профиль. Центральная зона тянется, поэтому поиск всегда по центру
+ * справа — свежесть данных. Центральная зона тянется, поэтому поиск всегда по центру
  * страницы независимо от ширины фильтров.
  */
 export function Topbar() {
@@ -20,9 +21,11 @@ export function Topbar() {
         <CommandTrigger />
       </div>
 
-      {/* Справа пусто намеренно: тема ушла в настройки, профиль — в сайдбар.
-          Пустая колонка держит поиск ровно по центру страницы. */}
-      <span className="app-topbar__side app-topbar__side--end" />
+      {/* Справа — когда данные обновлялись: тихая подпись, клик ведёт
+          на страницу сбора. Пустой её возвращать незачем. */}
+      <span className="app-topbar__side app-topbar__side--end">
+        <DataFreshness />
+      </span>
     </header>
   );
 }

@@ -13,9 +13,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
+  width: 72px;
   height: 56px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   margin-bottom: 8px;
   background: var(--ant-color-bg-layout);
   color: var(--ant-color-text-tertiary);

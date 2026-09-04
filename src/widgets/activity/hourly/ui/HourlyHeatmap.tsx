@@ -216,11 +216,14 @@ export function HourlyHeatmap({
               ))}
 
               <footer className="heatmap-legend" style={{ marginLeft: 28 }}>
-                <span className="heatmap-legend__caption">Меньше</span>
+                <span className="heatmap-legend__caption">0</span>
                 {HOURLY_COLOR_SCALE.map((color, i) => (
                   <span key={i} className="heatmap-legend__cell" style={{ background: color }} />
                 ))}
-                <span className="heatmap-legend__caption">Больше</span>
+                {/* Правая граница шкалы — реальный максимум периода, как в суточной heatmap. */}
+                <span className="heatmap-legend__caption">
+                  макс. {formatNumber(grid.maxCommits)}
+                </span>
               </footer>
             </div>
           </div>

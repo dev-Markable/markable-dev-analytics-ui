@@ -98,7 +98,7 @@ export function StatTile({
       className={`stat-tile stat-tile--${variant}${size === "lg" ? " stat-tile--lg" : ""}`}
     >
       <div className="stat-tile__head">
-        <span className="stat-tile__value">{value}</span>
+        <span className="stat-tile__value display-num">{value}</span>
         {delta && (
           <span
             className={`stat-tile__delta stat-tile__delta--${delta.good ? "good" : "bad"}`}

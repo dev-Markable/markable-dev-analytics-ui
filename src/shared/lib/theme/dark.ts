@@ -25,7 +25,8 @@ export const darkTheme: ThemeConfig = {
     colorTextTertiary: '#6a7280',
     colorTextQuaternary: '#4a525e',
 
-    fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+    fontFamily:
+      '"Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
     fontSize: 14,
     fontSizeHeading1: 28,
     fontSizeHeading2: 22,
